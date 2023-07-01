@@ -30,7 +30,7 @@ _editor_class["Boss"].difficulty="All"
 _editor_class["Boss"].init=function(self,cards)
     boss.init(self,240,384,_editor_class["Boss"].name,cards,New(spellcard_background),_editor_class["Boss"].difficulty)
 end
-_tmp_sc=boss.card.New("「」",2,5,60,1800,{0,0,0},false)
+_tmp_sc=boss.card.New("",2,5,60,1800,{0,0,0},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
@@ -42,7 +42,7 @@ function _tmp_sc:del()
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Boss"].cards,_tmp_sc)
-table.insert(_sc_table,{"Boss","「」",_tmp_sc,#_editor_class["Boss"].cards,false})
+
 stage.group.New('menu',{},"SpellCard",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
 stage.group.AddStage('SpellCard','SpellCard@SpellCard',{lifeleft=7,power=400,faith=50000,bomb=3},true)
 stage.group.DefStageFunc('SpellCard@SpellCard','init',function(self)
@@ -52,7 +52,7 @@ stage.group.DefStageFunc('SpellCard@SpellCard','init',function(self)
     if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
     lasttask=task.New(self,function()
         LoadMusic('spellcard','THlib\\music\\spellcard.ogg',75,0xc36e80/44100/4)
-        SetWorldUEX(screen.width/2, screen.height/2, 384, 448, 32, 32)
+        SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
         New(_editor_class["temple_background"] or temple_background)
         task._Wait(60)
         LoadMusicRecord("spellcard")

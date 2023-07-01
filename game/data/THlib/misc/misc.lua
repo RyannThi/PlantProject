@@ -46,6 +46,7 @@ function hinter:render()
 end
 
 bubble = Class(object)
+
 function bubble:init(img, x, y, life_time, size1, size2, color1, color2, layer, blend)
     self.img = img
     self.x = x
@@ -165,6 +166,70 @@ function float_text2:frame()
     end
 end
 
+--震屏
+--fixed by ETC，不再直接改lrbt
+function misc.ShakeScreen(t, s)
+    if lstg.tmpvar.shaker then
+        lstg.tmpvar.shaker.time = t
+        lstg.tmpvar.shaker.size = s
+        lstg.tmpvar.shaker.timer = 0
+    else
+        New(shaker_maker, t, s)
+    end
+end
+
+shaker_maker = Class(object)
+function shaker_maker:init(time, size)
+    lstg.tmpvar.shaker = self
+    self.time = time
+    self.size = size
+    self.offset = lstg.worldoffset
+    --[[
+    self.l=lstg.world.l
+    self.r=lstg.world.r
+    self.bb=lstg.world.b
+    self.t=lstg.world.t
+    --]]
+end
+function shaker_maker:frame()
+    local a = int(self.timer / 3) * 360 / 5 * 2
+    local x = self.size * cos(a)
+    local y = self.size * sin(a)
+    self.offset.dx = x
+    self.offset.dy = y
+    --[[
+    lstg.world.l=self.l+x
+    lstg.world.r=self.r+x
+    lstg.world.b=self.bb+y
+    lstg.world.t=self.t+y
+    --]]
+    if self.timer == self.time then
+        Del(self)
+    end
+end
+function shaker_maker:del()
+    self.offset.dx = 0
+    self.offset.dy = 0
+    --[[
+    lstg.world.l=self.l
+    lstg.world.r=self.r
+    lstg.world.b=self.bb
+    lstg.world.t=self.t
+    --]]
+    lstg.tmpvar.shaker = nil
+end
+function shaker_maker:kill()
+    self.offset.dx = 0
+    self.offset.dy = 0
+    --[[
+    lstg.world.l=self.l
+    lstg.world.r=self.r
+    lstg.world.b=self.bb
+    lstg.world.t=self.t
+    --]]
+    lstg.tmpvar.shaker = nil
+end
+
 --tasker
 tasker = Class(object)
 function tasker:init(f, group)
@@ -178,80 +243,7 @@ function tasker:frame()
     end
 end
 
---------------------------------------------------------------------------------
---- 形状渲染
-
-function misc.RenderRing(img, x, y, r1, r2, rot, n, nimg)
-    --boss card
-    local da = 360 / n
-    local a = rot
-    for i = 1, n do
-        a = rot - da * i
-        Render4V(img .. ((i - 1) % nimg + 1),
-                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
-                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
-                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
-                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
-    end
-end
-
-function misc.Renderhp(x, y, rot, la, r1, r2, n, c)
-    --boss
-    local da = la / n
-    local nn = int(n * c)
-    for i = 1, nn do
-        local a = rot + da * i
-        Render4V('hpbar1',
-                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
-                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
-                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
-                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
-    end
-end
-
-function misc.Renderhpbar(x, y, rot, la, r1, r2, n, c)
-    --boss
-    local da = la / n
-    local nn = int(n * c)
-    for i = 1, nn do
-        local a = rot + da * i
-        Render4V('hpbar2',
-                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
-                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
-                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
-                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
-    end
-end
-
-function renderstar(x, y, r, point)
-    --?
-    local ang = 360 / (2 * point)
-    for angle = 360 / point, 360, 360 / point do
-        local x1, y1 = x + r * cos(angle + ang) ^ 3, r * sin(angle + ang) ^ 3
-        local x2, y2 = x + r * cos(angle - ang) ^ 3, r * sin(angle - ang) ^ 3
-        Render4V('_sub_white', x, y, 0.5,
-                x, y, 0.5,
-                x1, y1, 0.5,
-                x2, y2, 0.5)
-    end
-end
-
-function rendercircle(x, y, r, point)
-    --player death effect
-    local ang = 360 / (2 * point)
-    for angle = 360 / point, 360, 360 / point do
-        local x1, y1 = x + r * cos(angle + ang), y + r * sin(angle + ang)
-        local x2, y2 = x + r * cos(angle - ang), y + r * sin(angle - ang)
-        Render4V('_rev_white', x, y, 0.5,
-                x, y, 0.5,
-                x1, y1, 0.5,
-                x2, y2, 0.5)
-    end
-end
-
---------------------------------------------------------------------------------
---- 切换关卡用的幕布
-
+--切换关卡用的幕布
 shutter = Class(object)
 function shutter:init(mode)
     self.layer = LAYER_TOP + 100
@@ -299,126 +291,106 @@ function mask_fader:render()
     SetViewMode 'world'
 end
 
---------------------------------------------------------------------------------
---- 震屏效果
-
-local Shaker = Class(object)
-shaker_maker = Shaker
-function Shaker:init(time, size)
-    lstg.tmpvar._G_shaker = self
-    self.time = time
-    self.size = size
-    self.offset = lstg.worldoffset
-    --[[
-    self.l=lstg.world.l
-    self.r=lstg.world.r
-    self.bb=lstg.world.b
-    self.t=lstg.world.t
-    --]]
-end
-function Shaker:frame()
-    local a = int(self.timer / 3) * 360 / 5 * 2
-    local x = self.size * cos(a)
-    local y = self.size * sin(a)
-    self.offset.dx = x
-    self.offset.dy = y
-    --[[
-    lstg.world.l=self.l+x
-    lstg.world.r=self.r+x
-    lstg.world.b=self.bb+y
-    lstg.world.t=self.t+y
-    --]]
-    if self.timer >= self.time then
-        Del(self)
-    end
-end
-function Shaker:del()
-    self.offset.dx = 0
-    self.offset.dy = 0
-    --[[
-    lstg.world.l=self.l
-    lstg.world.r=self.r
-    lstg.world.b=self.bb
-    lstg.world.t=self.t
-    --]]
-    lstg.tmpvar._G_shaker = nil
-end
-function Shaker:kill()
-    self.offset.dx = 0
-    self.offset.dy = 0
-    --[[
-    lstg.world.l=self.l
-    lstg.world.r=self.r
-    lstg.world.b=self.bb
-    lstg.world.t=self.t
-    --]]
-    lstg.tmpvar._G_shaker = nil
+--维持粒子特效直到消失
+--！警告：使用了改类功能
+function misc.KeepParticle(o)
+    o.class = ParticleKepper
+    PreserveObject(o)
+    ParticleStop(o)
+    o.bound = false
+    o.group = GROUP_GHOST
 end
 
---- 震屏
---- by ETC: 不再直接改lrbt
-function misc.ShakeScreen(t, s)
-    if lstg.tmpvar._G_shaker then
-        lstg.tmpvar._G_shaker.time = t
-        lstg.tmpvar._G_shaker.size = s
-        lstg.tmpvar._G_shaker.timer = 0
-    else
-        New(Shaker, t, s)
-    end
-end
-
---------------------------------------------------------------------------------
---- 维持粒子特效
-
-local ParticleMaintainer = Class(object)
-ParticleKepper = ParticleMaintainer
-function ParticleMaintainer:frame()
-    -- NEW BEGIN
-    if self._want_set_group then
-        self._want_set_group = false
-        self.group = GROUP_GHOST
-    end
-    -- NEW END
-
+ParticleKepper = Class(object)
+function ParticleKepper:frame()
     if ParticleGetn(self) == 0 then
         Del(self)
     end
 end
 
---- 维持粒子特效直到消失  
---- 警告：使用了改类功能  
---- 警告：新的写法延迟了碰撞组修改的时机，防止在碰撞检测时炸游戏  
-function misc.KeepParticle(o)
-    o.class = ParticleMaintainer
-    PreserveObject(o)
-    ParticleStop(o)
-    o.bound = false
-
-    -- OLD BEGIN
-    --o.group = GROUP_GHOST
-    -- OLD END
-
-    -- NEW BEGIN
-    o.colli = false
-    o._want_set_group = true
-    -- NEW END
+--一些形状的渲染
+function misc.RenderRing(img, x, y, r1, r2, rot, n, nimg)
+    --boss card
+    local da = 360 / n
+    local a = rot
+    for i = 1, n do
+        a = rot - da * i
+        Render4V(img .. ((i - 1) % nimg + 1),
+                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
+                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
+                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
+                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
+    end
 end
 
---------------------------------------------------------------------------------
---- 资源
+function misc.Renderhp(x, y, rot, la, r1, r2, n, c)
+    --boss
+    local da = la / n
+    local nn = int(n * c)
+    for i = 1, nn do
+        local a = rot + da * i
+        Render4V('hpbar1',
+                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
+                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
+                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
+                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
+    end
+end
+function misc.Renderhpbar(x, y, rot, la, r1, r2, n, c)
+    --boss
+    local da = la / n
+    local nn = int(n * c)
+    for i = 1, nn do
+        local a = rot + da * i
+        Render4V('hpbar2',
+                r1 * cos(a + da) + x, r1 * sin(a + da) + y, 0.5,
+                r2 * cos(a + da) + x, r2 * sin(a + da) + y, 0.5,
+                r2 * cos(a) + x, r2 * sin(a) + y, 0.5,
+                r1 * cos(a) + x, r1 * sin(a) + y, 0.5)
+    end
+end
+
+function renderstar(x, y, r, point)
+    --?
+    local ang = 360 / (2 * point)
+    for angle = 360 / point, 360, 360 / point do
+        local x1, y1 = x + r * cos(angle + ang) ^ 3, r * sin(angle + ang) ^ 3
+        local x2, y2 = x + r * cos(angle - ang) ^ 3, r * sin(angle - ang) ^ 3
+        Render4V('_sub_white', x, y, 0.5,
+                x, y, 0.5,
+                x1, y1, 0.5,
+                x2, y2, 0.5)
+    end
+end
+
+function rendercircle(x, y, r, point)
+    --player death effect
+    local ang = 360 / (2 * point)
+    for angle = 360 / point, 360, 360 / point do
+        local x1, y1 = x + r * cos(angle + ang), y + r * sin(angle + ang)
+        local x2, y2 = x + r * cos(angle - ang), y + r * sin(angle - ang)
+        Render4V('_rev_white', x, y, 0.5,
+                x, y, 0.5,
+                x1, y1, 0.5,
+                x2, y2, 0.5)
+    end
+end
+
+----------------------------------------
+--资源加载
 
 --一些乱七八糟的东西
-LoadTexture('misc', 'THlib/misc/misc.png')
+LoadTexture('misc', 'THlib\\misc\\misc.png')
 LoadImage('player_aura', 'misc', 128, 0, 64, 64)
 LoadImageGroup('bubble', 'misc', 192, 0, 64, 64, 1, 4)
 LoadImage('border', 'misc', 128, 192, 64, 64)
 LoadImage('leaf', 'misc', 0, 32, 32, 32)
 LoadImage('white', 'misc', 56, 8, 16, 16)
 --预制粒子特效图片
-LoadTexture('particles', 'THlib/misc/particles.png')
+LoadTexture('particles', 'THlib\\misc\\particles.png')
 LoadImageGroup('parimg', 'particles', 0, 0, 32, 32, 4, 4)
 --空图片
-LoadImageFromFile('img_void', 'THlib/misc/img_void.png')
+LoadImageFromFile('img_void', 'THlib\\misc\\img_void.png')
 --反色圈和星星的素材，预先设置好混合和颜色减少性能消耗
 CopyImage("_rev_white", "white")
 SetImageState('_rev_white', 'add+sub',

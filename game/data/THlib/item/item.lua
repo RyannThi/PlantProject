@@ -1,10 +1,10 @@
-LoadTexture('item', 'THlib/item/item.png')
+LoadTexture('item', 'THlib\\item\\item.png')
 LoadImageGroup('item', 'item', 0, 0, 32, 32, 2, 5, 8, 8)
 LoadImageGroup('item_up', 'item', 64, 0, 32, 32, 2, 5)
 SetImageState('item8', 'mul+add', Color(0xC0FFFFFF))
-LoadTexture('bonus1', 'THlib/item/item.png')
-LoadTexture('bonus2', 'THlib/item/item.png')
-LoadTexture('bonus3', 'THlib/item/item.png')
+LoadTexture('bonus1', 'THlib\\item\\item.png')
+LoadTexture('bonus2', 'THlib\\item\\item.png')
+LoadTexture('bonus3', 'THlib\\item\\item.png')
 
 lstg.var.collectingitem = 0
 
@@ -222,6 +222,28 @@ function item_faith_minor:collect()
     local var = lstg.var
     var.faith = var.faith + 4
     var.score = var.score + 500
+end
+if lstg.ResourceReference and true then
+    --0.81c及以后
+    item_faith_minor.ImageRef = lstg.ResourceReference("item8", 2)
+
+    function item_faith_minor:init(x, y)
+        self.x = x
+        self.y = y
+        lstg.ObjectChangeResource(self, item_faith_minor.ImageRef)
+        self.group = GROUP_ITEM
+        self.layer = LAYER_ITEM
+        if not BoxCheck(self, lstg.world.l, lstg.world.r, lstg.world.b, lstg.world.t) then
+            RawDel(self)
+        end
+        self.vx = ran:Float(-0.15, 0.15)
+        self._vy = ran:Float(3.25, 3.75)
+        self.flag = 1
+        self.attract = 0
+        self.bound = false
+        self.is_minor = true
+        self.target = player
+    end
 end
 
 item_point = Class(item)

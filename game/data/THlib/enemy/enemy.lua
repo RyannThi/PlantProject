@@ -1,4 +1,4 @@
-LoadTexture('enemy1', 'THlib/enemy/enemy1.png')
+LoadTexture('enemy1', 'THlib\\enemy\\enemy1.png')
 LoadImageGroup('enemy1_', 'enemy1', 0, 384, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy2_', 'enemy1', 0, 416, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy3_', 'enemy1', 0, 448, 32, 32, 12, 1, 8, 8)
@@ -20,7 +20,7 @@ for i = 1, 4 do
     SetImageState('enemy_aura' .. i, '', Color(0x80FFFFFF))
 end
 
-LoadTexture('enemy2', 'THlib/enemy/enemy2.png')
+LoadTexture('enemy2', 'THlib\\enemy\\enemy2.png')
 LoadImageGroup('enemy10_', 'enemy2', 0, 0, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy11_', 'enemy2', 0, 32, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy12_', 'enemy2', 0, 64, 32, 32, 12, 1, 8, 8)
@@ -30,12 +30,12 @@ LoadImageGroup('enemy15_', 'enemy2', 0, 288, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy16_', 'enemy2', 0, 352, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy17_', 'enemy2', 0, 416, 32, 32, 12, 1, 8, 8)
 LoadImageGroup('enemy18_', 'enemy2', 0, 480, 32, 32, 12, 1, 8, 8)
-LoadPS('ghost_fire_r', 'THlib/enemy/ghost_fire_r.psi', 'parimg1', 8, 8)
-LoadPS('ghost_fire_b', 'THlib/enemy/ghost_fire_b.psi', 'parimg1', 8, 8)
-LoadPS('ghost_fire_g', 'THlib/enemy/ghost_fire_g.psi', 'parimg1', 8, 8)
-LoadPS('ghost_fire_y', 'THlib/enemy/ghost_fire_y.psi', 'parimg1', 8, 8)
+LoadPS('ghost_fire_r', 'THlib\\enemy\\ghost_fire_r.psi', 'parimg1', 8, 8)
+LoadPS('ghost_fire_b', 'THlib\\enemy\\ghost_fire_b.psi', 'parimg1', 8, 8)
+LoadPS('ghost_fire_g', 'THlib\\enemy\\ghost_fire_g.psi', 'parimg1', 8, 8)
+LoadPS('ghost_fire_y', 'THlib\\enemy\\ghost_fire_y.psi', 'parimg1', 8, 8)
 
-LoadTexture('enemy3', 'THlib/enemy/enemy3.png')
+LoadTexture('enemy3', 'THlib\\enemy\\enemy3.png')
 LoadImageGroup('Ghost1', 'enemy3', 0, 0, 32, 32, 8, 1, 8, 8)
 LoadImageGroup('Ghost3', 'enemy3', 0, 32, 32, 32, 8, 1, 8, 8)
 LoadImageGroup('Ghost2', 'enemy3', 0, 64, 32, 32, 8, 1, 8, 8)
@@ -193,7 +193,7 @@ function enemy_death_ef:frame()
     end
 end
 
-Include 'THlib/enemy/boss.lua'
+Include 'THlib\\enemy\\boss.lua'
 
 EnemySimple = Class(enemy)
 

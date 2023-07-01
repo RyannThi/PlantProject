@@ -23,7 +23,7 @@ local sounds = {
 }
 
 for _, v in pairs(sounds) do
-    LoadSound(v, 'THlib/se/se_' .. v .. '.wav')
+    LoadSound(v, 'THlib\\se\\se_' .. v .. '.wav')
 end
 
 ----------------------------------------

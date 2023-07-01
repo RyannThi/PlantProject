@@ -1,4 +1,4 @@
-LoadTexture('bullet1', 'THlib/bullet/bullet1.png', true)
+LoadTexture('bullet1', 'THlib\\bullet\\bullet1.png', true)
 LoadImageGroup('preimg', 'bullet1', 80, 0, 32, 32, 1, 8)
 LoadImageGroup('arrow_big', 'bullet1', 0, 0, 16, 16, 1, 16, 2.5, 2.5)
 LoadImageGroup('gun_bullet', 'bullet1', 24, 0, 16, 16, 1, 16, 2.5, 2.5)
@@ -9,7 +9,7 @@ LoadImageGroup('ball_mid', 'bullet1', 176, 0, 32, 32, 1, 8, 4, 4)
 LoadImageGroup('mildew', 'bullet1', 208, 0, 16, 16, 1, 16, 2, 2)
 LoadImageGroup('ellipse', 'bullet1', 224, 0, 32, 32, 1, 8, 4.5, 4.5)
 
-LoadTexture('bullet2', 'THlib/bullet/bullet2.png')
+LoadTexture('bullet2', 'THlib\\bullet\\bullet2.png')
 LoadImageGroup('star_small', 'bullet2', 96, 0, 16, 16, 1, 16, 3, 3)
 LoadImageGroup('star_big', 'bullet2', 224, 0, 32, 32, 1, 8, 5.5, 5.5)
 for i = 1, 8 do
@@ -25,7 +25,7 @@ LoadImageGroup('ball_small', 'bullet2', 176, 0, 16, 16, 1, 16, 2, 2)
 LoadImageGroup('grain_a', 'bullet2', 160, 0, 16, 16, 1, 16, 2.5, 2.5)
 LoadImageGroup('grain_b', 'bullet2', 128, 0, 16, 16, 1, 16, 2.5, 2.5)
 
-LoadTexture('bullet3', 'THlib/bullet/bullet3.png')
+LoadTexture('bullet3', 'THlib\\bullet\\bullet3.png')
 LoadImageGroup('knife', 'bullet3', 0, 0, 32, 32, 1, 8, 4, 4)
 LoadImageGroup('grain_c', 'bullet3', 48, 0, 16, 16, 1, 16, 2.5, 2.5)
 LoadImageGroup('arrow_small', 'bullet3', 80, 0, 16, 16, 1, 16, 2.5, 2.5)
@@ -36,7 +36,7 @@ for i = 1, 16 do
     SetImageCenter('fake_laser' .. i, 0, 8)
 end
 
-LoadTexture('bullet4', 'THlib/bullet/bullet4.png')
+LoadTexture('bullet4', 'THlib\\bullet\\bullet4.png')
 LoadImageGroup('star_big_b', 'bullet4', 32, 0, 32, 32, 1, 8, 6, 6)
 LoadImageGroup('ball_mid_b', 'bullet4', 64, 0, 32, 32, 1, 8, 4, 4)
 for i = 1, 8 do
@@ -57,7 +57,7 @@ for i = 1, 8 do
     SetImageState('ball_mid_d' .. i, 'mul+add')
 end
 --------ball_light--------
-LoadTexture('bullet5', 'THlib/bullet/bullet5.png')
+LoadTexture('bullet5', 'THlib\\bullet\\bullet5.png')
 LoadImageGroup('ball_light', 'bullet5', 0, 0, 64, 64, 4, 2, 11.5, 11.5)
 LoadImageGroup('fade_ball_light', 'bullet5', 0, 0, 64, 64, 4, 2, 11.5, 11.5)
 LoadImageGroup('ball_light_dark', 'bullet5', 0, 0, 64, 64, 4, 2, 11.5, 11.5)
@@ -67,7 +67,7 @@ for i = 1, 8 do
 end
 --------------------------
 --------ball_huge---------
-LoadTexture('bullet_ball_huge', 'THlib/bullet/bullet_ball_huge.png')
+LoadTexture('bullet_ball_huge', 'THlib\\bullet\\bullet_ball_huge.png')
 LoadImageGroup('ball_huge', 'bullet_ball_huge', 0, 0, 64, 64, 4, 2, 13.5, 13.5)
 LoadImageGroup('fade_ball_huge', 'bullet_ball_huge', 0, 0, 64, 64, 4, 2, 13.5, 13.5)
 LoadImageGroup('ball_huge_dark', 'bullet_ball_huge', 0, 0, 64, 64, 4, 2, 13.5, 13.5)
@@ -77,7 +77,7 @@ for i = 1, 8 do
 end
 --------------------------
 --------water_drop--------
-LoadTexture('bullet_water_drop', 'THlib/bullet/bullet_water_drop.png')
+LoadTexture('bullet_water_drop', 'THlib\\bullet\\bullet_water_drop.png')
 for i = 1, 8 do
     LoadAnimation('water_drop' .. i, 'bullet_water_drop', 48 * (i - 1), 0, 48, 32, 1, 4, 4, 4, 4)
     SetAnimationState('water_drop' .. i, 'mul+add')
@@ -87,17 +87,17 @@ for i = 1, 8 do
 end
 --------------------------
 --------music-------------
-LoadTexture('bullet_music', 'THlib/bullet/bullet_music.png')
+LoadTexture('bullet_music', 'THlib\\bullet\\bullet_music.png')
 for i = 1, 8 do
     LoadAnimation('music' .. i, 'bullet_music', 60 * (i - 1), 0, 60, 32, 1, 3, 8, 4, 4)
 end
 ------silence-------------
-LoadTexture('bullet6', 'THlib/bullet/bullet6.png')
+LoadTexture('bullet6', 'THlib\\bullet\\bullet6.png')
 LoadImageGroup('silence', 'bullet6', 192, 0, 32, 32, 1, 8, 4.5, 4.5)
 --------------------------
 ------bullet_break--------
 --牺牲内存优化运行性能
-LoadTexture('etbreak', 'THlib/bullet/etbreak.png')
+LoadTexture('etbreak', 'THlib\\bullet\\etbreak.png')
 for j = 1, 16 do
     LoadAnimation('etbreak' .. j, 'etbreak', 0, 0, 64, 64, 4, 2, 3)
 end
@@ -141,6 +141,25 @@ function BulletBreak:frame()
     end
 end
 
+if lstg.ResourceReference and true then
+    --0.81c及以后
+    local STATIC_BULLETBKEF_RES = {}
+    for i = 1, 16 do
+        STATIC_BULLETBKEF_RES[i] = lstg.ResourceReference("etbreak" .. i, 3)
+    end
+
+    function BulletBreak:init(x, y, index)
+        self.x = x
+        self.y = y
+        self.group = GROUP_GHOST
+        self.layer = LAYER_ENEMY_BULLET - 50
+        lstg.ObjectChangeResource(self, STATIC_BULLETBKEF_RES[index])
+        local s = ran:Float(0.5, 0.75)
+        self.hscale = s
+        self.vscale = s
+        self.rot = ran:Float(0, 360)
+    end
+end
 --------------------------
 
 
@@ -237,6 +256,23 @@ function img_class:render()
         SetImageState('preimg' .. self.index, '', Color(255 * self.timer / 11, 255, 255, 255))
     end
     Render('preimg' .. self.index, self.x, self.y, self.rot, ((11 - self.timer) / 11 * 3 + 1) * self.imgclass.size)
+end
+if lstg.ResourceReference and true then
+    --0.81c及以后
+    local STATIC_PREIMG_RES = {}
+    for i = 1, 8 do
+        STATIC_PREIMG_RES[i] = lstg.ResourceReference("preimg" .. i, 2)
+    end
+
+    function img_class:render()
+        local Res = STATIC_PREIMG_RES[self.index]
+        if self._blend then
+            SetImageStateEx(Res, self._blend, Color(255 * self.timer / 11, 255, 255, 255))
+        else
+            SetImageStateEx(Res, "", Color(255 * self.timer / 11, 255, 255, 255))
+        end
+        RenderEx(Res, self.x, self.y, self.rot, ((11 - self.timer) / 11 * 3 + 1) * self.imgclass.size)
+    end
 end
 ----------------------------------------------------------------
 function ChangeBulletImage(obj, imgclass, index)

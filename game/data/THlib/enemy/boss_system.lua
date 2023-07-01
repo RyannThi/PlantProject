@@ -1,51 +1,50 @@
----高精度计时器
----@class lstg.StopWatch
----@return lstg.StopWatch
-local StopWatch = plus.Class()
+local StopWatch = StopWatch
 
-
----初始化函数
-function StopWatch:init()
-    self:Reset()
-end
----重置计时器
-function StopWatch:Reset()
-    self._pause = {}
-    self._resume = {}
-    self.time = os.clock()
-    self._is_paused = false
-end
----暂停计时器
-function StopWatch:Pause()
-    if self._is_paused then
-        return
+if StopWatch == nil then
+    ---高精度计时器
+    ---@class lstg.StopWatch
+    ---@return lstg.StopWatch
+    StopWatch = plus.Class()
+    ---初始化函数
+    function StopWatch:init()
+        self:Reset()
     end
-    self._is_paused = true
-    table.insert(self._pause, os.clock())
-end
----恢复计时器
-function StopWatch:Resume()
-    if not (self._is_paused) then
-        return
+    ---重置计时器
+    function StopWatch:Reset()
+        self._pause = {}
+        self._resume = {}
+        self.time = os.clock()
     end
-    self._is_paused = false
-    table.insert(self._resume, os.clock())
-end
----获取当前相对时间戳
-function StopWatch:GetElapsed()
-    local t = os.clock()
-    local ot = self.time
-    local pt = 0
-    local n = #self._pause
-    if self._is_paused then
-        t = self._pause[n]
-        n = n - 1
+    ---暂停计时器
+    function StopWatch:Pause()
+        if self._is_paused then
+            return
+        end
+        self._is_paused = true
+        table.insert(self._pause, os.clock())
     end
-    for i = 1, n do
-        pt = pt + (self._resume[i] - self._pause[i])
+    ---恢复计时器
+    function StopWatch:Resume()
+        if not (self._is_paused) then
+            return
+        end
+        table.insert(self._resume, os.clock())
     end
-    t = t - ot - pt
-    return t
+    ---获取当前相对时间戳
+    function StopWatch:GetElapsed()
+        local t = os.clock()
+        local ot = self.time
+        local pt = 0
+        local n = #self._pause
+        if self._is_paused then
+            n = n - 1
+        end
+        for i = 1, n do
+            pt = pt + (self._resume[i] - self._pause[i])
+        end
+        t = t - ot - pt
+        return t
+    end
 end
 
 local function matchVar(list, var)
@@ -489,40 +488,16 @@ end
 
 ---boss系统击破结算逻辑
 function system:kill()
-    self.is_killing = true
     local b = self.boss
-    if b.is_combat and b.ui then
+    if b.is_combat then
         b.ui.drawtimesaver = b.countdown
     end
     if b.timeout and not (b.time_sc) then
         self:clearBonus("all")
     end
     --符卡逻辑
-    local card = b.current_card
-    if card and card.beforedel then
-        PreserveObject(b)
-        task.Clear(b)
-        task.Clear(self)
-        task.New(self, function()
-            local t = task.New(b, function()
-                card.beforedel(b)
-            end)
-            while coroutine.status(t) ~= 'dead' do
-                task.Wait()
-            end
-            self:kill_part2()
-        end)
-        task.Do(self)
-    else
-        self:kill_part2()
-    end
-end
-
-function system:kill_part2()
-    local b = self.boss
-    local card = b.current_card
-    if card then
-        card.del(b)
+    if b.current_card then
+        b.current_card.del(b)
     end
     if b.__card_finish then
         b.__card_finish(b)
@@ -530,47 +505,20 @@ function system:kill_part2()
     end
     self:refresh(1)
     if b.is_final and not (b.no_killeff) and not (b.killed) then
-        if b.slowExplodeEffect then
-            self:slow_explode()
-        else
-            self:explode()
-        end
+        self:explode()
     else
         self:popSpellResult()
         if b.is_final then
-            self:popResult(true)
-            self:refresh(2)
-            if card and card.after then
-                task.New(b, function()
-                    card.after(b)
-                    Del(b)
-                end)
-                self:doTask()
-            else
-                Del(b)
-            end
+            Del(self)
         else
             self:popResult(true)
             self:refresh(2)
-            if card and card.after then
-                task.New(b, function()
-                    card.after(b)
-                    task.Clear(b)
-                    task.Clear(self)
-                    if self._cards_system then
-                        local ref = self._cards_system:next()
-                        if not (ref) then
-                            self._cards_system = nil
-                        end
-                    end
-                end)
-                self:doTask()
-            else
-                if self._cards_system then
-                    local ref = self._cards_system:next()
-                    if not (ref) then
-                        self._cards_system = nil
-                    end
+            if self._cards_system then
+                local ref = self._cards_system:next()
+                if not (ref) then
+                    self._cards_system = nil
+                else
+                    self:doTask()
                 end
             end
         end
@@ -581,9 +529,6 @@ end
 function system:del()
     local b = self.boss
     local unit = { b.ui, b.bg, b.dialog_displayer }
-    if IsValid(b.bg) then
-        b.bg.alpha = 0
-    end
     if IsValid(lstg.tmpvar.bg) then
         lstg.tmpvar.bg.hide = false
     end
@@ -604,24 +549,19 @@ end
 ---boss爆炸自删
 function system:explode()
     local b = self.boss
-    local card = b.current_card
-    local angle = ran:Float(-15, 15)
-    local sign, v = ran:Sign(), 1.5
     b.is_exploding = true
     b.killed = true
     b.no_killeff = true
     PlaySound("enep01", 0.5)
     b._colli = false
     b.hp = 0
-    b.lr = sign * 28
-    b.vx = sign * v * cos(angle)
-    b.vy = v * sin(angle)
-    New(bullet_cleaner, b.x, b.y, 3000, 120, 60, true, true, 0)
-    if b.protectPlayer then
-        player.protect = 120
-    end
     task.New(b, function()
-        local lifetime, l
+        local angle = ran:Float(-15, 15)
+        local sign, v = ran:Sign(), 1.5
+        b.lr = sign * 28
+        b.vx = sign * v * cos(angle)
+        b.vy = v * sin(angle)
+        New(bullet_cleaner, b.x, b.y, 1500, 120, 60, true, true, 0)
         if not b.__dieinstantly then
             for i = 1, 60 do
                 v = v * 0.98
@@ -629,8 +569,8 @@ function system:explode()
                 b.vy = v * sin(angle)
                 b.hp = 0
                 b.timer = b.timer - 1
-                lifetime = ran:Int(60, 90)
-                l = ran:Float(100, 250)
+                local lifetime = ran:Int(60, 90)
+                local l = ran:Float(100, 250)
                 New(boss_death_ef_unit, b.x, b.y, l / lifetime, ran:Float(0, 360), lifetime, ran:Float(2, 3))
                 task.Wait(1)
             end
@@ -640,77 +580,7 @@ function system:explode()
         New(deatheff, b.x, b.y, 'second')
         New(boss_death_ef, b.x, b.y)
         self:popSpellResult()
-        self:popResult(true)
-        self:refresh(1)
-        if card and card.after then
-            task.New(b, function()
-                card.after(b)
-                Del(b)
-            end)
-            self:doTask()
-        else
-            Del(b)
-        end
-    end)
-end
-
-function system:slow_explode()
-    local b = self.boss
-    local card = b.current_card
-    local clock = self.clock
-    local angle = ran:Float(-15, 15)
-    local sign, v = ran:Sign(), 1.5
-    local lifetime, l
-    b.is_exploding = true
-    b.killed = true
-    b.no_killeff = true
-    PlaySound("enep01", 0.5)
-    b._colli = false
-    b.hp = 0
-    b.lr = sign * 28
-    b.vx = sign * v * cos(angle)
-    b.vy = v * sin(angle)
-    New(bullet_cleaner, b.x, b.y, 3000, 120, 60, true, true, 0)
-    clock:Pause()
-    lstg.var.timeslow = 4
-    if b.protectPlayer then
-        player.protect = 120
-    end
-    task.New(self, function()
-        for i = 1, 60 do
-            v = v * 0.98
-            b.vx = sign * v * cos(angle)
-            b.vy = v * sin(angle)
-            b.hp = 0
-            b.timer = b.timer - 1
-            b.__card_timer = b.__card_timer - 1
-            lifetime = ran:Int(60, 90)
-            l = ran:Float(200, 500)
-            New(boss_death_ef_unit, b.x, b.y, l / lifetime, ran:Float(0, 360), lifetime, ran:Float(2, 3))
-            task.Wait(1)
-        end
-        PlaySound("enep01", 0.5, b.x / 256)
-        New(deatheff, b.x, b.y, 'first')
-        New(deatheff, b.x, b.y, 'second')
-        New(boss_death_ef, b.x, b.y)
-        misc.ShakeScreen(40, 24)
-        clock:Resume()
-        self:popSpellResult()
-        self:popResult(true)
-        self:refresh(1)
-        if card and card.after then
-            task.New(b, function()
-                card.after(b)
-                Del(b)
-            end)
-            self:doTask()
-        else
-            Del(b)
-        end
-        New(tasker, function()
-            task.Wait(20)
-            lstg.var.timeslow = 1
-        end)
+        self:popResult(false)
     end)
 end
 
@@ -726,7 +596,7 @@ function system:checkHP()
     local b = self.boss
     b.hp = max(0, b.hp) --血量下限
     if b.hp <= 0 then
-        if not (b.killed) and not (self.is_killing) then
+        if not (b.killed) then
             Kill(b)
         end
     end
@@ -1057,7 +927,6 @@ function system:refresh(part)
         b._sp_point_auto = {}
         b.__is_waiting = true
         b.__hpbartype = -1
-        self.is_killing = false 
     end
 end
 

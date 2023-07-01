@@ -12,11 +12,7 @@ function card:frame()
 end
 function card:render()
 end
-function card:beforedel()
-end
 function card:del()
-end
-function card:after()
 end
 
 ---创建一个符卡
@@ -47,7 +43,6 @@ function boss.card.New(name, t1, t2, t3, hp, drop, is_extra)
     c.is_combat = true
     return c
 end
-
 ---渲染符卡环
 ---@param self object @要渲染的对象
 local extend_rate = 1 + 16 / 60

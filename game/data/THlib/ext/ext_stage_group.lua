@@ -160,9 +160,6 @@ function stage.group.frame(self)
     end
 end
 
-stage.group.sc_pr_fast_retry = false
-stage.group.sc_pr_auto_retry = false
-
 function stage.group.frame_sc_pr(self)
     ext.sc_pr = true
     if not lstg.var.init_player_data then
@@ -173,9 +170,6 @@ function stage.group.frame_sc_pr(self)
             ext.pop_pause_menu = true
             ext.rep_over = true
             lstg.tmpvar.pause_menu_text = { 'Replay Again', 'Return to Title', nil }
-        elseif stage.group.sc_pr_auto_retry then
-            stage.Restart()
-            lstg.var.timeslow = nil
         else
             ext.pop_pause_menu = true
             lstg.tmpvar.death = true
@@ -183,7 +177,7 @@ function stage.group.frame_sc_pr(self)
         end
         lstg.var.lifeleft = 0
     end
-    if ext.GetPauseMenuOrder() == 'Give up and Retry' or ext.GetPauseMenuOrder() == 'Restart' or (stage.group.sc_pr_fast_retry and lstg.GetLastKey() == KEY.R) then
+    if ext.GetPauseMenuOrder() == 'Give up and Retry' or ext.GetPauseMenuOrder() == 'Restart' then
         stage.Restart()
         lstg.tmpvar.pause_menu_text = nil
         lstg.var.timeslow = nil
@@ -209,23 +203,25 @@ function stage.group.frame_sc_pr(self)
 end
 
 function stage.group.render(self)
+    SetViewMode 'ui'
+    RenderClear(Color(255, 0, 0, 0))
     ui.DrawFrame(self)
     if lstg.var.init_player_data then
         ui.DrawScore(self)
     end
     SetViewMode 'world'
-    RenderClearViewMode(Color(255, 0, 0, 0))
+    RenderClear(Color(255, 0, 0, 0))
 end
 
 function stage.group.Start(group)
     lstg.var.is_practice = false
-    stage.Set(group[1], 'save')
+    stage.Set('save', group[1])
     stage.stages[group.title].save_replay = { group[1] }
 end
 
 function stage.group.PracticeStart(stagename)
     lstg.var.is_practice = true
-    stage.Set(stagename, 'save')
+    stage.Set('save', stagename)
     stage.stages[stage.stages[stagename].group.title].save_replay = { stagename }
 end
 
@@ -247,11 +243,10 @@ function stage.group.FinishStage()
     else
         if ext.replay.IsReplay() then
             -- 载入关卡并执行录像
-            stage.Set(ext.replay.GetReplayStageName(ext.replay.GetCurrentReplayIdx() + 1),
-                'load', ext.replay.GetReplayFilename())
+            stage.Set('load', ext.replay.GetReplayFilename(), ext.replay.GetReplayStageName(ext.replay.GetCurrentReplayIdx() + 1))
         else
             -- 载入关卡并开始保存录像
-            stage.Set(group[self.number + 1], 'save')
+            stage.Set('save', group[self.number + 1])
             if stage.stages[group.title].save_replay then
                 table.insert(stage.stages[group.title].save_replay, group[self.number + 1])
             end
@@ -271,8 +266,7 @@ function stage.group.FinishReplay()
     else
         if ext.replay.IsReplay() then
             -- 载入关卡并执行录像
-            stage.Set(ext.replay.GetReplayStageName(ext.replay.GetCurrentReplayIdx() + 1),
-                'load', ext.replay.GetReplayFilename())
+            stage.Set('load', ext.replay.GetReplayFilename(), ext.replay.GetReplayStageName(ext.replay.GetCurrentReplayIdx() + 1))
         end
     end
 end
@@ -289,9 +283,9 @@ function stage.group.GoToStage(number)
         end
     else
         if ext.replay.IsReplay() then
-            stage.Set(group[number], 'load', ext.replay.GetReplayFilename())
+            stage.Set('load', ext.replay.GetReplayFilename(), group[number])
         else
-            stage.Set(group[number], 'save')
+            stage.Set('save', group[number])
             if stage.stages[group.title].save_replay then
                 table.insert(stage.stages[group.title].save_replay, group[number])
             end
@@ -315,93 +309,5 @@ function stage.group.ReturnToTitle(save_rep, finish)
         title.save_replay = nil
         moveoverflag = true
     end
-    stage.Set(self.group.title, 'none')
+    stage.Set('none', self.group.title)
 end
-
-----------------------------------------
----编辑器封装
-
-local function _fade_out_music()
-    local _, bgm = EnumRes('bgm')
-    for i = 1, 30 do
-        for _,v in pairs(bgm) do
-            if GetMusicState(v) == 'playing' then
-                SetBGMVolume(v, 1 - i / 30)
-            end
-        end
-        task.Wait(1)
-    end
-end
-
-function stage.group.initTask(self, f)
-    _init_item(self)
-    difficulty = self.group.difficulty
-    New(mask_fader,'open')
-    if jstg and jstg.CreatePlayers then
-        jstg.CreatePlayers()
-    else
-        New(_G[lstg.var.player_name])
-    end
-    local _main_task = task.New(self, function()
-        f(self)
-    end)
-    task.New(self, function()
-        while coroutine.status(_main_task) ~= 'dead' do
-            task.Wait(1)
-        end
-        stage.group.FinishReplay()
-        New(mask_fader, 'close')
-        task.New(self, function()
-            _fade_out_music()
-        end)
-        task.Wait(30)
-        _stop_music()
-        stage.group.FinishStage()
-    end)
-end
-
-function stage.group.GoToStageTask(self, number, wait)
-    local function f()
-        New(mask_fader, 'close')
-        task.New(self, function()
-            _fade_out_music()
-        end)
-        task.Wait(30)
-        _stop_music()
-        stage.group.GoToStage(number)
-    end
-    if wait then
-        f()
-    else
-        task.New(self, f)
-    end
-end
-
-function stage.group.FinishGroupTask(self, wait)
-    local function f()
-        New(mask_fader,'close')
-        task.New(self, function()
-            _fade_out_music()
-        end)
-        task.Wait(30)
-        _stop_music()
-        stage.group.FinishGroup()
-    end
-    if wait then
-        f()
-    else
-        task.New(self, f)
-    end
-end
-
-----------------------------------------
----示例代码
-
--- stage.group.New('menu', {}, "Normal", {lifeleft=2,power=400,bomb=2}, true, 4)
--- stage.group.AddStage('Normal', 'Stage 1@Normal', {lifeleft=8,power=400,bomb=8}, true)
--- stage.group.DefStageFunc('Stage 1@Normal', 'init', function(self)
---     stage.group.initTask(self, function()
---         New(temple_background)
---         task.Wait(60)
---     end)
--- end)

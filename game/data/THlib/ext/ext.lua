@@ -9,65 +9,16 @@
 ---@class ext @额外游戏循环加强库
 ext = {}
 
-local extpath = "THlib/ext/"
+local extpath = "THlib\\ext\\"
 
-DoFile(extpath .. "ext_pause_menu.lua")
- --暂停菜单和暂停菜单资源
-DoFile(extpath .. "ext_replay.lua")
- --CHU爷爷的replay系统以及切关函数重载
-DoFile(extpath .. "ext_stage_group.lua")
- --关卡组
+DoFile(extpath .. "ext_pause_menu.lua")--暂停菜单和暂停菜单资源
+DoFile(extpath .. "ext_replay.lua")--CHU爷爷的replay系统以及切关函数重载
+DoFile(extpath .. "ext_stage_group.lua")--关卡组
 
-ext.replayTicker = 0
- --控制录像播放速度时有用
-ext.slowTicker = 0
- --控制时缓的变量
-ext.time_slow_level = {1, 2, 3, 4}
- --60/30/20/15 4个程度
-ext.pause_menu = ext.pausemenu()
- --实例化的暂停菜单对象，允许运行时动态更改样式
-
-ext.debug_data = {
-    --- 调试功能版本 1
-    version = 1,
-    --- 允许修改更新速率
-    x_speed_update = false,
-    --- 更新速率，若为 2 则代表每帧更新 2 次  
-    --- 如果为负值，如 -2 则代表 (timer % 2) == 0 时更新一次  
-    --- 如果值为 0 则停止更新，用于步进模式  
-    x_speed_update_value = 0,
-    --- 请求触发一次更新，仅当更新速率为 0 时才生效
-    request_once_update = false,
-    --- 更新计时器
-    timer = -1,
-}
-
---- [调试功能] 是否启用了更新速率调试
-function ext.isUpdateSpeedModifierEnable()
-    return (not stage.current_stage.is_menu) and ext.debug_data.x_speed_update
-end
-
---- [调试功能] 根据自定义更新速率更新
-function ext.updateWithSpeedModifier()
-    local db = ext.debug_data
-    db.timer = db.timer + 1
-    if db.x_speed_update_value == 0 then
-        if db.request_once_update then
-            db.request_once_update = false
-            DoFrame(true, false)
-        end
-    elseif db.x_speed_update_value > 0 then
-        for _ = 1, ext.debug_data.x_speed_update_value do
-            if not ext.pop_pause_menu then
-                DoFrame(true, false)
-            end
-        end
-    else -- if db.x_speed_update_value < 0 then
-        if (db.timer % db.x_speed_update_value) == 0 then
-            DoFrame(true, false)
-        end
-    end
-end
+ext.replayTicker = 0--控制录像播放速度时有用
+ext.slowTicker = 0--控制时缓的变量
+ext.time_slow_level = { 1, 2, 3, 4 }--60/30/20/15 4个程度
+ext.pause_menu = ext.pausemenu()--实例化的暂停菜单对象，允许运行时动态更改样式
 
 ---重置缓速计数器
 function ext.ResetTicker()
@@ -102,15 +53,11 @@ end
 ---设置标题
 function ChangeGameTitle()
     local mod = setting.mod and #setting.mod > 0 and setting.mod
-    local ext =
-        table.concat(
-        {
-            string.format("FPS=%.1f", GetFPS()),
-            "OBJ=" .. GetnObj(),
-            gconfig.window_title
-        },
-        " | "
-    )
+    local ext = table.concat({
+        string.format("FPS=%.1f", GetFPS()),
+        "Objects=" .. GetnObj(),
+        "Luastg Ex Plus 0.82",
+    }, " | ")
     if mod then
         SetTitle(mod .. " | " .. ext)
     else
@@ -120,14 +67,10 @@ end
 
 ---切关处理
 function ChangeGameStage()
-    ResetWorld()
-    ResetWorldOffset()
-     --by ETC，重置world偏移
+    ResetWorldOffset()--by ETC，重置world偏移
 
-    lstg.ResetLstgtmpvar()
-     --重置lstg.tmpvar
-    ex.Reset()
-     --重置ex全局变量
+    lstg.ResetLstgtmpvar()--重置lstg.tmpvar
+    ex.Reset()--重置ex全局变量
 
     if lstg.nextvar then
         lstg.var = lstg.nextvar
@@ -145,15 +88,21 @@ function ChangeGameStage()
         if scoredata.hiscore == nil then
             scoredata.hiscore = {}
         end
-        lstg.tmpvar.hiscore = scoredata.hiscore[stage.next_stage.stage_name .. "@" .. tostring(lstg.var.player_name)]
+        lstg.tmpvar.hiscore = scoredata.hiscore[stage.next_stage.stage_name .. '@' .. tostring(lstg.var.player_name)]
     end
+
+    --切换关卡
+    stage.current_stage = stage.next_stage
+    stage.next_stage = nil
+    stage.current_stage.timer = 0
+    stage.current_stage:init()
 end
 
----获取输入
+---获取输入（ex+中不使用）
 function GetInput()
     if stage.next_stage then
         KeyStatePre = {}
-    elseif ext.pause_menu:IsKilled() then
+    else
         -- 刷新KeyStatePre
         for k, _ in pairs(setting.keys) do
             KeyStatePre[k] = KeyState[k]
@@ -167,33 +116,42 @@ function GetInput()
         end
     end
 
-    if ext.pause_menu:IsKilled() then
-        if ext.replay.IsRecording() then
-            -- 录像模式下记录当前帧的按键
-            replayWriter:Record(KeyState)
-        elseif ext.replay.IsReplay() then
-            -- 回放时载入按键状态
-            replayReader:Next(KeyState)
-        end
+    if ext.replay.IsRecording() then
+        -- 录像模式下记录当前帧的按键
+        replayWriter:Record(KeyState)
+    elseif ext.replay.IsReplay() then
+        -- 回放时载入按键状态
+        replayReader:Next(KeyState)
     end
 end
 
---- 逻辑帧更新，不和 FrameFunc 一一对应
+---行为帧动作(和游戏循环的帧更新分开)
 function DoFrame()
     --标题设置
     ChangeGameTitle()
+    --切关处理
+    if stage.next_stage then
+        --切关时清空资源和回收对象
+        if stage.current_stage then
+            stage.current_stage:del()
+            task.Clear(stage.current_stage)
+            if stage.preserve_res then
+                stage.preserve_res = nil
+            else
+                RemoveResource 'stage'
+            end
+            ResetPool()
+        end
+        ChangeGameStage()
+    end
     --刷新输入
     GetInput()
-    --切关处理
-    if stage.NextStageExist() then
-        stage.DestroyCurrentStage()
-        ChangeGameStage()
-        stage.CreateNextStage()
-    end
     --stage和object逻辑
     if GetCurrentSuperPause() <= 0 or stage.nopause then
         ex.Frame()
-        stage.Update()
+        task.Do(stage.current_stage)
+        stage.current_stage:frame()
+        stage.current_stage.timer = stage.current_stage.timer + 1
     end
     ObjFrame()
     if GetCurrentSuperPause() <= 0 or stage.nopause then
@@ -253,8 +211,6 @@ function DoFrameEx()
             if ext.slowTicker % (ext.time_slow_level[tmp]) == 0 then
                 DoFrame(true, false)
             end
-        elseif ext.isUpdateSpeedModifierEnable() then
-            ext.updateWithSpeedModifier()
         else
             DoFrame(true, false)
         end
@@ -276,12 +232,11 @@ end
 ----------------------------------------
 ---extra game call-back function
 
-local Ldebug = require("lib.Ldebug")
-
 function FrameFunc()
-    Ldebug.update()
-    --重设boss ui的槽位（多boss支持）
-    boss_ui.active_count = 0
+    boss_ui.active_count = 0--重设boss ui的槽位（多boss支持）
+    if GetLastKey() == setting.keysys.snapshot and setting.allowsnapshot then
+        Snapshot('snapshot\\' .. os.date("!%Y-%m-%d-%H-%M-%S", os.time() + setting.timezone * 3600) .. '.png')--支持时区
+    end
     --执行场景逻辑
     if ext.pause_menu:IsKilled() then
         --处理录像速度与正常更新逻辑
@@ -290,37 +245,36 @@ function FrameFunc()
         if (GetLastKey() == setting.keysys.menu or ext.pop_pause_menu) and (not stage.current_stage.is_menu) then
             ext.pause_menu:FlyIn()
         end
+    else
+        GetInput()
     end
     --暂停菜单更新
     ext.pause_menu:frame()
-    Ldebug.layout()
-    return stage.QuitFlagExist()
+    --退出游戏逻辑
+    if lstg.quit_flag then
+        GameExit()
+    end
+    return lstg.quit_flag
 end
 
 function RenderFunc()
     BeginScene()
-    UpdateScreenResources()
+    SetViewMode "ui"
+    RenderClear(Color(0xFF000000))
     SetWorldFlag(1)
     BeforeRender()
-    if
-        stage.current_stage.timer and stage.current_stage.timer >= 0 and
-            (stage.next_stage == nil or stage.next_stage.is_menu)
-     then
+    if stage.current_stage.timer and stage.current_stage.timer >= 0
+            and (stage.next_stage == nil or stage.next_stage.is_menu) then
         stage.current_stage:render()
         ObjRender()
-        SetViewMode("world")
+        SetViewMode('world')
         DrawCollider()
         if Collision_Checker then
             Collision_Checker.render()
         end
     end
     AfterRender()
-    Ldebug.draw()
     EndScene()
-    -- 截图
-    if GetLastKey() == setting.keysys.snapshot then
-        lstg.LocalUserData.Snapshot()
-    end
 end
 
 function FocusLoseFunc()

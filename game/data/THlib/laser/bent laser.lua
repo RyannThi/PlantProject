@@ -5,7 +5,7 @@
 ----------------------------------------
 ---res
 
-LoadTexture('laser_bent2', 'THlib/laser/laser5.png')
+LoadTexture('laser_bent2', 'THlib\\laser\\laser5.png')
 
 ----------------------------------------
 ---bent lazer

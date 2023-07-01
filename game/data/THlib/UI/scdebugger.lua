@@ -38,6 +38,7 @@ stage.group.DefStageFunc('SC Debugger@SC Debugger', 'init', function(self)
         local musicname = "spellcard"
         do
             --LoadMusic('spellcard',music_list.spellcard[1],music_list.spellcard[2],music_list.spellcard[3])
+            --New(bamboo_background)
             --by 青山 and OLC，提供符卡debug的背景和bossBGM支持
             if _editor_class[_boss_class_name].bgm ~= "" then
                 LoadMusicRecord(_editor_class[_boss_class_name].bgm)

@@ -1,4 +1,4 @@
-﻿menu = {}
+menu = {}
 
 function menu:FlyIn(dir)
     self.alpha = 1
@@ -248,9 +248,9 @@ end
 
 ------------------------------------------------------------
 
-LoadTTF("replayfnt", 'assets/font/SourceHanSansCN-Bold.otf', 30)
-LoadImageFromFile('replay_title', 'THlib/UI/replay_title.png')
-LoadImageFromFile('save_rep_title', 'THlib/UI/save_rep_title.png')
+LoadTTF("replayfnt", 'THlib\\UI\\font\\default_ttf', 30)
+LoadImageFromFile('replay_title', 'THlib\\UI\\replay_title.png')
+LoadImageFromFile('save_rep_title', 'THlib\\UI\\save_rep_title.png')
 
 local REPLAY_USER_NAME_MAX = 8
 local REPLAY_DISPLAY_FORMAT1 = "%02d %s %" .. tostring(REPLAY_USER_NAME_MAX) .. "s %012d"

@@ -1,50 +1,3 @@
--- boss 练习场景
-
--- _sc_table = { boss_class, scene_name, scene_class, scene_index, include_previous_scene }
-
-local function getBossClass()
-	if lstg.var.sc_index and lstg.var.sc_index > 0 then
-		return _editor_class[_sc_table[lstg.var.sc_index][1]]
-	elseif lstg.var.sc_pr_data then
-		return _editor_class[lstg.var.sc_pr_data.class_name]
-	else
-		error("unknown error")
-	end
-end
-
-local function getBossScene()
-	if lstg.var.sc_index and lstg.var.sc_index > 0 then
-		return _sc_table[lstg.var.sc_index][3]
-	elseif lstg.var.sc_pr_data then
-		local boss_class = _editor_class[lstg.var.sc_pr_data.class_name]
-		return boss_class.cards[lstg.var.sc_pr_data.scene_index]
-	else
-		error("unknown error")
-	end
-end
-
-local function isBossSceneIncludePrevious()
-	if lstg.var.sc_index and lstg.var.sc_index > 0 then
-		return _sc_table[lstg.var.sc_index][5]
-	elseif lstg.var.sc_pr_data then
-		return lstg.var.sc_pr_data.include_previous
-	else
-		return false
-	end
-end
-
-local function getPreviousBossScene()
-	if lstg.var.sc_index and lstg.var.sc_index > 0 then
-		local boss_class = _editor_class[_sc_table[lstg.var.sc_index][1]]
-		return boss_class.cards[_sc_table[lstg.var.sc_index][4] - 1]
-	elseif lstg.var.sc_pr_data then
-		local boss_class = _editor_class[lstg.var.sc_pr_data.class_name]
-		return boss_class.cards[lstg.var.sc_pr_data.scene_index - 1]
-	else
-		error("unknown error")
-	end
-end
-
 stage.group.New('menu', {}, "Spell Practice", { lifeleft = 0, power = 400, faith = 50000, bomb = 0 }, false)
 stage.group.AddStage('Spell Practice', 'Spell Practice@Spell Practice', { lifeleft = 0, power = 400, faith = 50000, bomb = 0 }, false)
 stage.group.DefStageFunc('Spell Practice@Spell Practice', 'init', function(self)
@@ -52,16 +5,14 @@ stage.group.DefStageFunc('Spell Practice@Spell Practice', 'init', function(self)
     New(mask_fader, 'open')
     New(_G[lstg.var.player_name])
     task.New(self, function()
-        local boss_class = getBossClass()
-		local boss_scene = getBossScene()
         do
-            if boss_class.bgm ~= "" then
-                LoadMusicRecord(boss_class.bgm)
+            if _editor_class[_sc_table[lstg.var.sc_index][1]].bgm ~= "" then
+                LoadMusicRecord(_editor_class[_sc_table[lstg.var.sc_index][1]].bgm)
             else
                 LoadMusic('spellcard', music_list.spellcard[1], music_list.spellcard[2], music_list.spellcard[3])
             end
-            if boss_class._bg ~= nil then
-                New(boss_class._bg)
+            if _editor_class[_sc_table[lstg.var.sc_index][1]]._bg ~= nil then
+                New(_editor_class[_sc_table[lstg.var.sc_index][1]]._bg)
             else
                 New(temple_background)
             end
@@ -72,8 +23,8 @@ stage.group.DefStageFunc('Spell Practice@Spell Practice', 'init', function(self)
             if GetMusicState(v) ~= 'stopped' then
                 ResumeMusic(v)
             else
-                if boss_class.bgm ~= "" then
-                    _play_music(boss_class.bgm)
+                if _editor_class[_sc_table[lstg.var.sc_index][1]].bgm ~= "" then
+                    _play_music(_editor_class[_sc_table[lstg.var.sc_index][1]].bgm)
                 else
                     _play_music("spellcard")
                 end
@@ -81,17 +32,11 @@ stage.group.DefStageFunc('Spell Practice@Spell Practice', 'init', function(self)
         end
         local _boss_wait = true
         local _ref
-        if isBossSceneIncludePrevious() then
-            _ref = New(boss_class, {
-                getPreviousBossScene(),
-                boss_scene,
-            })
+        if _sc_table[lstg.var.sc_index][5] then
+            _ref = New(_editor_class[_sc_table[lstg.var.sc_index][1]], { _editor_class[_sc_table[lstg.var.sc_index][1]].cards[_sc_table[lstg.var.sc_index][4] - 1], _sc_table[lstg.var.sc_index][3] })
             last = _ref
         else
-            _ref = New(boss_class, {
-                boss.move.New(0, 144, 60, MOVE_DECEL),
-                boss_scene,
-            })
+            _ref = New(_editor_class[_sc_table[lstg.var.sc_index][1]], { boss.move.New(0, 144, 60, MOVE_DECEL), _sc_table[lstg.var.sc_index][3] })
             last = _ref
         end
         if _boss_wait then

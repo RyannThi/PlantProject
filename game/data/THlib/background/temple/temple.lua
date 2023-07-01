@@ -4,9 +4,9 @@ function temple_background:init()
 	--
 	background.init(self,false)
 	--resource
-	LoadImageFromFile('temple_road','THlib/background/temple/road.png')
-	LoadImageFromFile('temple_ground','THlib/background/temple/ground.png')
-	LoadImageFromFile('temple_pillar','THlib/background/temple/pillar.png')
+	LoadImageFromFile('temple_road','THlib\\background\\temple\\road.png')
+	LoadImageFromFile('temple_ground','THlib\\background\\temple\\ground.png')
+	LoadImageFromFile('temple_pillar','THlib\\background\\temple\\pillar.png')
 	--set 3d camera and fog
 	Set3D('eye',0,2.5,-4)
 	--Set3D('eye',0,20,20)

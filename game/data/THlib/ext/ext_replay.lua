@@ -9,6 +9,10 @@ ext.replay = {}
 
 local REPLAY_DIR = "replay"
 
+if not plus.DirectoryExists(REPLAY_DIR) then
+    plus.CreateDirectory(REPLAY_DIR)
+end
+
 local replayManager = nil --replay管理器
 local replayFilename = nil--当前打开的Replay文件名称
 local replayInfo = nil    --当前打开的Replay文件信息
@@ -74,7 +78,7 @@ function ext.replay.SaveReplay(stageNames, slot, playerName, finish)
 end
 
 function ext.reload()
-    replayManager = plus.ReplayManager(lstg.LocalUserData.GetReplayDirectory() .. "/" .. setting.mod)
+    replayManager = plus.ReplayManager(REPLAY_DIR .. "\\" .. setting.mod)
 end
 
 ext.reload()--加载一次replay管理器
@@ -83,33 +87,18 @@ ext.reload()--加载一次replay管理器
 ---关卡切换增强功能
 ---用于支持replay
 
---- 设置关卡  
---- 当 mode = "none" 时，参数 stageName 用于表明下一个跳转的场景  
---- 当 mode = "save" 时，参数 path 无效，使用 stageName 指定场景名称并开始录像  
---- 当 mode = "load" 时，参数 path 有效，指明从 path 录像文件中加载场景 stageName 的录像数据  
----@param stageName string
----@param mode '"none"' | '"save"' | '"load"'
----@param path string
-function stage.Set(stageName, mode, path)
-    -- 【警告】如果你不知道这段代码的意思，请不要随便修改或删除，至少不要从通用 data 中删除
-    -- 【警告】如果你知道这段代码的意思，并且确认[私人/商业]项目内没有老式的 stage.Set 调用写法，请直接删除这段兼容代码
-    -- 对老代码的特别关照，以前参数顺序很神秘
-    -- 参数顺序为 mode, stageName
-    -- 或者当 mode = "load" 时，参数顺序为 mode, path, stageName
-    -- 【开始转换老式参数】
-    if stageName == "load" then
-        lstg.Log(3, string.format("Dangerous Stage Name: '%s', is this what you want?", stageName))
-        stageName, mode, path = path, stageName, mode -- 警告：stageName 可能为 nil
-    elseif stageName == "save" or stageName == "none" then
-        lstg.Log(3, string.format("Dangerous Stage Name: '%s', is this what you want?", stageName))
-        stageName, mode, path = mode, stageName, path -- path 没有用上，应该为 nil
-    end
-    -- 【结束转换老式参数】
-
-    lstg.Log(2, string.format("Change Stage '%s' (mode = %s) [path = %s]", stageName, mode, tostring(path)))
+---设置场景
+---当mode="none"时，参数stage用于表明下一个跳转的场景
+---当mode="load"时，参数path有效，指明从path录像文件中加载场景stage的录像数据
+---当mode="save"时，参数path无效，使用stage指定场景名称并开始录像
+---@param mode string @none, load, save录像模式
+---@param path string @录像文件路径（可选）
+---@param stageName string @关卡名称
+function stage.Set(mode, path, stageName)
+    Print('Set', mode, path, stageName)
     if mode == "load" and stage.next_stage then
-        return -- 防止放 replay 时转场两次
-    end
+        return
+    end --防止放replay时转场两次
 
     ext.pause_menu_order = nil
 
@@ -132,7 +121,7 @@ function stage.Set(stageName, mode, path)
         replayInfo = nil
         replayStageIdx = 0
     end
-    ext.ResetTicker() -- 重置计数器
+    ext.ResetTicker()--重置计数器
 
     -- 刷新最高分
     if (not stage.current_stage.is_menu) and (not ext.replay.IsReplay()) then
@@ -145,6 +134,8 @@ function stage.Set(stageName, mode, path)
 
     -- 转场
     if mode == "save" then
+        assert(stageName == nil)
+        stageName = path
         -- 设置随机数种子
 
         lstg.var.ran_seed = ((os.time() % 65536) * 877) % 65536
@@ -209,6 +200,10 @@ function stage.Set(stageName, mode, path)
         lstg.var.stage_name = nextRecordStage.stageName
         stage.next_stage = stage.stages[stageName]
     else
+        assert(mode == "none")
+        assert(stageName == nil)
+        stageName = path
+
         -- 转场
         lstg.var.stage_name = stageName
         stage.next_stage = stage.stages[stageName]
@@ -219,11 +214,11 @@ end
 function stage.Restart()
     stage.preserve_res = true  -- 保留资源在转场时不清空
     if ext.replay.IsReplay() then
-        stage.Set(lstg.var.stage_name, "load", ext.replay.GetReplayFilename())
-        --stage.Set(lstg.var.stage_name, "load", ext.replay.GetReplayStageName(1))
+        stage.Set("load", ext.replay.GetReplayFilename(), lstg.var.stage_name)
+        --stage.Set("load", ext.replay.GetReplayStageName(1), lstg.var.stage_name)
     elseif ext.replay.IsRecording() then
-        stage.Set(lstg.var.stage_name, "save")
+        stage.Set("save", lstg.var.stage_name)
     else
-        stage.Set(lstg.var.stage_name, "none")
+        stage.Set("none", lstg.var.stage_name)
     end
 end

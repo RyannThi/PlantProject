@@ -1,42 +1,39 @@
 laser_texture_num = 1
 laser_data = {}
 
-function LoadLaserTexture(text, l1, l2, l3, margin)
+function LoadLaserTexture(text, l1, l2, l3)
     local n = laser_texture_num
-    local texture = "laser" .. n
-    LoadTexture(texture, "THlib/laser/" .. text .. ".png")
-    local w, h = GetTextureSize(texture)
-    h = h / 16
-    LoadImageGroup(texture .. 1, texture, 0, 0, l1, h, 1, 16)
-    LoadImageGroup(texture .. 2, texture, l1, 0, l2, h, 1, 16)
-    LoadImageGroup(texture .. 3, texture, l1 + l2, 0, l3, h, 1, 16)
-    h = h / 2
+    local texture = 'laser' .. n
+    LoadTexture(texture, 'THlib\\laser\\' .. text .. '.png')
+    LoadImageGroup(texture .. 1, texture, 0, 0, l1, 16, 1, 16)
+    LoadImageGroup(texture .. 2, texture, l1, 0, l2, 16, 1, 16)
+    LoadImageGroup(texture .. 3, texture, l1 + l2, 0, l3, 16, 1, 16)
     for i = 1, 3 do
         for j = 1, 16 do
-            SetImageCenter(texture .. i .. j, 0, h)
+            SetImageCenter(texture .. i .. j, 0, 8)
         end
     end
-    laser_data[n] = { l1, l2, l3, h, margin, h - margin }
+    laser_data[n] = { l1, l2, l3 }
     laser_texture_num = n + 1
 end
 
-LoadLaserTexture("laser1", 64, 128, 64, 1)
-LoadLaserTexture("laser2", 5, 236, 15, 1)
-LoadLaserTexture("laser3", 127, 1, 128, 1)
-LoadLaserTexture("laser4", 1, 254, 1, 1)
+LoadLaserTexture('laser1', 64, 128, 64)
+LoadLaserTexture('laser2', 5, 236, 15)
+LoadLaserTexture('laser3', 127, 1, 128)
+LoadLaserTexture('laser4', 1, 254, 1)
 
-LoadImageGroup("laser_node", "bullet1", 80, 0, 32, 32, 1, 8)
+LoadImageGroup('laser_node', 'bullet1', 80, 0, 32, 32, 1, 8)
 
 laser = Class(object)
 
 function laser:init(index, x, y, rot, l1, l2, l3, w, node, head)
     self.index = max(min(int(index), 16), 1)
     self.imgid = 1
-    self.img1 = "laser11" .. self.index
-    self.img2 = "laser12" .. self.index
-    self.img3 = "laser13" .. self.index
-    self.img4 = "laser_node" .. int((self.index + 1) / 2)
-    self.img5 = "ball_mid_b" .. int((self.index + 1) / 2)
+    self.img1 = 'laser11' .. self.index
+    self.img2 = 'laser12' .. self.index
+    self.img3 = 'laser13' .. self.index
+    self.img4 = 'laser_node' .. int((self.index + 1) / 2)
+    self.img5 = 'ball_mid_b' .. int((self.index + 1) / 2)
     self.x = x
     self.y = y
     self.rot = rot
@@ -58,7 +55,7 @@ function laser:init(index, x, y, rot, l1, l2, l3, w, node, head)
     self.da = 0
     self.counter = 0
     self._inf_graze = true
-    self._blend, self._a, self._r, self._g, self._b = "mul+add", 255, 255, 255, 255
+    self._blend, self._a, self._r, self._g, self._b = 'mul+add', 255, 255, 255, 255
 end
 
 function laser:frame()
@@ -111,14 +108,13 @@ function laser:render()
     if self.w > 0 then
         local c = Color(self._a * self.alpha, self._r, self._g, self._b)
         local data = laser_data[self.imgid]
-        local l = self.l1 + self.l2 + self.l3
-        local w = (self.w / 2) / data[6] * data[4] / data[6]
+        local l = (self.l1 + self.l2 + self.l3) * 0.95
         SetImageState(self.img1, b, c)
-        Render(self.img1, self.x, self.y, self.rot, self.l1 / data[1], w)
+        Render(self.img1, self.x, self.y, self.rot, self.l1 / data[1], self.w / 7)
         SetImageState(self.img2, b, c)
-        Render(self.img2, self.x + self.l1 * cos(self.rot), self.y + self.l1 * sin(self.rot), self.rot, self.l2 / data[2], w)
+        Render(self.img2, self.x + self.l1 * cos(self.rot), self.y + self.l1 * sin(self.rot), self.rot, self.l2 / data[2], self.w / 7)
         SetImageState(self.img3, b, c)
-        Render(self.img3, self.x + (self.l1 + self.l2) * cos(self.rot), self.y + (self.l1 + self.l2) * sin(self.rot), self.rot, self.l3 / data[3], w)
+        Render(self.img3, self.x + (self.l1 + self.l2) * cos(self.rot), self.y + (self.l1 + self.l2) * sin(self.rot), self.rot, self.l3 / data[3], self.w / 7)
         if self.node > 0 then
             c = Color(self._a * self.w / self.w0, self._r, self._g, self._b)
             SetImageState(self.img4, b, c)
@@ -153,9 +149,7 @@ function laser:kill()
             end
         end
         self.class = laser_death_ef
-        --self.group = GROUP_GHOST
-        self.colli = false
-        self._want_set_group = true
+        self.group = GROUP_GHOST
         local alpha = self.alpha
         local d = self.w
         task.Clear(self)
@@ -174,9 +168,7 @@ function laser:del()
     PreserveObject(self)
     if self.class ~= laser_death_ef then
         self.class = laser_death_ef
-        --self.group = GROUP_GHOST
-        self.colli = false
-        self._want_set_group = true
+        self.group = GROUP_GHOST
         local alpha = self.alpha
         local d = self.w
         task.Clear(self)
@@ -268,9 +260,7 @@ function laser:newkill()
             end
         end
         self.class = laser_death_ef
-        --self.group = GROUP_GHOST
-        self.colli = false
-        self._want_set_group = true
+        self.group = GROUP_GHOST
         local alpha = self.alpha
         local d = self.w
         task.Clear(self)
@@ -292,16 +282,16 @@ function laser:ChangeImage(id, index)
     end
     local index = self.index
     local id = self.imgid
-    self.img1 = "laser" .. id .. "1" .. index
-    self.img2 = "laser" .. id .. "2" .. index
-    self.img3 = "laser" .. id .. "3" .. index
-    self.img4 = "laser_node" .. int((index + 1) / 2)
-    self.img5 = "ball_mid_b" .. int((index + 1) / 2)
+    self.img1 = 'laser' .. id .. '1' .. index
+    self.img2 = 'laser' .. id .. '2' .. index
+    self.img3 = 'laser' .. id .. '3' .. index
+    self.img4 = 'laser_node' .. int((index + 1) / 2)
+    self.img5 = 'ball_mid_b' .. int((index + 1) / 2)
 end
 
 function laser:grow(time, mute, wait)
     if mute then
-        PlaySound("lazer00", 0.25, self.x / 200)
+        PlaySound('lazer00', 0.25, self.x / 200)
     end
     if time == 0 then
         return
@@ -343,7 +333,7 @@ function laser:TurnOn(t, mute)
     t = t or 30
     t = max(1, int(t))
     if not mute then
-        PlaySound("lazer00", 0.25, self.x / 200)
+        PlaySound('lazer00', 0.25, self.x / 200)
     end
     self.counter = t
     self.da = (1 - self.alpha) / t
@@ -369,10 +359,6 @@ end
 laser_death_ef = Class(laser)
 
 function laser_death_ef:frame()
-    if self._want_set_group then
-        self._want_set_group = false
-        self.group = GROUP_GHOST
-    end
     task.Do(self)
 end
 
@@ -382,4 +368,4 @@ end
 function laser_death_ef:kill()
 end
 
-Include("THlib/laser/bent laser.lua")
+Include("THlib\\laser\\bent laser.lua")

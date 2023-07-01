@@ -4,7 +4,7 @@ function stage_init:init()
 end
 function stage_init:frame()
     if self.timer >= 30 then
-        stage.Set('menu', 'none')
+        stage.Set('none', 'menu')
     end
 end
 function stage_init:render()
@@ -200,7 +200,7 @@ function stage_menu:init()
                 task.Wait(30)
                 Print(filename, stageName)
                 stage.IsReplay = true--判定进入rep播放的flag add by OLC
-                stage.Set(stageName, 'load', filename)
+                stage.Set('load', filename, stageName)
             end)
         end
     end)
@@ -210,7 +210,7 @@ function stage_menu:init()
     local sc_init = function()
         --by OLC
         menu_sc_pr.pos = lstg.var.sc_index
-        menu_sc_pr.page = int(lstg.var.sc_index / ui.menu.sc_pr_line_per_page)
+        menu_sc_pr.page = int(lstg.var.sc_index / ui.menu.sc_pr_line_per_page) + 2
         self.pos_changed = ui.menu.shake_time
     end
 

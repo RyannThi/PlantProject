@@ -1,4 +1,9 @@
 {
+	"player_select": 3,
+	"hiscore": {
+		"SpellCard@SpellCard@sakuya_player": 101900
+	},
+	"difficulty_select": 2,
 	"spell_card_hist": {
 		"All": {
 			"「」": {
@@ -8,14 +13,9 @@
 				],
 				"sakuya_player": [
 					0,
-					1
+					8
 				]
 			}
 		}
-	},
-	"player_select": 3,
-	"difficulty_select": 2,
-	"hiscore": {
-		"SpellCard@SpellCard@sakuya_player": 59040
 	}
 }

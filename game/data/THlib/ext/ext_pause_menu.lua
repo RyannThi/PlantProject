@@ -1,4 +1,4 @@
-﻿---=====================================
+---=====================================
 ---pause menu
 ---=====================================
 
@@ -56,7 +56,7 @@ function ext.pausemenu:frame()
     if (not self.lock) and self.t < 1 then
         local lastkey = GetLastKey()
         --关闭暂停菜单
-        if lastkey == setting.keysys.menu and (not lstg.tmpvar.death) then
+        if lastkey == setting.keysys.menu then
             if not ext.rep_over then
                 self.t = 60
                 PlaySound('cancel00', 0.3)
@@ -65,7 +65,7 @@ function ext.pausemenu:frame()
             end
         end
         --直接重开
-        if lastkey == setting.keysys.retry and (not lstg.tmpvar.death) then
+        if lastkey == setting.keysys.retry then
             self.t = 60
             PlaySound('ok00', 0.3)
             self.choose = false
@@ -105,7 +105,7 @@ function ext.pausemenu:frame()
                 PlaySound('cancel00', 0.3)
                 self.choose = false
             else
-                if not ext.rep_over and (not lstg.tmpvar.death) then
+                if not ext.rep_over then
                     self.t = 60
                     PlaySound('cancel00', 0.3)
                     self:FlyOut()
@@ -395,8 +395,8 @@ end
 
 local deathmusic = 'deathmusic'--疮痍曲
 
-LoadMusic(deathmusic, 'THlib/music/player_score.ogg', 34.834, 27.54)
-LoadTexture('pause', 'THlib/UI/pause.png')
+LoadMusic(deathmusic, 'THlib\\music\\player_score.ogg', 34.834, 27.54)
+LoadTexture('pause', 'THlib\\UI\\pause.png')
 LoadImage('pause_pausemenu', 'pause', 2, 0, 168, 70)
 SetImageCenter('pause_pausemenu', 0, 35)
 LoadImage('pause_gameover', 'pause', 172, 0, 170, 70)

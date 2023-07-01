@@ -1,11 +1,11 @@
-﻿Include "THlib/UI/uiconfig.lua"
-Include "THlib/UI/font.lua"
-Include "THlib/UI/title.lua"
-Include "THlib/UI/sc_pr.lua"
+Include "THlib\\UI\\uiconfig.lua"
+Include "THlib\\UI\\font.lua"
+Include "THlib\\UI\\title.lua"
+Include "THlib\\UI\\sc_pr.lua"
 
 ui = {}
 
-LoadTexture("boss_ui", "THlib/UI/boss_ui.png")
+LoadTexture("boss_ui", "THlib\\UI\\boss_ui.png")
 LoadImage("boss_spell_name_bg", "boss_ui", 0, 0, 256, 36)
 SetImageCenter("boss_spell_name_bg", 256, 0)
 
@@ -15,7 +15,7 @@ SetImageCenter("boss_pointer", 24, 0)
 LoadImage("boss_sc_left", "boss_ui", 64, 64, 32, 32)
 SetImageState("boss_sc_left", "", Color(0xFF80FF80))
 
-LoadTexture("hint", "THlib/UI/hint.png", true)
+LoadTexture("hint", "THlib\\UI\\hint.png", true)
 LoadImage("hint.bonusfail", "hint", 0, 64, 256, 64)
 LoadImage("hint.getbonus", "hint", 0, 128, 396, 64)
 LoadImage("hint.extend", "hint", 0, 192, 160, 64)
@@ -42,10 +42,10 @@ SetImageCenter("hint.score", 0, 10)
 SetImageCenter("hint.Pnumber", 0, 10)
 SetImageCenter("hint.Bnumber", 0, 10)
 
-LoadTexture("line", "THlib/UI/line.png", true)
+LoadTexture("line", "THlib\\UI\\line.png", true)
 LoadImageGroup("line_", "line", 0, 0, 200, 8, 1, 7, 0, 0)
 
-LoadTexture("ui_rank", "THlib/UI/rank.png")
+LoadTexture("ui_rank", "THlib\\UI\\rank.png")
 LoadImage("rank_Easy", "ui_rank", 0, 0, 144, 32)
 LoadImage("rank_Normal", "ui_rank", 0, 32, 144, 32)
 LoadImage("rank_Hard", "ui_rank", 0, 64, 144, 32)
@@ -297,17 +297,17 @@ function lstg_ui:reloadUI()
     local pool = GetResourceStatus() or "global"
     SetResourceStatus("global")
     if self.type == 1 then
-        LoadImageFromFile("logo", "THlib/UI/logo.png")
+        LoadImageFromFile("logo", "THlib\\UI\\logo.png")
         SetImageCenter("logo", 0, 0)
-        LoadImageFromFile("ui_bg", "THlib/UI/ui_bg.png")
-        LoadImageFromFile("menu_bg", "THlib/UI/menu_bg.png")
+        LoadImageFromFile("ui_bg", "THlib\\UI\\ui_bg.png")
+        LoadImageFromFile("menu_bg", "THlib\\UI\\menu_bg.png")
     elseif self.type == 2 then
-        LoadImageFromFile("logo", "THlib/UI/logo.png")
+        LoadImageFromFile("logo", "THlib\\UI\\logo.png")
         SetImageCenter("logo", 0, 0)
-        LoadImageFromFile("ui_bg", "THlib/UI/ui_bg.png")
-        LoadImageFromFile("ui_bg2", "THlib/UI/ui_bg_2.png")
-        LoadImageFromFile("menu_bg", "THlib/UI/menu_bg.png")
-        LoadImageFromFile("menu_bg2", "THlib/UI/menu_bg_2.png")
+        LoadImageFromFile("ui_bg", "THlib\\UI\\ui_bg.png")
+        LoadImageFromFile("ui_bg2", "THlib\\UI\\ui_bg_2.png")
+        LoadImageFromFile("menu_bg", "THlib\\UI\\menu_bg.png")
+        LoadImageFromFile("menu_bg2", "THlib\\UI\\menu_bg_2.png")
     end
     SetResourceStatus(pool)
 end
@@ -327,13 +327,13 @@ function lstg_ui:drawFrame1()
     local w = lstg.world
     local x = (w.scrr - w.scrl) / 2 + w.scrl
     local y = (w.scrt - w.scrb) / 2 + w.scrb
-    local hs = (w.scrr - w.scrl) / 384
+    local hs = (w.scrr - w.scrl) / 448
     local vs = (w.scrt - w.scrb) / 448
     x = x + 96 * hs
     if CheckRes("img", "image:UI_img") then
         Render("image:UI_img", x, y, 0, hs, vs)
     else
-        Render("ui_bg", screen.width / 2, y, 0, hs / 2.25, vs / 2.25)
+        Render("ui_bg", screen.width/2, y, 0, hs/2.25, vs/2.25)
     end
     if CheckRes("img", "image:LOGO_img") then
         Render("image:LOGO_img", -16 + w.scrr, 150, 0, 0.5, 0.5)

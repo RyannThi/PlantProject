@@ -75,6 +75,9 @@ _LoadImageFromFile('image:'..'TitleBackgroundCliff','TITLE\\TitleBackgroundCliff
 _LoadImageFromFile('image:'..'TitleBackgroundMountains','TITLE\\TitleBackgroundMountains.png',true,0,0,false,0)
 _LoadImageGroupFromFile('image:'..'TitleSelections','TITLE\\TitleSelections.png',true,4,1,0,0,false)
 _LoadImageFromFile('image:'..'TitleSelectionsHighlight','TITLE\\TitleSelectionsHighlight.png',true,0,0,false,0)
+LoadTexture('texture:'..'TitleBackgroundClouds','TITLE\\TitleBackgroundClouds.png',true)
+SetTextureSamplerState("texture:TitleBackgroundClouds", "point+wrap")
+_LoadImageFromFile('image:'..'TitleBackgroundStone','TITLE\\TitleBackgroundStone.png',true,0,0,false,0)
 -- archive space: 
 _editor_class["Base_Drop"]=Class(_object)
 _editor_class["Base_Drop"].init=function(self,_x,_y,_)
@@ -106,6 +109,8 @@ _editor_class["Base_Drop"].init=function(self,_x,_y,_)
 	_connect(self,last,0,false)
 	last=New(_editor_class["Title_Mountains"],0,0,_)
 	_connect(self,last,0,false)
+	last=New(_editor_class["Title_Sky"],0,0,_)
+	_connect(self,last,0,false)
 	last=New(_editor_class["Title_Cliff"],0,0,_)
 	_connect(self,last,0,false)
 	last=New(_editor_class["MainMenu_Manager"],0,0,_)
@@ -113,8 +118,8 @@ _editor_class["Base_Drop"].init=function(self,_x,_y,_)
 end
 _editor_class["Base_Drop"].frame=function(self)
 	if KeyIsPressed"shoot" then
-		self.positionIndex = self.positionIndex + 1
-		self.positionIndex = Wrap(self.positionIndex, 1, 5)
+		--self.positionIndex = self.positionIndex + 1
+		--self.positionIndex = Wrap(self.positionIndex, 1, 5)
 	end
 	
 	self.x = LerpDecel(self.x, self.positions[self.positionIndex][1], 0.5)
@@ -264,7 +269,7 @@ end
 _editor_class["Title_Mountains"]=Class(_object)
 _editor_class["Title_Mountains"].init=function(self,_x,_y,_)
 	self.x,self.y=_x,_y
-	self.img="image:TitleBackgroundMountains"
+	self.img="image:TitleBackgroundStone"
 	self.layer=LAYER_TOP-2
 	self.group=GROUP_GHOST
 	self.hide=false
@@ -284,6 +289,53 @@ end
 _editor_class["Title_Mountains"].render=function(self)
 	SetViewMode'ui'
 	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Title_Sky"]=Class(_object)
+_editor_class["Title_Sky"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:TitleBackgroundMountains"
+	self.layer=LAYER_TOP-3
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	self.addx = 0
+end
+_editor_class["Title_Sky"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+	self.addx = self.addx + 0.4
+end
+_editor_class["Title_Sky"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	local tex_name = "texture:TitleBackgroundClouds"
+	local tex_width, tex_height = GetTextureSize(tex_name)
+	tex_width, tex_height = tex_width, tex_height
+	
+	local top_left =     {0   + self.x - 853, 480 + self.y + 30}
+	local top_right =    {1706 + self.x - 853, 480 + self.y + 30}
+	local bottom_right = {1706 + self.x - 853, 0   + self.y + 30}
+	local bottom_left =  {0   + self.x - 853, 0   + self.y + 30}
+	
+	local col = Color(255, 255, 255, 255)
+	
+	local tl, tr, br, bl = top_left, top_right, bottom_right, bottom_left
+	local tw, th = tex_width, tex_height
+	
+	RenderTexture(tex_name, "",
+	             {tl[1], tl[2], 1, 0  + self.addx, 0,  col},
+	             {tr[1], tr[2], 1, tw + self.addx, 0,  col},
+	             {br[1], br[2], 1, tw + self.addx, th, col},
+	             {bl[1], bl[2], 1, 0  + self.addx, th, col}
+	             )
 	SetViewMode'world'
 end
 _editor_class["Title_Cliff"]=Class(_object)
@@ -329,20 +381,41 @@ _editor_class["MainMenu_Manager"].init=function(self,_x,_y,_)
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
 	self.selectionIndex = 1
+	self.selectionOptionsIndex = 1
 	self.selectionsPosition = {
 		{-115, 200 - 50},
 		{-115, 150 + 15 - 50},
 		{-115, 100 + 30 - 50},
-		{-115, 50 + 45 - 50},
+		{-115, 50 + 45 - 50}
+	}
+	
+	self.optionsIn = false
+	self.resolutions = {
+		{640, 360},
+		{853, 480},
+		{1024, 576},
+		{1280, 720},
+		{1366, 768},
+		{1600, 900},
+		{1920, 1080}
+	}
+	self.resolutionPick = 1;
+	self.windowed = setting.windowed or true;
+	self.vsync = setting.vsync or true;
+	self.bgm = setting.bgmvolume
+	self.sfx = setting.sevolume
+	self.optionsText = {
+		"Resolution: " .. self.resolutions[self.resolutionPick][1] .. "x" .. self.resolutions[self.resolutionPick][2],
+		"\nWindowed: " .. tostring(self.windowed),
+		"\n\nVsync: " .. tostring(self.vsync),
+		"\n\n\nBGM Volume: " .. self.bgm,
+		"\n\n\n\nSFX Volume: " .. self.sfx,
+		"\n\n\n\n\nSave and Apply"
 	}
 	
 	self.selectionPositionRefX = {0, 0, 0, 0}
+	self.selectionOptionsPositionRefX = {0, 0, 0, 0, 0, 0}
 	self.selectionHighlightRefY = 150
-	
-	--self.images = {}
-	--for i = 1, 4 do
-	--	table.insert(self.images, "image:TitleSelections" .. i)
-	--end
 	
 	self.images = {
 		"image:TitleSelections1",
@@ -356,34 +429,102 @@ end
 _editor_class["MainMenu_Manager"].frame=function(self)
 	self.class.base.frame(self)
 	_set_rel_pos(self,0,0,self.rot,false)
-	if is_up_held then
-		self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
-		PlaySound("select00",0.1,self.x/256,false)
+	if self.optionsIn == false then
+		if is_up_held then
+			self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if is_down_held then
+			self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if KeyIsPressed"shoot" then
+			if (self.selectionIndex == 1) then end
+			if (self.selectionIndex == 2) then end
+			if (self.selectionIndex == 3) then 
+				self.selectionOptionsIndex = 1
+				self.optionsIn = true;
+			end
+			if (self.selectionIndex == 4) then end
+			PlaySound("ok00",0.1,0,false)
+		end
+	else
+		if is_up_held then
+			self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex - 1, 1, 7)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if is_down_held then
+			self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex + 1, 1, 7)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if KeyIsPressed"shoot" then
+			if self.selectionOptionsIndex == 1 then
+				self.resolutionPick = Wrap(self.resolutionPick + 1, 1, 8)
+			elseif self.selectionOptionsIndex == 2 then
+				self.windowed = not self.windowed
+			elseif self.selectionOptionsIndex == 3 then
+				self.vsync = not self.vsync
+			elseif self.selectionOptionsIndex == 4 then
+				self.bgm = Wrap(self.bgm + 10, 0, 101)
+			elseif self.selectionOptionsIndex == 5 then
+				self.sfx = Wrap(self.sfx + 10, 0, 101)
+			elseif self.selectionOptionsIndex == 6 then
+				self.optionsIn = false
+			end
+			PlaySound("ok00",0.1,0,false)
+		end
 	end
-	if is_down_held then
-		self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
-		PlaySound("select00",0.1,self.x/256,false)
-	end
+	
+	self.optionsText = {
+		"Resolution: " .. self.resolutions[self.resolutionPick][1] .. "x" .. self.resolutions[self.resolutionPick][2],
+		"\nWindowed: " .. tostring(self.windowed),
+		"\n\nVsync: " .. tostring(self.vsync),
+		"\n\n\nBGM Volume: " .. self.bgm,
+		"\n\n\n\nSFX Volume: " .. self.sfx,
+		"\n\n\n\n\nSave and Apply"
+	}
 end
 _editor_class["MainMenu_Manager"].render=function(self)
 	SetViewMode'ui'
 	self.class.base.render(self)
-	self.selectionHighlightRefY = LerpDecel(self.selectionHighlightRefY, self.selectionsPosition[self.selectionIndex][2], 0.2)
-	Render("image:TitleSelectionsHighlight",
-			self.selectionsPosition[self.selectionIndex][1] + self.x - 41,
-			self.selectionHighlightRefY + self.y,
-			0, self.hscale, self.vscale)
+	if self.optionsIn == false then
+		self.selectionHighlightRefY = LerpDecel(self.selectionHighlightRefY, self.selectionsPosition[self.selectionIndex][2], 0.2)
+		Render("image:TitleSelectionsHighlight",
+				self.selectionsPosition[self.selectionIndex][1] + self.x - 41,
+				self.selectionHighlightRefY + self.y,
+				0, self.hscale, self.vscale)
+	else
+		self.selectionHighlightRefY = LerpDecel(self.selectionHighlightRefY, 185 - ((self.selectionOptionsIndex - 1) * 28.5), 0.2)
+		Render("image:TitleSelectionsHighlight",
+				self.x - 115 - 41,
+				self.selectionHighlightRefY + self.y,
+				0, self.hscale, self.vscale)
+	end
+	
 			
 	for i = 1, 4 do
-		if i == self.selectionIndex then
-			self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 15, 0.2)
-			SetImageState(self.images[i], "", Color(255, 255, 255, 255))
-			Render(self.images[i],
-				self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
-				self.selectionsPosition[i][2] + self.y,
-				0, self.hscale, self.vscale)
+		if self.optionsIn == false then
+			if i == self.selectionIndex then
+				self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 15, 0.2)
+				SetImageState(self.images[i], "", Color(255, 255, 255, 255))
+				Render(self.images[i],
+					self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
+					self.selectionsPosition[i][2] + self.y,
+					0, self.hscale, self.vscale)
+			else
+				self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 0, 0.2)
+				SetImageState(self.images[i], "", Color(155, 255, 255, 255))
+				Render(self.images[i],
+					self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
+					self.selectionsPosition[i][2] + self.y,
+					0, self.hscale, self.vscale)
+			end
 		else
-			self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 0, 0.2)
+			self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], -200, 0.2)
 			SetImageState(self.images[i], "", Color(155, 255, 255, 255))
 			Render(self.images[i],
 				self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
@@ -391,7 +532,24 @@ _editor_class["MainMenu_Manager"].render=function(self)
 				0, self.hscale, self.vscale)
 		end
 	end
-	lstg.RenderText("font:trocchi","asdaSDASDasfasfas$%%$#$fasfsf",320, 150,self.hscale,0)
+	
+	for i = 1, 6 do
+		if self.optionsIn == true then
+			if i == self.selectionOptionsIndex then
+				self.selectionOptionsPositionRefX[i] = LerpDecel(self.selectionOptionsPositionRefX[i], 15, 0.2)
+				SetFontState("font:trocchi", "", Color(255,255,255,255))
+				lstg.RenderText("font:trocchi", self.optionsText[i], -50 + self.x - self.selectionOptionsPositionRefX[i], self.y + 200, self.hscale - 0.2, 2)
+			else
+				self.selectionOptionsPositionRefX[i] = LerpDecel(self.selectionOptionsPositionRefX[i], 0, 0.2)
+				SetFontState("font:trocchi", "", Color(100,255,255,255))
+				lstg.RenderText("font:trocchi", self.optionsText[i], -50 + self.x - self.selectionOptionsPositionRefX[i], self.y + 200, self.hscale - 0.2, 2)
+			end
+		else
+			self.selectionOptionsPositionRefX[i] = LerpDecel(self.selectionOptionsPositionRefX[i], -350, 0.2)
+			SetFontState("font:trocchi", "", Color(100,255,255,255))
+			lstg.RenderText("font:trocchi", self.optionsText[i], -50 + self.x - self.selectionOptionsPositionRefX[i], self.y + 200, self.hscale - 0.2, 2)
+		end
+	end
 	SetViewMode'world'
 end
 _editor_class["Boss"]=Class(boss)

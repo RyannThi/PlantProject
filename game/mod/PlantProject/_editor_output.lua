@@ -4,22 +4,395 @@ _author = "LuaSTG User"
 _mod_version = 4096
 _allow_practice = true
 _allow_sc_practice = true
-function SetWorldUEX(x, y, w, h, bound, m)
-	bound = bound or 32
-    m = m or 15
-	OriginalSetWorld(
-	--l,r,b,t,
-			(-w / 2), (w / 2), (-h / 2), (h / 2),
-	--bl,br,bb,bt
-			(-w / 2) - bound, (w / 2) + bound, (-h / 2) - bound, (h / 2) + bound,
-	--sl,sr,sb,st
-			(x - w/2), (x + w/2), (y - h/2), (y + h/2),
-	--pl,pr,pb,pt
-			(-w / 2), (w / 2), (-h / 2), (h / 2),
-	--world mask
-			m
-    )
-	SetBound(lstg.world.boundl, lstg.world.boundr, lstg.world.boundb, lstg.world.boundt)
+SetSplash(true)
+-- MenuInputChecker
+	function MenuInputChecker(name)
+	    while(true) do
+	        while(not KeyIsPressed(name))do
+	            coroutine.yield(false) --return false until the key is pressed
+	        end
+	        coroutine.yield(true) --return true once
+	        for i=0, 20 do
+	            coroutine.yield(false) --return false for 30 frames
+	            if (not KeyIsDown(name)) then
+	                break --if the key is not being held down, break out of for (which will make you consequently restart
+	            end
+	        end
+	        while (KeyIsDown(name)) do
+	            coroutine.yield(true) -- return true once every 3 frames
+	            for i=0, 2 do
+	                coroutine.yield(false) --return false for 3 frames
+	            end
+	        end
+	    end
+	end
+
+-- SetWorldUEX
+	function SetWorldUEX(x, y, w, h, bound, m)
+		bound = bound or 32
+		m = m or 15
+		OriginalSetWorld(
+		--l,r,b,t,
+				(-w / 2), (w / 2), (-h / 2), (h / 2),
+		--bl,br,bb,bt
+				(-w / 2) - bound, (w / 2) + bound, (-h / 2) - bound, (h / 2) + bound,
+		--sl,sr,sb,st
+				(x - w/2), (x + w/2), (y - h/2), (y + h/2),
+		--pl,pr,pb,pt
+				(-w / 2), (w / 2), (-h / 2), (h / 2),
+		--world mask
+				m
+		)
+		SetBound(lstg.world.boundl, lstg.world.boundr, lstg.world.boundb, lstg.world.boundt)
+	end
+
+-- Wrap
+	function Wrap(x, x_min, x_max)
+		return (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min;
+	end
+
+-- Interpolation
+	function LerpDecel(a, b, x)
+	    local y = 1 - x
+	    return (a + (1 - y * y) * (b - a))
+	end
+	
+	function Lerp(a, b, t)
+	    return a + (b - a) * t
+	end
+
+lstg.LoadFont('font:'..'trocchi','font\\trocchi.fnt',false)
+--- Load Font Image "trocchi"
+-- archive space: TITLE\
+_LoadImageFromFile('image:'..'BaseDrop','TITLE\\BaseDrop.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'TitleBackgroundSun','TITLE\\TitleBackgroundSun.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'TitleBackgroundSunRay','TITLE\\TitleBackgroundSunRay.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'TitleLogo','TITLE\\TitleLogo.png',true,0,0,false,0)
+SetImageCenter("image:TitleBackgroundSunRay",1200,70)
+LoadTexture('texture:'..'TitleBackgroundFog','TITLE\\TitleBackgroundFog.png',true)
+SetTextureSamplerState("texture:TitleBackgroundFog", "point+wrap")
+_LoadImageFromFile('image:'..'TitleBackgroundCliff','TITLE\\TitleBackgroundCliff.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'TitleBackgroundMountains','TITLE\\TitleBackgroundMountains.png',true,0,0,false,0)
+_LoadImageGroupFromFile('image:'..'TitleSelections','TITLE\\TitleSelections.png',true,4,1,0,0,false)
+_LoadImageFromFile('image:'..'TitleSelectionsHighlight','TITLE\\TitleSelectionsHighlight.png',true,0,0,false,0)
+-- archive space: 
+_editor_class["Base_Drop"]=Class(_object)
+_editor_class["Base_Drop"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP-5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	self.positions = {
+		{ screen.width,       screen.height - 480 }, 
+		{ screen.width - 853, screen.height - 480 }, 
+		{ screen.width,       screen.height       }, 
+		{ screen.width - 853, screen.height       }
+	}
+	self.positionIndex = 1
+	last=New(_editor_class["Background_Sun"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Title_Logo"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Background_Fog"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Title_Mountains"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Title_Cliff"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["MainMenu_Manager"],0,0,_)
+	_connect(self,last,0,false)
+end
+_editor_class["Base_Drop"].frame=function(self)
+	if KeyIsPressed"shoot" then
+		self.positionIndex = self.positionIndex + 1
+		self.positionIndex = Wrap(self.positionIndex, 1, 5)
+	end
+	
+	self.x = LerpDecel(self.x, self.positions[self.positionIndex][1], 0.5)
+	self.y = LerpDecel(self.y, self.positions[self.positionIndex][2], 0.5)
+	self.class.base.frame(self)
+end
+_editor_class["Base_Drop"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Background_Sun"]=Class(_object)
+_editor_class["Background_Sun"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:TitleBackgroundSun"
+	self.layer=LAYER_TOP+1
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.omiga = 0.15
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	do local ang,_d_ang=(0),(360/5) for _=1,5 do
+		last=New(_editor_class["Background_Sun_Ray"],self.x,self.y,-0.1)
+		last.rot = ang
+		_connect(self,last,0,false)
+	ang=ang+_d_ang end end
+	do local ang,_d_ang=((360/5) / 2),(360/5) for _=1,5 do
+		last=New(_editor_class["Background_Sun_Ray"],self.x,self.y,0.1)
+		last.rot = ang
+		_connect(self,last,0,false)
+	ang=ang+_d_ang end end
+end
+_editor_class["Background_Sun"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,-175, 400,self.rot,false)
+end
+_editor_class["Background_Sun"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Background_Sun_Ray"]=Class(_object)
+_editor_class["Background_Sun_Ray"].init=function(self,_x,_y,omiga)
+	self.x,self.y=_x,_y
+	self.img="image:TitleBackgroundSunRay"
+	self.layer=LAYER_TOP
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.omiga = omiga
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	_object.set_color(self,"",55,255,255,255)
+end
+_editor_class["Background_Sun_Ray"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0, 0,self.rot,false)
+end
+_editor_class["Background_Sun_Ray"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Title_Logo"]=Class(_object)
+_editor_class["Title_Logo"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:TitleLogo"
+	self.layer=LAYER_TOP
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+end
+_editor_class["Title_Logo"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,-525, 250 + (sin(self.timer) * 6),self.rot,false)
+end
+_editor_class["Title_Logo"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Background_Fog"]=Class(_object)
+_editor_class["Background_Fog"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP-1
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	_object.set_color(self,"",0,255,255,255)
+	self.addx = 0
+end
+_editor_class["Background_Fog"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+	self.addx = self.addx + 1
+end
+_editor_class["Background_Fog"].render=function(self)
+	SetViewMode'ui'
+	local tex_name = "texture:TitleBackgroundFog"
+	local tex_width, tex_height = GetTextureSize(tex_name)
+	tex_width, tex_height = tex_width, tex_height
+	
+	local top_left =     {0   + self.x - 853, 480 + self.y + 30}
+	local top_right =    {853 + self.x - 853, 480 + self.y + 30}
+	local bottom_right = {853 + self.x - 853, 0   + self.y + 30}
+	local bottom_left =  {0   + self.x - 853, 0   + self.y + 30}
+	
+	local col = Color(255, 255, 255, 255)
+	
+	local tl, tr, br, bl = top_left, top_right, bottom_right, bottom_left
+	local tw, th = tex_width, tex_height
+	
+	RenderTexture(tex_name, "",
+	             {tl[1], tl[2], 1, 0  + self.addx, 0,  col},
+	             {tr[1], tr[2], 1, tw + self.addx, 0,  col},
+	             {br[1], br[2], 1, tw + self.addx, th, col},
+	             {bl[1], bl[2], 1, 0  + self.addx, th, col}
+	             )
+	SetViewMode'world'
+end
+_editor_class["Title_Mountains"]=Class(_object)
+_editor_class["Title_Mountains"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:TitleBackgroundMountains"
+	self.layer=LAYER_TOP-2
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+end
+_editor_class["Title_Mountains"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+end
+_editor_class["Title_Mountains"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["Title_Cliff"]=Class(_object)
+_editor_class["Title_Cliff"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:TitleBackgroundCliff"
+	self.layer=LAYER_TOP
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+end
+_editor_class["Title_Cliff"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+end
+_editor_class["Title_Cliff"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+--[[ ]]
+
+_editor_class["MainMenu_Manager"]=Class(_object)
+_editor_class["MainMenu_Manager"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	self.selectionIndex = 1
+	self.selectionsPosition = {
+		{-115, 200 - 50},
+		{-115, 150 + 15 - 50},
+		{-115, 100 + 30 - 50},
+		{-115, 50 + 45 - 50},
+	}
+	
+	self.selectionPositionRefX = {0, 0, 0, 0}
+	self.selectionHighlightRefY = 150
+	
+	--self.images = {}
+	--for i = 1, 4 do
+	--	table.insert(self.images, "image:TitleSelections" .. i)
+	--end
+	
+	self.images = {
+		"image:TitleSelections1",
+		"image:TitleSelections2",
+		"image:TitleSelections3",
+		"image:TitleSelections4"
+	}
+	
+	
+end
+_editor_class["MainMenu_Manager"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+	if is_up_held then
+		self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
+		PlaySound("select00",0.1,self.x/256,false)
+	end
+	if is_down_held then
+		self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
+		PlaySound("select00",0.1,self.x/256,false)
+	end
+end
+_editor_class["MainMenu_Manager"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	self.selectionHighlightRefY = LerpDecel(self.selectionHighlightRefY, self.selectionsPosition[self.selectionIndex][2], 0.2)
+	Render("image:TitleSelectionsHighlight",
+			self.selectionsPosition[self.selectionIndex][1] + self.x - 41,
+			self.selectionHighlightRefY + self.y,
+			0, self.hscale, self.vscale)
+			
+	for i = 1, 4 do
+		if i == self.selectionIndex then
+			self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 15, 0.2)
+			SetImageState(self.images[i], "", Color(255, 255, 255, 255))
+			Render(self.images[i],
+				self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
+				self.selectionsPosition[i][2] + self.y,
+				0, self.hscale, self.vscale)
+		else
+			self.selectionPositionRefX[i] = LerpDecel(self.selectionPositionRefX[i], 0, 0.2)
+			SetImageState(self.images[i], "", Color(155, 255, 255, 255))
+			Render(self.images[i],
+				self.selectionsPosition[i][1] + self.x - self.selectionPositionRefX[i],
+				self.selectionsPosition[i][2] + self.y,
+				0, self.hscale, self.vscale)
+		end
+	end
+	lstg.RenderText("font:trocchi","asdaSDASDasfasfas$%%$#$fasfsf",320, 150,self.hscale,0)
+	SetViewMode'world'
 end
 _editor_class["Boss"]=Class(boss)
 _editor_class["Boss"].cards={}
@@ -28,57 +401,80 @@ _editor_class["Boss"].bgm=""
 _editor_class["Boss"]._bg=nil
 _editor_class["Boss"].difficulty="All"
 _editor_class["Boss"].init=function(self,cards)
-    boss.init(self,240,384,_editor_class["Boss"].name,cards,New(spellcard_background),_editor_class["Boss"].difficulty)
+	boss.init(self,240,384,_editor_class["Boss"].name,cards,New(spellcard_background),_editor_class["Boss"].difficulty)
 end
 _tmp_sc=boss.card.New("",2,5,60,1800,{0,0,0},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
-    lasttask=task.New(self,function()
-        task.MoveTo(0,122,60,MOVE_NORMAL)
-    end)
+	lasttask=task.New(self,function()
+		task.MoveTo(0,122,60,MOVE_NORMAL)
+	end)
 end
 function _tmp_sc:del()
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Boss"].cards,_tmp_sc)
 
+-- Title Screen
+	stage_init = stage.New("menu", true, true)
+	function stage_init:init()
+		checker_up = coroutine.create(MenuInputChecker)
+		checker_down = coroutine.create(MenuInputChecker)
+		checker_left = coroutine.create(MenuInputChecker)
+		checker_right = coroutine.create(MenuInputChecker)
+		checker_c = coroutine.create(MenuInputChecker)
+		last=New(_editor_class["Base_Drop"],0,0,_)
+	end
+	function stage_init:frame()
+		_, is_up_held = coroutine.resume(checker_up, "up")
+		_, is_down_held = coroutine.resume(checker_down, "down")
+		_, is_left_held = coroutine.resume(checker_left, "left")
+		_, is_right_held = coroutine.resume(checker_right, "right")
+		_, is_c_held = coroutine.resume(checker_c, "special")
+		if is_debug then
+			if GetKeyState(KEY.U) then scoredata.tutoriallock = false end
+			if GetKeyState(KEY.L) then scoredata.tutoriallock = true end
+		end
+		task.Do(self)
+	end
+
 stage.group.New('menu',{},"SpellCard",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
 stage.group.AddStage('SpellCard','SpellCard@SpellCard',{lifeleft=7,power=400,faith=50000,bomb=3},true)
 stage.group.DefStageFunc('SpellCard@SpellCard','init',function(self)
-    _init_item(self)
-    difficulty=self.group.difficulty
-    New(mask_fader,'open')
-    if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
-    lasttask=task.New(self,function()
-        LoadMusic('spellcard','THlib\\music\\spellcard.ogg',75,0xc36e80/44100/4)
-        SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
-        New(_editor_class["temple_background"] or temple_background)
-        task._Wait(60)
-        LoadMusicRecord("spellcard")
-        _play_music("spellcard")
-        local _boss_wait=true
-        local _ref=New(_editor_class["Boss"],_editor_class["Boss"].cards)
-        last=_ref
-        if _boss_wait then while IsValid(_ref) do task.Wait() end end
-        task._Wait(180)
-    end)
-    task.New(self,function()
-        while coroutine.status(self.task[1])~='dead' do task.Wait() end
-        stage.group.FinishReplay()
-        New(mask_fader,'close')
-        task.New(self,function()
-            local _,bgm=EnumRes('bgm')
-            for i=1,30 do
-                for _,v in pairs(bgm) do
-                    if GetMusicState(v)=='playing' then
-                        SetBGMVolume(v,1-i/30)
-                    end
-                end
-                task.Wait()
-            end
-        end)
-        task.Wait(30)
-        stage.group.FinishStage()
-    end)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		LoadMusic('spellcard','THlib\\music\\spellcard.ogg',75,0xc36e80/44100/4)
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		New(_editor_class["temple_background"] or temple_background)
+		task._Wait(60)
+		LoadMusicRecord("spellcard")
+		_play_music("spellcard")
+		local _boss_wait=true
+		local _ref=New(_editor_class["Boss"],_editor_class["Boss"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		task._Wait(180)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
 end)

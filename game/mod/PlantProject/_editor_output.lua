@@ -51,6 +51,13 @@ SetSplash(true)
 		return (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min;
 	end
 
+-- Clamp
+	function Clamp(val, lower, upper)
+	    assert(val and lower and upper, "not very useful error message here")
+	    if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
+	    return math.max(lower, math.min(upper, val))
+	end
+
 -- Interpolation
 	function LerpDecel(a, b, x)
 	    local y = 1 - x
@@ -85,7 +92,37 @@ _LoadImageGroupFromFile('image:'..'ShrubsCards','TITLE\\ShrubsCards.png',true,8,
 for i = 1, 8 do
 	CopyImage("image:ShrubsCardsAlt" .. i, "image:ShrubsCards" .. i)
 end
+_LoadImageGroupFromFile('image:'..'ShrubsCardsGray','TITLE\\ShrubsCardsGray.png',true,8,1,0,0,false)
 _LoadImageFromFile('image:'..'ShopBoard','TITLE\\ShopBoard.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'YuukaShop','TITLE\\YuukaShop.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'ShopBoardDesc','TITLE\\ShopBoardDesc.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'YuukaTalkBox','TITLE\\YuukaTalkBox.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'ActSelectRibbon','TITLE\\ActSelectRibbon.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'ActSelectShadow','TITLE\\ActSelectShadow.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'InventoryBoard','TITLE\\InventoryBoard.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'EquippedBoard','TITLE\\EquippedBoard.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'PlantedBoard','TITLE\\PlantedBoard.png',true,0,0,false,0)
+-- archive space: 
+-- archive space: PORTRAITS\ISAKI\
+_LoadImageFromFile('image:'..'Isaki_Shadow','PORTRAITS\\ISAKI\\Isaki_Shadow.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'Isaki_1','PORTRAITS\\ISAKI\\Isaki_1.png',true,0,0,false,0)
+-- archive space: 
+-- archive space: PORTRAITS\MARISA\
+_LoadImageFromFile('image:'..'Marisa_1','PORTRAITS\\MARISA\\Marisa_1.png',true,0,0,false,0)
+-- archive space: 
+-- archive space: SPRITES\MARISA\
+_LoadImageFromFile('image:'..'arml','SPRITES\\MARISA\\arml.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'armr','SPRITES\\MARISA\\armr.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'broom','SPRITES\\MARISA\\broom.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'hair','SPRITES\\MARISA\\hair.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'hat','SPRITES\\MARISA\\hat.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'hattop','SPRITES\\MARISA\\hattop.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'legl','SPRITES\\MARISA\\legl.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'legr','SPRITES\\MARISA\\legr.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'skirt','SPRITES\\MARISA\\skirt.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'torso','SPRITES\\MARISA\\torso.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'waist_ribbon','SPRITES\\MARISA\\waist_ribbon.png',true,0,0,false,0)
+_LoadImageGroupFromFile('image:'..'Marisa_Shot','SPRITES\\MARISA\\Marisa_Shot.png',true,4,1,0,0,false)
 -- archive space: 
 _editor_class["Base_Drop"]=Class(_object)
 _editor_class["Base_Drop"].init=function(self,_x,_y,_)
@@ -125,6 +162,10 @@ _editor_class["Base_Drop"].init=function(self,_x,_y,_)
 	last=New(_editor_class["MainMenu_Manager"],0,0,_)
 	_connect(self,last,0,false)
 	last=New(_editor_class["Shop_Manager"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Act_Select"],0,0,_)
+	_connect(self,last,0,false)
+	last=New(_editor_class["Loadout_Select"],0,0,_)
 	_connect(self,last,0,false)
 end
 _editor_class["Base_Drop"].frame=function(self)
@@ -411,12 +452,14 @@ _editor_class["Title_Leaf"].init=function(self,_x,_y,_)
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.scale = ran:Float(-0.3, -0.45)
 	self.xspeed = ran:Float(1, 2)
+	self.yspeed = ran:Float(1, 0.1)
 	self.hscale, self.vscale = (1 / 2.25) + self.scale, (1 / 2.25) + self.scale
 	self.vx, self.vy = ran:Float(-1, -2), ran:Float(-1, -0.1)
 	self.omiga = ran:Float(-1, 1)
 end
 _editor_class["Title_Leaf"].frame=function(self)
 	self.x = BaseDrop.x - self.timer * self.xspeed + 853 * 2
+	self.y = BaseDrop.y - self.timer * self.yspeed + 853
 	if self.x <= -853 then
 		_del(self,true)
 	else
@@ -508,7 +551,7 @@ _editor_class["MainMenu_Manager"].frame=function(self)
 			
 			if KeyIsPressed"shoot" then
 				if (self.selectionIndex == 1) then
-					
+					BaseDrop.positionIndex = 3
 				end
 				if (self.selectionIndex == 2) then
 					BaseDrop.positionIndex = 2
@@ -692,9 +735,66 @@ _editor_class["Shop_Manager"].init=function(self,_x,_y,_)
 		table.insert(self.slotCardOffset, i, 0)
 	end
 	
-	scoredata.ownedCards = scoredata.ownedCards or {0,0,0,0,0,0,0,0}
-	if scoredata.ownedCards[1] == nil then scoredata.ownedCards = {0,0,0,0,0,0,0,0} end
+	--print("start " .. tostring(scoredata.ownedCards[1]))
+	--scoredata.ownedCards = scoredata.ownedCards or {0,0,0,0,0,0,0,0}
+	scoredata.seedAmount = scoredata.seedAmount or 0
+	if not scoredata.ownedCards then scoredata.ownedCards = {0,0,0,0,0,0,0,0} end
+	if scoredata.seedAmount == nil then scoredata.seedAmount = 0 end
 	-- Earth, Water, Fire, Ice, Poison, Lightning, Wind, Metal
+	print("end " .. tostring(scoredata.ownedCards[1]))
+	
+	self.shrubNames = {
+		"Verdantia Seraphlora",
+		"Etheria Aquaroot",
+		"Euphoric Emberbloom",
+		"Celestia Crystalily",
+		"Mystical Shadowvine",
+		"Luminous Glowfern",
+		"Whispering Willowspire",
+		"Arcane Shimmerthorn"
+	}
+	
+	self.shrubDmg = {
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+		{4, 6, 8},
+	}
+	
+	self.shrubDesc = {
+		"The basic plant. \nNothing much special, \nbut packs decent strength.",
+		"The water plant. \nSplish splash! A little \nweak, but splashes enemies in area.",
+		"The fire plant. \nFerocious, but small ranged. \nGreat damage but weak reach.",
+		"The ice plant. \nGood penetration, but weak \nrange. Very shiny.",
+		"The poison plant. \nPoisons all lanes, and \nleaves a trail of poison behind.",
+		"The lightning plant. \nA strong thunder penetrates\nahead, but with slow recharge.",
+		"The wind plant. \nSlows enemies down, and \nhas incredible reach.",
+		"The metal plant. \nQuite dull, but is a \nheavy tank. Pretty destructive.",
+	}
+	
+	self.shrubInfoCosts = {
+		{1000, 5000, 6000}, -- prices > earth (first is buy price)
+		{1500, 5000, 6000}, -- prices > earth (first is buy price)
+		{2000, 5000, 6000}, -- prices > earth (first is buy price)
+		{1600, 5000, 6000}, -- prices > earth (first is buy price)
+		{3000, 5000, 6000}, -- prices > earth (first is buy price)
+		{1200, 5000, 6000}, -- prices > earth (first is buy price)
+		{1100, 5000, 6000}, -- prices > earth (first is buy price)
+		{1400, 5000, 6000} -- prices > earth (first is buy price)
+	} -- shrub types
+	
+	self.yuukaTalk = {
+		"Welcome to my stand! There's \nquite a bit of variety I'd say.",
+		"If you'd like, I could help you \nout by enhancing these things."
+	}
+	
+	self.yuukaTalkIndex = ran:Int(1, #self.yuukaTalk)
+	
+	scoredata.shrubLevelUp = {1, 1, 1, 1, 1, 1, 1, 1}
 end
 _editor_class["Shop_Manager"].frame=function(self)
 	self.class.base.frame(self)
@@ -720,11 +820,12 @@ _editor_class["Shop_Manager"].frame=function(self)
 			PlaySound("select00",0.1,0,false)
 		end
 		
-		if KeyIsPressed"shoot" then
-			if (self.selectionIndex == 1) then
-				
+		if BaseDrop.x < 20 then
+			if KeyIsPressed"shoot" then
+				scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] = scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] + 1
+				scoredata.seedAmount = scoredata.seedAmount + 20
+				PlaySound("ok00",0.1,0,false)
 			end
-			PlaySound("ok00",0.1,0,false)
 		end
 		
 		if KeyIsPressed"spell" then
@@ -732,11 +833,16 @@ _editor_class["Shop_Manager"].frame=function(self)
 			PlaySound("cancel00",0.1,0,false)
 		end
 	end
+	
+	if self.timer % (60*10) == 0 then
+		self.yuukaTalkIndex = ran:Int(1, #self.yuukaTalk)
+	end
+	
 end
 _editor_class["Shop_Manager"].render=function(self)
 	SetViewMode'ui'
 	self.class.base.render(self)
-	Render("image:ShopBoard", self.x + 240, self.y + 240, 0, self.hscale, self.vscale)
+	 Render("image:ShopBoard", self.x + 240, self.y + 240, 0, self.hscale, self.vscale)
 	
 	local offsetX = 0;
 	local offsetY = 0;
@@ -754,13 +860,13 @@ _editor_class["Shop_Manager"].render=function(self)
 		if self.selectionIndex == i then
 			SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
 			SetImageState("image:ShrubsCards" .. i, "", Color(255, 255, 255, 255))
-			Render("image:ShopSlotSeller", self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
-			Render("image:ShrubsCards" .. i, self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i], 0, self.hscale - 0.2, self.vscale - 0.2)
+			Render("image:ShopSlotSeller", self.x + 82 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
+			Render("image:ShrubsCards" .. i, self.x + 82 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i], 0, self.hscale - 0.2, self.vscale - 0.2)
 		else
 			SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
 			SetImageState("image:ShrubsCards" .. i, "", Color(255, 100, 100, 100))
-			Render("image:ShopSlotSeller", self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, self.hscale, self.vscale)
-			Render("image:ShrubsCards" .. i, self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i], 0, self.hscale - 0.2, self.vscale - 0.2)
+			Render("image:ShopSlotSeller", self.x + 82 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, self.hscale, self.vscale)
+			Render("image:ShrubsCards" .. i, self.x + 82 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i], 0, self.hscale - 0.2, self.vscale - 0.2)
 		end
 		
 	end
@@ -770,23 +876,598 @@ _editor_class["Shop_Manager"].render=function(self)
 		if self.selectionIndex == i+8 then
 			SetImageState("image:ShopSlot", "", Color(255, 255, 255, 255))
 			SetImageState("image:ShrubsCardsAlt" .. i, "", Color(255, 255, 255, 255))
-			Render("image:ShopSlot", self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
-			Render("image:ShrubsCardsAlt" .. i, self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			SetImageState("image:ShrubsCardsGray" .. i, "", Color(255, 255, 255, 255))
+			Render("image:ShopSlot", self.x + 100 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
+			if scoredata.ownedCards[i] > 0 then
+				Render("image:ShrubsCardsAlt" .. i, self.x + 100 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			else
+				Render("image:ShrubsCardsGray" .. i, self.x + 100 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			end
 			SetFontState("font:trocchi", "", Color(255, 255, 255, 255))
-			RenderText("font:trocchi", "x" .. tostring(scoredata.ownedCards[i]), self.x + 150 + offsetX + 20, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8] + 60, self.hscale - 0.2, 2)
+			RenderText("font:trocchi", "x" .. tostring(scoredata.ownedCards[i]), self.x + 98 + offsetX + 20, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8] + 60, self.hscale - 0.2, 2)
 		else
 			SetImageState("image:ShopSlot", "", Color(255, 100, 100, 100))
 			SetImageState("image:ShrubsCardsAlt" .. i, "", Color(255, 100, 100, 100))
-			Render("image:ShopSlot", self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
-			Render("image:ShrubsCardsAlt" .. i, self.x + 150 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			SetImageState("image:ShrubsCardsGray" .. i, "", Color(255, 100, 100, 100))
+			Render("image:ShopSlot", self.x + 98 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY, 0, self.hscale, self.vscale)
+			if scoredata.ownedCards[i] > 0 then
+				Render("image:ShrubsCardsAlt" .. i, self.x + 98 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			else
+				Render("image:ShrubsCardsGray" .. i, self.x + 98 + offsetX, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8], 0, self.hscale - 0.2, self.vscale - 0.2)
+			end
 			SetFontState("font:trocchi", "", Color(155, 255, 255, 255))
-			RenderText("font:trocchi", "x" .. tostring(scoredata.ownedCards[i]), self.x + 150 + offsetX + 20, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8] + 60, self.hscale - 0.2, 2)
+			RenderText("font:trocchi", "x" .. tostring(scoredata.ownedCards[i]), self.x + 98 + offsetX + 20, self.y + 380 - (100 * (i - 1)) - offsetY - 20 + self.slotCardOffset[i+8] + 60, self.hscale - 0.2, 2)
 		end
 		
 	end
+	
+	SetFontState("font:trocchi", "", Color(255, 255, 255, 255))
+	RenderText("font:trocchi", "Available Shrubs", self.x + 34, self.y + 465, self.hscale - 0.2, 2)
+	RenderText("font:trocchi", "Owned Shrubs", self.x + 265, self.y + 465, self.hscale - 0.2, 2)
+	
+	Render("image:YuukaShop", self.x + 680, self.y + 200 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+	Render("image:ShopBoardDesc", self.x + 700, self.y + 10, 0, self.hscale, self.vscale)
+	
+	lstg.RenderText("font:trocchi", self.shrubNames[Wrap(self.selectionIndex, 1, 9)], self.x + 670, self.y + 222, self.hscale - 0.2, 5)
+	lstg.RenderText("font:trocchi",
+	"Current Level: ".. scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] ..
+	"\nAttack DMG: " .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)]] .. ">" .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1] ..
+	"\nPress Shoot to Buy\nPress Special to Upgrade" ..
+	"\n\n" .. self.shrubDesc[Wrap(self.selectionIndex, 1, 9)]
+	, self.x + 500, self.y + 190, self.hscale - 0.3, 0)
+	
+	if (scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] < 3) then
+		lstg.RenderText("font:trocchi",
+		"Your seeds: " .. scoredata.seedAmount ..
+		"\nBuy price: " .. self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][1] ..
+		"\nCurrent shrub level: " .. scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] ..
+		"\nUpgrade price: " .. self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][Clamp(scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1, 1, 3)]
+		, self.x + 680, self.y + 190, self.hscale - 0.3, 0)
+	else
+		lstg.RenderText("font:trocchi",
+		"Your seeds: " .. scoredata.seedAmount ..
+		"\nBuy price: " .. self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][1] ..
+		"\nCurrent shrub level: " .. scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] ..
+		"\nUpgrade price: " .. "Max Amount Reached"
+		, self.x + 680, self.y + 190, self.hscale - 0.3, 0)
+	end
+	
+	
+	Render("image:YuukaTalkBox", self.x + 669, self.y + 280, 0, self.hscale, self.vscale)
+	
+	lstg.RenderText("font:trocchi", self.yuukaTalk[self.yuukaTalkIndex], self.x + 496, self.y + 302, self.hscale - 0.25, 0)
 	SetViewMode'world'
 end
-_editor_class["Boss"]=Class(boss)
+_editor_class["Act_Select"]=Class(_object)
+_editor_class["Act_Select"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	ActSelect = self
+	self.selectionIndex = 1
+	self.actText = {
+		"Tutorial",
+		"Act 1",
+		"Act 2",
+		"Act 3"
+	}
+	self.actShadows = {
+		{{"image:Isaki_Shadow", "image:Isaki_1"}, {"img_void", "img_void"}},
+		{{"img_void", "img_void"}, {"img_void", "img_void"}},
+		{{"img_void", "img_void"}, {"img_void", "img_void"}},
+		{{"img_void", "img_void"}, {"img_void", "img_void"}},
+	}
+	self.actName = {
+		"Tutorial Act\nFragant Floral Poetry",
+		"Act 1\nForest Melodies Ensemble",
+		"Act 2\n ",
+		"Act 3\n "
+	}
+	
+	if not scoredata.clearCount then
+		scoredata.clearCount = {
+			{0, 0},
+			{0, 0},
+			{0, 0}
+		}
+	end
+	
+	if not scoredata.attemptCount then
+		scoredata.attemptCount = {0, 0, 0}
+	end
+end
+_editor_class["Act_Select"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+	if BaseDrop.positionIndex == 3 then
+		if is_up_held then
+			self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if is_down_held then
+			self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
+			PlaySound("select00",0.1,0,false)
+		end
+		
+		if BaseDrop.y > 470 and BaseDrop.x > 840 then
+			if KeyIsPressed"shoot" then
+				PlaySound("ok00",0.1,0,false)
+				BaseDrop.positionIndex = 4
+			end
+		end
+		
+		if KeyIsPressed"spell" then
+			BaseDrop.positionIndex = 1
+			PlaySound("cancel00",0.1,0,false)
+		end
+	end
+end
+_editor_class["Act_Select"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	Render("image:ActSelectShadow", self.x - 743, self.y - 240, 0, self.hscale + 0.1, self.vscale)
+	Render("image:ActSelectRibbon", self.x - 743, self.y - 50  + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+	Render("image:ActSelectRibbon", self.x - 743, self.y + 50 - 480  - (sin(self.timer) * 6), 180, self.hscale, self.vscale)
+	
+	for i = 1, 4 do
+		if self.selectionIndex == i then
+			SetFontState("font:trocchi", "", Color(255,255,255,255))
+			lstg.RenderText("font:trocchi", self.actText[i], self.x - 743, self.y - 240 - (60 * i) + (35 * 4.3), self.hscale - 0.15, 5)
+		else
+			SetFontState("font:trocchi", "", Color(200,155,155,155))
+			lstg.RenderText("font:trocchi", self.actText[i], self.x - 743, self.y - 240 - (60 * i) + (35 * 4.3), self.hscale - 0.15, 5)
+		end
+		
+	end
+	
+	SetFontState("font:trocchi", "", Color(255,255,255,255))
+	
+	if self.selectionIndex > 1 then
+		lstg.RenderText("font:trocchi",
+		"Attempt Times\n" .. scoredata.attemptCount[self.selectionIndex-1] ..
+		"\nClear Times\n" .. (scoredata.clearCount[self.selectionIndex-1][1] + scoredata.clearCount[self.selectionIndex-1][2]) ..
+		"\nHigh Score\n"
+		, self.x - 120, self.y - 100, self.hscale - 0.25, 5)
+	
+		if scoredata.clearCount[self.selectionIndex-1][1] > 0 then
+			Render(self.actShadows[self.selectionIndex-1][1][2], self.x - 420, self.y - 240 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+		else
+			Render(self.actShadows[self.selectionIndex-1][1][1], self.x - 420, self.y - 240 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+		end
+		
+		if scoredata.clearCount[self.selectionIndex-1][2] > 0 then
+			Render(self.actShadows[self.selectionIndex-1][2][2], self.x - 380, self.y - 240 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+		else
+			Render(self.actShadows[self.selectionIndex-1][2][1], self.x - 380, self.y - 240 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+		end
+	end
+	
+	lstg.RenderText("font:trocchi", self.actName[self.selectionIndex], self.x - 420, self.y - 340 + (sin(self.timer) * 6), self.hscale - 0.15, 5)
+	
+	
+	SetViewMode'world'
+end
+_editor_class["Loadout_Select"]=Class(_object)
+_editor_class["Loadout_Select"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	self.selectionIndex = 1
+	self.selections = {
+		"Start Scene",
+		"Equip Shrub",
+		"Plant Shrub"
+	}
+	self.menuType = 1
+	self.inputDelay = 0
+	self.selectionIndexInventory = 1
+	self.selectionIndexEquip = 1
+	self.selectionIndexPlant = 1
+	self.equippedPlants = {0, 0}
+	self.plantedPlants = {0, 0, 0, 0, 0, 0, 0, 0}
+end
+_editor_class["Loadout_Select"].frame=function(self)
+	self.class.base.frame(self)
+	_set_rel_pos(self,0,0,self.rot,false)
+	if BaseDrop.positionIndex == 4 then
+		if self.menuType == 1 then -- Main selections ----------------
+			if is_up_held then
+				self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 4)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if is_down_held then
+				self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 4)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if BaseDrop.x < 20 then
+				if KeyIsPressed"shoot" then
+					if self.selectionIndex == 1 then
+						stage.group.Start(stage.groups['Act1'], 0)
+					elseif self.selectionIndex == 2 then
+						self.menuType = 2
+					elseif self.selectionIndex == 3 then
+						self.menuType = 3
+					end
+					self.inputDelay = 5
+					PlaySound("ok00",0.1,0,false)
+				end
+			end
+			
+			if KeyIsPressed"spell" then
+				BaseDrop.positionIndex = 3
+				PlaySound("cancel00",0.1,0,false)
+			end
+		end
+		
+		------------------------------------------------------------------------
+		
+		if self.menuType == 2 then -- Equip shrubs ----------------
+			if is_left_held then
+				self.selectionIndexEquip = Wrap(self.selectionIndexEquip - 1, 1, 3)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if is_right_held then
+				self.selectionIndexEquip = Wrap(self.selectionIndexEquip + 1, 1, 3)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if KeyIsPressed"shoot" and self.inputDelay <= 0 then
+				self.menuType = 4
+				self.menuSlot = self.selectionIndexEquip
+				self.lastMenu = 2
+				self.inputDelay = 5
+				PlaySound("ok00",0.1,0,false)
+			end
+			
+			if KeyIsPressed"spell" then
+				self.menuType = 1
+				PlaySound("cancel00",0.1,0,false)
+			end
+		end
+		
+		------------------------------------------------------------------------
+		
+		if self.menuType == 3 then -- Plant shrubs ----------------
+			if is_left_held then
+				if ActSelect.selectionIndex == 2 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant - 1, 1, 5)
+				elseif ActSelect.selectionIndex == 3 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant - 1, 1, 6)
+				elseif ActSelect.selectionIndex == 4 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant - 1, 1, 7)
+				end
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if is_right_held then
+				if ActSelect.selectionIndex == 2 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant + 1, 1, 5)
+				elseif ActSelect.selectionIndex == 3 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant + 1, 1, 6)
+				elseif ActSelect.selectionIndex == 4 then
+					self.selectionIndexPlant = Wrap(self.selectionIndexPlant + 1, 1, 7)
+				end
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if KeyIsPressed"shoot" and self.inputDelay <= 0 then
+				self.menuType = 4
+				self.menuSlot = self.selectionIndexPlant
+				self.lastMenu = 3
+				self.inputDelay = 5
+				PlaySound("ok00",0.1,0,false)
+			end
+			
+			if KeyIsPressed"spell" then
+				self.menuType = 1
+				PlaySound("cancel00",0.1,0,false)
+			end
+		end
+		
+		------------------------------------------------------------------------
+		
+		if self.menuType == 4 then -- Inventory ----------------
+			if is_left_held then
+				self.selectionIndexInventory = Wrap(self.selectionIndexInventory - 1, 1, 9)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if is_right_held then
+				self.selectionIndexInventory = Wrap(self.selectionIndexInventory + 1, 1, 9)
+				PlaySound("select00",0.1,0,false)
+			end
+			
+			if KeyIsPressed"shoot" and self.inputDelay <= 0 then
+				if scoredata.ownedCards[self.selectionIndexInventory] > 0 then
+					if self.lastMenu == 2 then
+						if self.equippedPlants[self.selectionIndexEquip] > 0 then
+							scoredata.ownedCards[self.selectionIndexEquip] = scoredata.ownedCards[self.selectionIndexEquip] + 1
+						end
+						self.equippedPlants[self.selectionIndexEquip] = self.selectionIndexInventory
+						scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+					end
+					if self.lastMenu == 3 then
+						if self.plantedPlants[self.selectionIndexPlant] > 0 then
+							scoredata.ownedCards[self.selectionIndexEquip] = scoredata.ownedCards[self.selectionIndexEquip] + 1
+						end
+						self.plantedPlants[self.selectionIndexPlant] = self.selectionIndexInventory
+						scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+					end
+					self.menuType = self.lastMenu
+					PlaySound("ok00",0.1,0,false)
+				else
+					PlaySound("invalid",0.1,0,false)
+				end
+				self.inputDelay = 5
+			end
+			
+			if KeyIsPressed"spell" then
+				self.menuType = self.lastMenu
+				PlaySound("cancel00",0.1,0,false)
+			end
+		end
+		
+	end
+	
+	self.inputDelay = self.inputDelay - 1
+end
+_editor_class["Loadout_Select"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	Render("image:Marisa_1", self.x + 853/2, self.y - 280 + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
+	
+	Render("image:InventoryBoard", self.x + 400, self.y - 405, 0, self.hscale, self.vscale)
+	Render("image:EquippedBoard", self.x + 120, self.y - 260, 0, self.hscale, self.vscale)
+	Render("image:PlantedBoard", self.x + 690, self.y - 160, 0, self.hscale, self.vscale)
+	
+	SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+	if (ActSelect.selectionIndex == 1) then
+		for i = 1, 4 do
+			if self.selectionIndexPlant == i and self.menuType == 3 then
+				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+			else
+				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+			end
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 60), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+		end
+	end
+	if (ActSelect.selectionIndex == 2) then
+		for i = 1, 4 do
+			if self.selectionIndexPlant == i and self.menuType == 3 then
+				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+			else
+				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+			end
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 60), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+		end
+	end
+	if (ActSelect.selectionIndex == 3) then
+		for i = 1, 5 do
+			if self.selectionIndexPlant == i and self.menuType == 3 then
+				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+			else
+				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+			end
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 50), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+		end
+	end
+	if (ActSelect.selectionIndex == 4) then
+		for i = 1, 6 do
+			if self.selectionIndexPlant == i and self.menuType == 3 then
+				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+			else
+				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+			end
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 40), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+		end
+	end
+	
+	lstg.RenderText("font:trocchi", "Equipped", self.x + 120, self.y - 217, self.hscale - 0.2, 5)
+	lstg.RenderText("font:trocchi", "Inventory", self.x + 400, self.y - 352, self.hscale - 0.2, 5)
+	lstg.RenderText("font:trocchi", "Field Shrubs", self.x + 690, self.y - 70, self.hscale - 0.2, 5)
+	
+	for i = 1, 3 do
+		if self.selectionIndex == i then
+			SetFontState("font:trocchi", "", Color(255,255,255,255))
+			lstg.RenderText("font:trocchi", self.selections[i], self.x + 40, self.y - (40 * i), self.hscale - 0.15, 0)
+		else
+			SetFontState("font:trocchi", "", Color(155,155,155,155))
+			lstg.RenderText("font:trocchi", self.selections[i], self.x + 40, self.y - (40 * i), self.hscale - 0.15, 0)
+		end
+	end
+	
+	for i = 1, 8 do
+		if self.selectionIndexInventory == i and self.menuType == 4 then
+			SetImageState("image:ShrubsCards" .. i, "", Color(255, 255, 255, 255))
+			SetImageState("image:ShopSlot", "", Color(255, 255, 255, 255))
+			SetFontState("font:trocchi", "", Color(255,255,255,255))
+		else
+			SetImageState("image:ShrubsCards" .. i, "", Color(255, 100, 100, 100))
+			SetImageState("image:ShopSlot", "", Color(255, 100, 100, 100))
+			SetFontState("font:trocchi", "", Color(155,155,155,155))
+		end
+		Render("image:ShopSlot", self.x + 40 + (i * 80), self.y - 410, 0, self.hscale - 0.1, self.vscale - 0.1)
+		Render("image:ShrubsCards" .. i, self.x + 40 + (i * 80), self.y - 430, 0, self.hscale - 0.235, self.vscale - 0.235)
+		lstg.RenderText("font:trocchi", "x" .. scoredata.ownedCards[i], self.x + 58 + (i * 80), self.y - 364, self.hscale - 0.15, 0)
+	end
+	
+	for i = 1, 2 do
+		if self.selectionIndexEquip == i and self.menuType == 2 then
+			SetImageState("image:ShopSlot", "", Color(255, 255, 255, 255))
+		else
+			SetImageState("image:ShopSlot", "", Color(255, 100, 100, 100))
+		end
+		Render("image:ShopSlot", self.x + 45 + (i * 50), self.y - 265, 0, self.hscale - 0.2, self.vscale - 0.2)
+		if self.equippedPlants[i] > 0 then
+			if self.selectionIndexEquip == i then
+				SetImageState("image:ShrubsCards" .. self.equippedPlants[i], "", Color(255, 255, 255, 255))
+			else
+				SetImageState("image:ShrubsCards" .. self.equippedPlants[i], "", Color(255, 100, 100, 100))
+			end
+			Render("image:ShrubsCards" .. self.equippedPlants[i], self.x + 45 + (i * 50), self.y - 285, 0, self.hscale - 0.3, self.vscale - 0.3)
+		end
+	end
+	
+	SetViewMode'world'
+end
+_editor_class["Base_Shot"]=Class(_object)
+_editor_class["Base_Shot"].init=function(self,_x,_y,_)
+	player_bullet_straight.init(self,"image:Marisa_Shot1",_x,_y,16,90,2)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+end
+_editor_class["Base_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Base_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Base_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Base_Shot"].kill=function(self)
+end
+_editor_class["Base_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+Marisa=Class(player_class)
+Marisa.init=function(self)
+	player_class.init(self)
+	self.name = "Marisa"
+	--[[ Add Option List Here]]
+	
+	LoadTexture('blank_void','blank_void.png')
+	LoadImageGroup('blank_void','blank_void',0,0,32,48,8,3,0.5,0.5)
+	self.imgs = {}
+	self.A, self.B = 0.5,0.5
+	for i = 1, 24 do self.imgs[i]='blank_void'..i end
+	player.hspeed, player.lspeed = 4,2
+	player.protect = 120
+	self.hscale, self.vscale = 1/8, 1/8
+	self.armllerp = 0
+	self.armrlerp = 0
+	self.legllerp = 0
+	self.legrlerp = 0
+	self.hairlerp = 0
+	self.hatlerp = 0
+	self.hattoplerp = 0
+	self.skirtlerp = 0
+	self.broomlerp = 0
+	self.torsolerp = 0
+end
+Marisa.frame=function(self)
+	task.Do(self)	player_class.frame(self)
+	if KeyIsDown"left" and KeyIsDown"right" then
+		self.armllerp = LerpDecel(self.armllerp, 0, 0.1)
+		self.armrlerp = LerpDecel(self.armllerp, 0, 0.1)
+		self.legllerp = LerpDecel(self.legllerp, 0, 0.1)
+		self.legrlerp = LerpDecel(self.legrlerp, 0, 0.1)
+		self.hairlerp = LerpDecel(self.hairlerp, 0, 0.1)
+		self.hatlerp = LerpDecel(self.hatlerp, 0, 0.1)
+		self.hattoplerp = LerpDecel(self.hattoplerp, 0, 0.1)
+		self.skirtlerp = LerpDecel(self.skirtlerp, 0, 0.1)
+		self.broomlerp = LerpDecel(self.broomlerp, 0, 0.1)
+		self.torsolerp = LerpDecel(self.torsolerp, 0, 0.1)
+	elseif KeyIsDown"left" then
+		self.armllerp = LerpDecel(self.armllerp, 15, 0.1)
+		self.armrlerp = LerpDecel(self.armrlerp, 15, 0.1)
+		self.legllerp = LerpDecel(self.legllerp, 20, 0.1)
+		self.legrlerp = LerpDecel(self.legrlerp, 20, 0.1)
+		self.hairlerp = LerpDecel(self.hairlerp, 20, 0.1)
+		self.hatlerp = LerpDecel(self.hatlerp, 15, 0.1)
+		self.hattoplerp = LerpDecel(self.hattoplerp, 20, 0.1)
+		self.skirtlerp = LerpDecel(self.skirtlerp, 30, 0.1)
+		self.broomlerp = LerpDecel(self.broomlerp, 15, 0.1)
+		self.torsolerp = LerpDecel(self.torsolerp, 15, 0.1)
+	elseif KeyIsDown"right" then
+		self.armllerp = LerpDecel(self.armllerp, -15, 0.1)
+		self.armrlerp = LerpDecel(self.armrlerp, -15, 0.1)
+		self.legllerp = LerpDecel(self.legllerp, -20, 0.1)
+		self.legrlerp = LerpDecel(self.legrlerp, -20, 0.1)
+		self.hairlerp = LerpDecel(self.hairlerp, -20, 0.1)
+		self.hatlerp = LerpDecel(self.hatlerp, -15, 0.1)
+		self.hattoplerp = LerpDecel(self.hattoplerp, -20, 0.1)
+		self.skirtlerp = LerpDecel(self.skirtlerp, -30, 0.1)
+		self.broomlerp = LerpDecel(self.broomlerp, -15, 0.1)
+		self.torsolerp = LerpDecel(self.torsolerp, -15, 0.1)
+	else
+		self.armllerp = LerpDecel(self.armllerp, 0, 0.1)
+		self.armrlerp = LerpDecel(self.armllerp, 0, 0.1)
+		self.legllerp = LerpDecel(self.legllerp, 0, 0.1)
+		self.legrlerp = LerpDecel(self.legrlerp, 0, 0.1)
+		self.hairlerp = LerpDecel(self.hairlerp, 0, 0.1)
+		self.hatlerp = LerpDecel(self.hatlerp, 0, 0.1)
+		self.hattoplerp = LerpDecel(self.hattoplerp, 0, 0.1)
+		self.skirtlerp = LerpDecel(self.skirtlerp, 0, 0.1)
+		self.broomlerp = LerpDecel(self.broomlerp, 0, 0.1)
+		self.torsolerp = LerpDecel(self.torsolerp, 0, 0.1)
+	end
+end
+Marisa.render=function(self)
+	player_class.render(self)
+	Render("image:legl", self.x - 2, self.y - 4, 0 - (sin(self.timer) * 6) + self.legllerp, self.hscale, self.vscale)
+	Render("image:legr", self.x + 2, self.y - 4, 0 + (sin(self.timer) * 6) + self.legrlerp, self.hscale, self.vscale)
+	Render("image:broom", self.x, self.y - 2, 0 + self.broomlerp, self.hscale, self.vscale)
+	Render("image:torso", self.x, self.y + 2, 0 + self.torsolerp, self.hscale, self.vscale)
+	Render("image:arml", self.x - 3, self.y + 4, 0 + self.armllerp, self.hscale, self.vscale)
+	Render("image:armr", self.x + 3, self.y + 4, 0 + self.armrlerp, self.hscale, self.vscale)
+	Render("image:skirt", self.x, self.y - 2, 0 + (sin(self.timer * 3) * 8) + self.skirtlerp, self.hscale, self.vscale)
+	Render("image:hair", self.x, self.y + 12, 0 + (sin(self.timer * 6) * 6) + self.hairlerp, self.hscale, self.vscale)
+	Render("image:hat", self.x, self.y + 14, 0 + self.hatlerp, self.hscale, self.vscale)
+	Render("image:hattop", self.x, self.y + 21, 0 + (sin(self.timer) * 10) + self.hattoplerp, self.hscale, self.vscale)
+		for i = 1, 4 do
+		if self.sp[i] and self.sp[i][3] > 0.5 then
+			Render("leaf", self.supportx + self.sp[i][1], self.supporty + self.sp[i][2], self.timer * 3)
+		end
+	end
+end
+Marisa.shoot=function(self)
+	player.nextshoot = 4
+	PlaySound("plst00",0.3,self.x/1024,false)
+	last=New(_editor_class["Base_Shot"],self.x - 8,self.y + 4,_)
+	last=New(_editor_class["Base_Shot"],self.x + 8,self.y + 4,_)
+end
+Marisa.spell=function(self)
+	player.nextspell = 120
+	PlaySound("nep00",0.8,self.x/1024,false)
+	New(player_spell_mask,255,255,255,30,60,30)
+end
+Marisa.special=function(self)
+	player.nextsp = 120
+	PlaySound("slash",0.8,self.x/1024,false)
+end
+table.insert(player_list, {'Marisa Kirisame','Marisa','Marisa'})_editor_class["Boss"]=Class(boss)
 _editor_class["Boss"].cards={}
 _editor_class["Boss"].name="Name"
 _editor_class["Boss"].bgm=""
@@ -816,6 +1497,8 @@ table.insert(_editor_class["Boss"].cards,_tmp_sc)
 		checker_left = coroutine.create(MenuInputChecker)
 		checker_right = coroutine.create(MenuInputChecker)
 		checker_c = coroutine.create(MenuInputChecker)
+		lstg.var.rep_player = "Marisa"
+		lstg.var.player_name = "Marisa"
 		last=New(_editor_class["Base_Drop"],0,0,_)
 	end
 	function stage_init:frame()

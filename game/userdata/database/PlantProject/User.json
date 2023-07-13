@@ -1,7 +1,34 @@
 {
-	"hiscore": {
-		"SpellCard@SpellCard@sakuya_player": 101900
-	},
+	"seedAmount": 20,
+	"shrubLevelUp": [
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1
+	],
+	"clearCount": [
+		[
+			0,
+			0
+		],
+		[
+			0,
+			0
+		],
+		[
+			0,
+			0
+		]
+	],
+	"attemptCount": [
+		0,
+		0,
+		0
+	],
 	"ownedCards": [
 		0,
 		0,
@@ -12,20 +39,7 @@
 		0,
 		0
 	],
-	"player_select": 3,
-	"difficulty_select": 2,
-	"spell_card_hist": {
-		"All": {
-			"「」": {
-				"sakuya_player": [
-					0,
-					8
-				],
-				"reimu_player": [
-					0,
-					14
-				]
-			}
-		}
+	"hiscore": {
+		"Scene@Act1@Marisa": 19580
 	}
 }

@@ -59,7 +59,7 @@ end
 
 setting.last_mod = setting.mod
 if not start_game then
-	setting.mod = "launcher"
+	setting.mod = "PlantProject"
 	--setting.resx = 480
 	--setting.resy = 640
 	--setting.windowed = true

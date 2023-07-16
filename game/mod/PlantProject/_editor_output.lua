@@ -102,6 +102,7 @@ _LoadImageFromFile('image:'..'ActSelectShadow','TITLE\\ActSelectShadow.png',true
 _LoadImageFromFile('image:'..'InventoryBoard','TITLE\\InventoryBoard.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'EquippedBoard','TITLE\\EquippedBoard.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'PlantedBoard','TITLE\\PlantedBoard.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'TitleShadowCircle','TITLE\\TitleShadowCircle.png',true,0,0,false,0)
 -- archive space: 
 -- archive space: PORTRAITS\ISAKI\
 _LoadImageFromFile('image:'..'Isaki_Shadow','PORTRAITS\\ISAKI\\Isaki_Shadow.png',true,0,0,false,0)
@@ -109,6 +110,14 @@ _LoadImageFromFile('image:'..'Isaki_1','PORTRAITS\\ISAKI\\Isaki_1.png',true,0,0,
 -- archive space: 
 -- archive space: PORTRAITS\MARISA\
 _LoadImageFromFile('image:'..'Marisa_1','PORTRAITS\\MARISA\\Marisa_1.png',true,0,0,false,0)
+-- archive space: 
+-- archive space: SPRITES\GENERAL\
+_LoadImageFromFile('image:'..'ShrubShadow','SPRITES\\GENERAL\\ShrubShadow.png',true,0,0,false,0)
+SetImageCenter("image:ShrubShadow",0,1008)
+_LoadImageGroupFromFile('image:'..'ShrubsShooters','SPRITES\\GENERAL\\ShrubsShooters.png',true,8,1,0,0,false)
+for _=1,8 do
+	SetImageCenter("image:ShrubsShooters" .. _,0,312)
+end
 -- archive space: 
 -- archive space: SPRITES\MARISA\
 _LoadImageFromFile('image:'..'arml','SPRITES\\MARISA\\arml.png',true,0,0,false,0)
@@ -123,6 +132,12 @@ _LoadImageFromFile('image:'..'skirt','SPRITES\\MARISA\\skirt.png',true,0,0,false
 _LoadImageFromFile('image:'..'torso','SPRITES\\MARISA\\torso.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'waist_ribbon','SPRITES\\MARISA\\waist_ribbon.png',true,0,0,false,0)
 _LoadImageGroupFromFile('image:'..'Marisa_Shot','SPRITES\\MARISA\\Marisa_Shot.png',true,4,1,0,0,false)
+_LoadImageFromFile('image:'..'Hakkero','SPRITES\\MARISA\\Hakkero.png',true,0,0,false,0)
+_LoadImageGroupFromFile('image:'..'Fire_Shot','SPRITES\\MARISA\\Fire_Shot.png',true,4,1,0,0,false)
+_LoadImageGroupFromFile('image:'..'Earth_Shot','SPRITES\\MARISA\\Earth_Shot.png',true,4,1,0,0,false)
+_LoadImageGroupFromFile('image:'..'Ice_Shot','SPRITES\\MARISA\\Ice_Shot.png',true,4,1,0,0,false)
+_LoadImageFromFile('image:'..'Lightning_Ray','SPRITES\\MARISA\\Lightning_Ray.png',true,0,0,false,0)
+SetImageCenter("image:Lightning_Ray",0, 32)
 -- archive space: 
 _editor_class["Base_Drop"]=Class(_object)
 _editor_class["Base_Drop"].init=function(self,_x,_y,_)
@@ -250,7 +265,7 @@ _editor_class["Title_Logo"]=Class(_object)
 _editor_class["Title_Logo"].init=function(self,_x,_y,_)
 	self.x,self.y=_x,_y
 	self.img="image:TitleLogo"
-	self.layer=LAYER_TOP
+	self.layer=LAYER_TOP+1
 	self.group=GROUP_GHOST
 	self.hide=false
 	self.bound=false
@@ -1016,6 +1031,10 @@ end
 _editor_class["Act_Select"].render=function(self)
 	SetViewMode'ui'
 	self.class.base.render(self)
+	Render("image:TitleShadowCircle", self.x, self.y - 480 * 1.5, self.timer * 0.1, self.hscale, self.vscale)
+	Render("image:TitleShadowCircle", self.x - 853, self.y - 480 * 1.5, self.timer * -0.1, self.hscale, self.vscale)
+	Render("image:TitleShadowCircle", self.x + 853, self.y - 480 * 1.5, self.timer * -0.1, self.hscale, self.vscale)
+	
 	Render("image:ActSelectShadow", self.x - 743, self.y - 240, 0, self.hscale + 0.1, self.vscale)
 	Render("image:ActSelectRibbon", self.x - 743, self.y - 50  + (sin(self.timer) * 6), 0, self.hscale, self.vscale)
 	Render("image:ActSelectRibbon", self.x - 743, self.y + 50 - 480  - (sin(self.timer) * 6), 180, self.hscale, self.vscale)
@@ -1086,6 +1105,10 @@ _editor_class["Loadout_Select"].init=function(self,_x,_y,_)
 	self.selectionIndexPlant = 1
 	self.equippedPlants = {0, 0}
 	self.plantedPlants = {0, 0, 0, 0, 0, 0, 0, 0}
+	self.slotCardOffsetEquip = {0, 0}
+	self.slotCardOffsetInventory = {0, 0, 0, 0, 0, 0, 0, 0}
+	self.slotCardOffsetPlant = {0, 0, 0, 0, 0, 0}
+	self.takeOff = false
 end
 _editor_class["Loadout_Select"].frame=function(self)
 	self.class.base.frame(self)
@@ -1105,6 +1128,9 @@ _editor_class["Loadout_Select"].frame=function(self)
 			if BaseDrop.x < 20 then
 				if KeyIsPressed"shoot" then
 					if self.selectionIndex == 1 then
+						lstg.var.equipCard = {}
+						lstg.var.equipCard[1] = self.equippedPlants[1]
+						lstg.var.equipCard[2] = self.equippedPlants[2]
 						stage.group.Start(stage.groups['Act1'], 0)
 					elseif self.selectionIndex == 2 then
 						self.menuType = 2
@@ -1202,23 +1228,42 @@ _editor_class["Loadout_Select"].frame=function(self)
 			end
 			
 			if KeyIsPressed"shoot" and self.inputDelay <= 0 then
-				if scoredata.ownedCards[self.selectionIndexInventory] > 0 then
+				if scoredata.ownedCards[self.selectionIndexInventory] > 0 or (self.plantedPlants[self.selectionIndexPlant] == self.selectionIndexInventory and self.lastMenu == 3) or (self.equippedPlants[self.selectionIndexEquip] == self.selectionIndexInventory and self.lastMenu == 2) then
 					if self.lastMenu == 2 then
 						if self.equippedPlants[self.selectionIndexEquip] > 0 then
-							scoredata.ownedCards[self.selectionIndexEquip] = scoredata.ownedCards[self.selectionIndexEquip] + 1
+							scoredata.ownedCards[self.equippedPlants[self.selectionIndexEquip]] = scoredata.ownedCards[self.equippedPlants[self.selectionIndexEquip]] + 1
+							if self.equippedPlants[self.selectionIndexEquip] == self.selectionIndexInventory then
+								self.equippedPlants[self.selectionIndexEquip] = 0
+								self.takeOff = true
+							end
 						end
-						self.equippedPlants[self.selectionIndexEquip] = self.selectionIndexInventory
-						scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+						if self.equippedPlants[self.selectionIndexEquip] ~= self.selectionIndexInventory and self.takeOff == false then
+							self.equippedPlants[self.selectionIndexEquip] = self.selectionIndexInventory
+							scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+						else
+							self.equippedPlants[self.selectionIndexEquip] = 0
+						end
+						
 					end
 					if self.lastMenu == 3 then
 						if self.plantedPlants[self.selectionIndexPlant] > 0 then
-							scoredata.ownedCards[self.selectionIndexEquip] = scoredata.ownedCards[self.selectionIndexEquip] + 1
+							scoredata.ownedCards[self.plantedPlants[self.selectionIndexPlant]] = scoredata.ownedCards[self.plantedPlants[self.selectionIndexPlant]] + 1
+							if self.plantedPlants[self.selectionIndexPlant] == self.selectionIndexInventory then
+								self.plantedPlants[self.selectionIndexPlant] = 0
+								self.takeOff = true
+							end
 						end
-						self.plantedPlants[self.selectionIndexPlant] = self.selectionIndexInventory
-						scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+						if self.plantedPlants[self.selectionIndexPlant] ~= self.selectionIndexInventory and self.takeOff == false then
+							self.plantedPlants[self.selectionIndexPlant] = self.selectionIndexInventory
+							scoredata.ownedCards[self.selectionIndexInventory] = scoredata.ownedCards[self.selectionIndexInventory] - 1
+						else
+							self.plantedPlants[self.selectionIndexPlant] = 0
+						end
+						
 					end
 					self.menuType = self.lastMenu
 					PlaySound("ok00",0.1,0,false)
+					self.takeOff = false
 				else
 					PlaySound("invalid",0.1,0,false)
 				end
@@ -1244,45 +1289,79 @@ _editor_class["Loadout_Select"].render=function(self)
 	Render("image:EquippedBoard", self.x + 120, self.y - 260, 0, self.hscale, self.vscale)
 	Render("image:PlantedBoard", self.x + 690, self.y - 160, 0, self.hscale, self.vscale)
 	
+	self.mPos = {}
+	self.mPos.x = 690
+	self.mPos.y = 130 - (sin(self.timer) * 3)
+	Render("image:legl",   self.x - 4 + self.mPos.x, self.y - 16 - self.mPos.y,  0 - (sin(self.timer) * 6),     self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:legr",   self.x + 4 + self.mPos.x, self.y - 16 - self.mPos.y,  0 + (sin(self.timer) * 6),     self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:broom",  self.x + self.mPos.x,     self.y - 14 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:torso",  self.x + self.mPos.x,     self.y - 12 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:arml",   self.x - 5 + self.mPos.x, self.y - 4 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:armr",   self.x + 5 + self.mPos.x, self.y - 4 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:skirt",  self.x + self.mPos.x,     self.y - 16 - self.mPos.y,  0 + (sin(self.timer * 3) * 8), self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:hair",   self.x + self.mPos.x,     self.y + 10 - self.mPos.y, 0 + (sin(self.timer * 6) * 6), self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:hat",    self.x + self.mPos.x,     self.y + 14 - self.mPos.y, 0,                             self.hscale - 0.2, self.vscale - 0.2)
+	Render("image:hattop", self.x + self.mPos.x,     self.y + 24 - self.mPos.y, 0 + (sin(self.timer) * 10),    self.hscale - 0.2, self.vscale - 0.2)
+	
 	SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
 	if (ActSelect.selectionIndex == 1) then
 		for i = 1, 4 do
 			if self.selectionIndexPlant == i and self.menuType == 3 then
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 20, 0.3)	
 				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 255, 255, 255)) end
 			else
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 0, 0.3)	
 				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 100, 100, 100)) end
 			end
 			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 60), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			if self.plantedPlants[i] > 0 then Render("image:ShrubsCards" .. self.plantedPlants[i], self.x + 560 + 40 + ((i - 1) * 60), self.y - 270 + self.slotCardOffsetPlant[i], 0, self.hscale - 0.3, self.vscale - 0.3) end
 		end
 	end
 	if (ActSelect.selectionIndex == 2) then
 		for i = 1, 4 do
 			if self.selectionIndexPlant == i and self.menuType == 3 then
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 20, 0.3)
 				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 255, 255, 255)) end
 			else
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 0, 0.3)	
 				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 100, 100, 100)) end
 			end
 			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 60), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			if self.plantedPlants[i] > 0 then Render("image:ShrubsCards" .. self.plantedPlants[i], self.x + 560 + 40 + ((i - 1) * 60), self.y - 270 + self.slotCardOffsetPlant[i], 0, self.hscale - 0.3, self.vscale - 0.3) end
 		end
 	end
 	if (ActSelect.selectionIndex == 3) then
 		for i = 1, 5 do
 			if self.selectionIndexPlant == i and self.menuType == 3 then
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 20, 0.3)
 				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 255, 255, 255)) end
 			else
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 0, 0.3)
 				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 100, 100, 100)) end
 			end
-			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 50), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 45), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			if self.plantedPlants[i] > 0 then Render("image:ShrubsCards" .. self.plantedPlants[i], self.x + 560 + 40 + ((i - 1) * 45), self.y - 270 + self.slotCardOffsetPlant[i], 0, self.hscale - 0.3, self.vscale - 0.3) end
 		end
 	end
 	if (ActSelect.selectionIndex == 4) then
 		for i = 1, 6 do
 			if self.selectionIndexPlant == i and self.menuType == 3 then
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 20, 0.3)
 				SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 255, 255, 255)) end
 			else
+				self.slotCardOffsetPlant[i] = LerpDecel(self.slotCardOffsetPlant[i], 0, 0.3)
 				SetImageState("image:ShopSlotSeller", "", Color(255, 100, 100, 100))
+				if self.plantedPlants[i] > 0 then SetImageState("image:ShrubsCards" .. self.plantedPlants[i], "", Color(255, 100, 100, 100)) end
 			end
-			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 40), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			Render("image:ShopSlotSeller", self.x + 560 + 40 + ((i - 1) * 36), self.y - 250, 0, self.hscale - 0.2, self.vscale - 0.2)
+			if self.plantedPlants[i] > 0 then Render("image:ShrubsCards" .. self.plantedPlants[i], self.x + 560 + 40 + ((i - 1) * 36), self.y - 270 + self.slotCardOffsetPlant[i], 0, self.hscale - 0.3, self.vscale - 0.3) end
 		end
 	end
 	
@@ -1291,7 +1370,7 @@ _editor_class["Loadout_Select"].render=function(self)
 	lstg.RenderText("font:trocchi", "Field Shrubs", self.x + 690, self.y - 70, self.hscale - 0.2, 5)
 	
 	for i = 1, 3 do
-		if self.selectionIndex == i then
+		if self.selectionIndex == i and self.menuType == 1 then
 			SetFontState("font:trocchi", "", Color(255,255,255,255))
 			lstg.RenderText("font:trocchi", self.selections[i], self.x + 40, self.y - (40 * i), self.hscale - 0.15, 0)
 		else
@@ -1302,37 +1381,65 @@ _editor_class["Loadout_Select"].render=function(self)
 	
 	for i = 1, 8 do
 		if self.selectionIndexInventory == i and self.menuType == 4 then
+			self.slotCardOffsetInventory[i] = LerpDecel(self.slotCardOffsetInventory[i], 20, 0.3)	
 			SetImageState("image:ShrubsCards" .. i, "", Color(255, 255, 255, 255))
 			SetImageState("image:ShopSlot", "", Color(255, 255, 255, 255))
 			SetFontState("font:trocchi", "", Color(255,255,255,255))
 		else
+			self.slotCardOffsetInventory[i] = LerpDecel(self.slotCardOffsetInventory[i], 0, 0.3)	
 			SetImageState("image:ShrubsCards" .. i, "", Color(255, 100, 100, 100))
 			SetImageState("image:ShopSlot", "", Color(255, 100, 100, 100))
 			SetFontState("font:trocchi", "", Color(155,155,155,155))
 		end
 		Render("image:ShopSlot", self.x + 40 + (i * 80), self.y - 410, 0, self.hscale - 0.1, self.vscale - 0.1)
-		Render("image:ShrubsCards" .. i, self.x + 40 + (i * 80), self.y - 430, 0, self.hscale - 0.235, self.vscale - 0.235)
-		lstg.RenderText("font:trocchi", "x" .. scoredata.ownedCards[i], self.x + 58 + (i * 80), self.y - 364, self.hscale - 0.15, 0)
+		Render("image:ShrubsCards" .. i, self.x + 40 + (i * 80), self.y - 430 + self.slotCardOffsetInventory[i], 0, self.hscale - 0.235, self.vscale - 0.235)
+		lstg.RenderText("font:trocchi", "x" .. scoredata.ownedCards[i], self.x + 58 + (i * 80), self.y - 364 + self.slotCardOffsetInventory[i], self.hscale - 0.15, 0)
 	end
 	
 	for i = 1, 2 do
 		if self.selectionIndexEquip == i and self.menuType == 2 then
+			self.slotCardOffsetEquip[i] = LerpDecel(self.slotCardOffsetEquip[i], 20, 0.3)	
 			SetImageState("image:ShopSlot", "", Color(255, 255, 255, 255))
 		else
+			self.slotCardOffsetEquip[i] = LerpDecel(self.slotCardOffsetEquip[i], 0, 0.3)	
 			SetImageState("image:ShopSlot", "", Color(255, 100, 100, 100))
 		end
 		Render("image:ShopSlot", self.x + 45 + (i * 50), self.y - 265, 0, self.hscale - 0.2, self.vscale - 0.2)
 		if self.equippedPlants[i] > 0 then
-			if self.selectionIndexEquip == i then
+			if self.selectionIndexEquip == i and self.menuType == 2 then
 				SetImageState("image:ShrubsCards" .. self.equippedPlants[i], "", Color(255, 255, 255, 255))
 			else
 				SetImageState("image:ShrubsCards" .. self.equippedPlants[i], "", Color(255, 100, 100, 100))
 			end
-			Render("image:ShrubsCards" .. self.equippedPlants[i], self.x + 45 + (i * 50), self.y - 285, 0, self.hscale - 0.3, self.vscale - 0.3)
+			Render("image:ShrubsCards" .. self.equippedPlants[i], self.x + 45 + (i * 50), self.y - 285 + self.slotCardOffsetEquip[i], 0, self.hscale - 0.3, self.vscale - 0.3)
 		end
 	end
 	
 	SetViewMode'world'
+end
+_editor_class["Plant_Manager"]=Class(_object)
+_editor_class["Plant_Manager"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_BG+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1/2.25, 1/2.25
+end
+_editor_class["Plant_Manager"].render=function(self)
+	for i = 1, 4 do
+		Render("image:ShrubShadow", -224 + ((i - 1) * 112), -224, 0, self.hscale, self.vscale)
+		Render("image:ShrubsShooters" .. i, -224 + ((i - 1) * 112), -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+	end
+	
+	self.class.base.render(self)
 end
 _editor_class["Base_Shot"]=Class(_object)
 _editor_class["Base_Shot"].init=function(self,_x,_y,_)
@@ -1361,6 +1468,148 @@ end
 _editor_class["Base_Shot"].del=function(self)
 	self.class.base.del(self)
 end
+_editor_class["Earth_Shot"]=Class(_object)
+_editor_class["Earth_Shot"].init=function(self,_x,_y,speed)
+	player_bullet_straight.init(self,"image:Earth_Shot1",_x,_y,speed,90,2)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+end
+_editor_class["Earth_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Earth_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Earth_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Earth_Shot"].kill=function(self)
+end
+_editor_class["Earth_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Fire_Shot"]=Class(_object)
+_editor_class["Fire_Shot"].init=function(self,_x,_y,speed)
+	player_bullet_straight.init(self,"image:Fire_Shot1",_x,_y,speed,ran:Int(60, 180-60),1.5)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	lasttask=task.New(self,function()
+		do
+			local _beg_mov=speed local mov=_beg_mov local _end_mov=0 local _w_mov=0 local _d_w_mov=1/(80-1)
+			for _=1,80 do
+				SetV2(self,mov,self.rot,true,false)
+				task._Wait(1)
+				_w_mov=_w_mov+_d_w_mov mov=(_beg_mov-_end_mov)*(_w_mov-1)^2+_end_mov
+			end
+		end
+		_del(self,true)
+	end)
+end
+_editor_class["Fire_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Fire_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Fire_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Fire_Shot"].kill=function(self)
+end
+_editor_class["Fire_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Ice_Shot"]=Class(_object)
+_editor_class["Ice_Shot"].init=function(self,_x,_y,angle)
+	player_bullet_straight.init(self,"image:Ice_Shot1",_x,_y,16,angle,2)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	lasttask=task.New(self,function()
+		do
+			local _beg_mov=16 local mov=_beg_mov local _end_mov=0 local _w_mov=0 local _d_w_mov=1/(60-1)
+			for _=1,60 do
+				SetV2(self,mov,self.rot,true,false)
+				task._Wait(1)
+				_w_mov=_w_mov+_d_w_mov mov=(_beg_mov-_end_mov)*(_w_mov-1)^2+_end_mov
+			end
+		end
+		_del(self,true)
+	end)
+end
+_editor_class["Ice_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Ice_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Ice_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Ice_Shot"].kill=function(self)
+end
+_editor_class["Ice_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Lightning_Shot"]=Class(_object)
+_editor_class["Lightning_Shot"].init=function(self,_x,_y,angle)
+	player_bullet_straight.init(self,"image:Lightning_Ray",_x,_y,0,angle,0.035)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/2, 1/4
+	_object.set_color(self,"mul+add",35,255,255,255)
+	self.a, self.b, self.rect = 448, 8,false
+	self.killflag = true
+	lasttask=task.New(self,function()
+		do
+			local _beg_scale=1/2 local scale=_beg_scale local _end_scale=0 local _w_scale=0 local _d_w_scale=1/(30-1)
+			for _=1,30 do
+				self.hscale, self.vscale = scale, 1/4
+				task._Wait(1)
+				_w_scale=_w_scale+_d_w_scale scale=(_beg_scale-_end_scale)*(_w_scale-1)^2+_end_scale
+			end
+		end
+		_del(self,true)
+	end)
+end
+_editor_class["Lightning_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Lightning_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Lightning_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Lightning_Shot"].kill=function(self)
+end
+_editor_class["Lightning_Shot"].del=function(self)
+	self.class.base.del(self)
+end
 Marisa=Class(player_class)
 Marisa.init=function(self)
 	player_class.init(self)
@@ -1385,6 +1634,43 @@ Marisa.init=function(self)
 	self.skirtlerp = 0
 	self.broomlerp = 0
 	self.torsolerp = 0
+	self.options = {lstg.var.equipCard[1], lstg.var.equipCard[2]}
+	self.optionPosition = {
+		{-30, 0, -15, 30},
+		{30, 0, 15, 30}
+	}
+	self.optionCurrentPosition = {
+		{0, 0},
+		{0, 0}
+	}
+	function self.optionFire(x, y, shrubIndex)
+		if shrubIndex == 1 then
+			do local speed,_d_speed=(10),(16) for _=1,2 do
+				last=New(_editor_class["Earth_Shot"],x, y,speed)
+			speed=speed+_d_speed end end
+		elseif shrubIndex == 2 then
+		elseif shrubIndex == 3 then
+			for _=1,6 do
+				last=New(_editor_class["Fire_Shot"],x, y,ran:Float(4, 12))
+			end
+		elseif shrubIndex == 4 then
+			if x > player.x then
+				do local ang,_d_ang=(0),(360/3) for _=1,3 do
+					last=New(_editor_class["Ice_Shot"],x, y,self.timer + ang)
+					last=New(_editor_class["Ice_Shot"],x, y,self.timer + ang + (360/3)/2)
+				ang=ang+_d_ang end end
+			else
+				do local ang,_d_ang=(0),(360/3) for _=1,3 do
+					last=New(_editor_class["Ice_Shot"],x, y,-self.timer + ang + (360/3)/2)
+					last=New(_editor_class["Ice_Shot"],x, y,-self.timer + ang + (360/3)/2 + (360/3)/2)
+				ang=ang+_d_ang end end
+			end
+		elseif shrubIndex == 6 then
+			last=New(_editor_class["Lightning_Shot"],x, y,90)
+			last=New(_editor_class["Lightning_Shot"],x, y,-90)
+		else
+		end
+	end
 end
 Marisa.frame=function(self)
 	task.Do(self)	player_class.frame(self)
@@ -1433,9 +1719,62 @@ Marisa.frame=function(self)
 		self.broomlerp = LerpDecel(self.broomlerp, 0, 0.1)
 		self.torsolerp = LerpDecel(self.torsolerp, 0, 0.1)
 	end
+	if KeyIsDown"slow" == false then
+		self.optionCurrentPosition[1][1] = LerpDecel(self.optionCurrentPosition[1][1], self.optionPosition[1][1], 0.1)
+		self.optionCurrentPosition[1][2] = LerpDecel(self.optionCurrentPosition[1][2], self.optionPosition[1][2], 0.1)
+		
+		self.optionCurrentPosition[2][1] = LerpDecel(self.optionCurrentPosition[2][1], self.optionPosition[2][1], 0.1)
+		self.optionCurrentPosition[2][2] = LerpDecel(self.optionCurrentPosition[2][2], self.optionPosition[2][2], 0.1)
+	else
+		self.optionCurrentPosition[1][1] = LerpDecel(self.optionCurrentPosition[1][1], self.optionPosition[1][3], 0.1)
+		self.optionCurrentPosition[1][2] = LerpDecel(self.optionCurrentPosition[1][2], self.optionPosition[1][4], 0.1)
+		
+		self.optionCurrentPosition[2][1] = LerpDecel(self.optionCurrentPosition[2][1], self.optionPosition[2][3], 0.1)
+		self.optionCurrentPosition[2][2] = LerpDecel(self.optionCurrentPosition[2][2], self.optionPosition[2][4], 0.1)
+	end
 end
 Marisa.render=function(self)
 	player_class.render(self)
+	if self.options[1] ~= 0 then
+		SetImageState("image:Hakkero", "", Color(255, 255, 255, 255))
+	else
+		SetImageState("image:Hakkero", "", Color(100, 155, 155, 155))
+	end
+	
+	Render("image:Hakkero", self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.timer * -1, 1/3.75, 1/3.75)
+	
+	if self.options[2] ~= 0 then
+		SetImageState("image:Hakkero", "", Color(255, 255, 255, 255))
+	else
+		SetImageState("image:Hakkero", "", Color(100, 155, 155, 155))
+	end
+	
+	Render("image:Hakkero", self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.timer * 1, 1/3.75, 1/3.75)
+	
+	if self.protect % 4 == 0 then
+		SetImageState("image:legl", "", Color(255, 255, 255, 255))
+		SetImageState("image:legr", "", Color(255, 255, 255, 255))
+		SetImageState("image:broom", "", Color(255, 255, 255, 255))
+		SetImageState("image:torso", "", Color(255, 255, 255, 255))
+		SetImageState("image:arml", "", Color(255, 255, 255, 255))
+		SetImageState("image:armr", "", Color(255, 255, 255, 255))
+		SetImageState("image:skirt", "", Color(255, 255, 255, 255))
+		SetImageState("image:hair", "", Color(255, 255, 255, 255))
+		SetImageState("image:hat", "", Color(255, 255, 255, 255))
+		SetImageState("image:hattop", "", Color(255, 255, 255, 255))
+	else
+		SetImageState("image:legl", "", Color(255, 50, 50, 255))
+		SetImageState("image:legr", "", Color(255, 50, 50, 255))
+		SetImageState("image:broom", "", Color(255, 50, 50, 255))
+		SetImageState("image:torso", "", Color(255, 50, 50, 255))
+		SetImageState("image:arml", "", Color(255, 50, 50, 255))
+		SetImageState("image:armr", "", Color(255, 50, 50, 255))
+		SetImageState("image:skirt", "", Color(255, 50, 50, 255))
+		SetImageState("image:hair", "", Color(255, 50, 50, 255))
+		SetImageState("image:hat", "", Color(255, 50, 50, 255))
+		SetImageState("image:hattop", "", Color(255, 50, 50, 255))
+	end
+	
 	Render("image:legl", self.x - 2, self.y - 4, 0 - (sin(self.timer) * 6) + self.legllerp, self.hscale, self.vscale)
 	Render("image:legr", self.x + 2, self.y - 4, 0 + (sin(self.timer) * 6) + self.legrlerp, self.hscale, self.vscale)
 	Render("image:broom", self.x, self.y - 2, 0 + self.broomlerp, self.hscale, self.vscale)
@@ -1457,6 +1796,8 @@ Marisa.shoot=function(self)
 	PlaySound("plst00",0.3,self.x/1024,false)
 	last=New(_editor_class["Base_Shot"],self.x - 8,self.y + 4,_)
 	last=New(_editor_class["Base_Shot"],self.x + 8,self.y + 4,_)
+	self.optionFire(self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.options[1])
+	self.optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
 end
 Marisa.spell=function(self)
 	player.nextspell = 120
@@ -1499,7 +1840,7 @@ table.insert(_editor_class["Boss"].cards,_tmp_sc)
 		checker_c = coroutine.create(MenuInputChecker)
 		lstg.var.rep_player = "Marisa"
 		lstg.var.player_name = "Marisa"
-		last=New(_editor_class["Base_Drop"],0,0,_)
+		last=New(_editor_class["Base_Drop"],853, 0,_)
 	end
 	function stage_init:frame()
 		_, is_up_held = coroutine.resume(checker_up, "up")
@@ -1524,6 +1865,7 @@ stage.group.DefStageFunc('Scene@Act1','init',function(self)
 	lasttask=task.New(self,function()
 		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
 		New(_editor_class["temple_background"] or temple_background)
+		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
 		task._Wait(60)
 		local _boss_wait=true
 		local _ref=New(_editor_class["Boss"],_editor_class["Boss"].cards)

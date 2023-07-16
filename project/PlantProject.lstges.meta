@@ -9,7 +9,7 @@ d314f2975f25f2710b36f001ae84dede|C:\Users\ryann\Documents\PlantProject\project\T
 4bdb01e67d1de99380433823d5be0e27|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundMountains.png|TITLE\TitleBackgroundMountains.png
 62478f13decb17102e591491097506c9|C:\Users\ryann\Documents\PlantProject\project\Title\TitleSelections.png|TITLE\TitleSelections.png
 fbcd0c51ee5dc1d08ec5f22459508e50|C:\Users\ryann\Documents\PlantProject\project\Title\TitleSelectionsHighlight.png|TITLE\TitleSelectionsHighlight.png
-25c5897f1cb4b84cd7dca71956f8147f|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundClouds.png|TITLE\TitleBackgroundClouds.png
+ad8d98cde130784c6913298f48c2c0e6|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundClouds.png|TITLE\TitleBackgroundClouds.png
 9f1e3f152eaa824498c50c07a6cb8e4d|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundStone.png|TITLE\TitleBackgroundStone.png
 50e30210cd4a223458f58dc5365189d2|C:\Users\ryann\Documents\PlantProject\project\Title\TitleLeaves.png|TITLE\TitleLeaves.png
 ac8112d869ed6accb0b5258ec7b3a322|C:\Users\ryann\Documents\PlantProject\project\Title\ShopSlot.png|TITLE\ShopSlot.png
@@ -25,9 +25,12 @@ d175bcc9bc52718f2c04effc605de9db|C:\Users\ryann\Documents\PlantProject\project\T
 9cc3a01ccf7c7b77b1796e1110e0a525|C:\Users\ryann\Documents\PlantProject\project\Title\InventoryBoard.png|TITLE\InventoryBoard.png
 4751cab5f404df150af2e94ff3857cbd|C:\Users\ryann\Documents\PlantProject\project\Title\EquippedBoard.png|TITLE\EquippedBoard.png
 fabbb9c59ced30c910aac7e6a67c1eb2|C:\Users\ryann\Documents\PlantProject\project\Title\PlantedBoard.png|TITLE\PlantedBoard.png
+2bfc7e0646d454bae3a808f8a4fcb57a|C:\Users\ryann\Documents\PlantProject\project\Title\TitleShadowCircle.png|TITLE\TitleShadowCircle.png
 3fb9016b866cb651679b56ad5097aed0|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_Shadow.png|PORTRAITS\ISAKI\Isaki_Shadow.png
 8fffa5b5515543697087e084f19f1d24|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_1.png|PORTRAITS\ISAKI\Isaki_1.png
 3539430a6b0e7ed34f373b849a2c0c24|C:\Users\ryann\Documents\PlantProject\project\Portraits\Marisa\Marisa_1.png|PORTRAITS\MARISA\Marisa_1.png
+bb8fa43177ad3e483cb42b154e529670|C:\Users\ryann\Documents\PlantProject\project\Shrubs\ShrubShadow.png|SPRITES\GENERAL\ShrubShadow.png
+02338d5f01963fbc654dc241272a9d63|C:\Users\ryann\Documents\PlantProject\project\Shrubs\ShrubsShooters.png|SPRITES\GENERAL\ShrubsShooters.png
 4891c409efb0ac40cd4c8243a746a93c|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\arml.png|SPRITES\MARISA\arml.png
 eff9d5163b61c783b11580ebe9de01eb|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\armr.png|SPRITES\MARISA\armr.png
 65cc65dc6e8650430f21641daec0c7f5|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\broom.png|SPRITES\MARISA\broom.png
@@ -40,4 +43,9 @@ dd70a03cb440f6bf9165f8a6ddaa81d9|C:\Users\ryann\Documents\PlantProject\project\S
 ee6829a70eba4f06d61ec3a7f9f3298a|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\torso.png|SPRITES\MARISA\torso.png
 7cb18ef72551badf54864d261af379dc|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\waist_ribbon.png|SPRITES\MARISA\waist_ribbon.png
 ccb0413f5bd038138550dbe6b67d377e|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Marisa_Shot.png|SPRITES\MARISA\Marisa_Shot.png
+bdb69883a5710b52defd8715ef555c59|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Hakkero.png|SPRITES\MARISA\Hakkero.png
+969e6adc048322a5e94d01b1ad0df63d|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Fire_Shot.png|SPRITES\MARISA\Fire_Shot.png
+6331fe4f8bf371cd8977d7df9af5239f|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Earth_Shot.png|SPRITES\MARISA\Earth_Shot.png
+e633ab2e44a1e1d9e273c43c5816d1e2|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Ice_Shot.png|SPRITES\MARISA\Ice_Shot.png
+6ed350e4340c43deb0103c535692ef23|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Lightning_Ray.png|SPRITES\MARISA\Lightning_Ray.png
 0e3a6096212efdffd9be6c2dbea24b1e|C:\Users\ryann\Documents\PlantProject\project\Sprites\blank_void.png|blank_void.png

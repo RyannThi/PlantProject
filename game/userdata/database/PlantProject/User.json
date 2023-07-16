@@ -1,5 +1,4 @@
 {
-	"seedAmount": 20,
 	"shrubLevelUp": [
 		1,
 		1,
@@ -29,17 +28,18 @@
 		0,
 		0
 	],
+	"seedAmount": 3100,
 	"ownedCards": [
 		0,
+		1,
 		0,
+		2,
 		0,
-		0,
-		0,
-		0,
-		0,
+		3,
+		1,
 		0
 	],
 	"hiscore": {
-		"Scene@Act1@Marisa": 19580
+		"Scene@Act1@Marisa": 433400
 	}
 }

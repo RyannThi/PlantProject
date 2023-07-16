@@ -1,4 +1,14 @@
 {
+	"keys2": {
+		"special": 70,
+		"up": 101,
+		"down": 98,
+		"left": 97,
+		"right": 99,
+		"slow": 65,
+		"shoot": 83,
+		"spell": 68
+	},
 	"keysys": {
 		"repfast": 17,
 		"repslow": 16,
@@ -7,35 +17,25 @@
 		"retry": 82
 	},
 	"username": "User",
-	"locale": "en_us",
-	"vsync": true,
-	"timezone": 8,
-	"windowed": true,
 	"resx": 1600,
-	"resy": 900,
+	"locale": "en_us",
 	"last_mod": "PlantProject",
-	"mod": "PlantProject",
-	"bgmvolume": 100,
+	"sevolume": 100,
 	"keys": {
+		"special": 67,
+		"up": 38,
 		"down": 40,
 		"left": 37,
 		"right": 39,
 		"slow": 16,
 		"shoot": 90,
-		"spell": 88,
-		"special": 67,
-		"up": 38
+		"spell": 88
 	},
+	"timezone": 8,
 	"nosplash": true,
-	"sevolume": 100,
-	"keys2": {
-		"down": 98,
-		"left": 97,
-		"right": 99,
-		"slow": 65,
-		"shoot": 83,
-		"spell": 68,
-		"special": 70,
-		"up": 101
-	}
+	"windowed": true,
+	"resy": 900,
+	"vsync": true,
+	"mod": "PlantProject",
+	"bgmvolume": 100
 }

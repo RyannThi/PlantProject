@@ -1,5 +1,8 @@
+c2d60af3bc8747aaeef3f17c8ae21ce2|C:\Users\ryann\Documents\PlantProject\project\Music\TitleTheme.ogg|MUSIC\TitleTheme.ogg
 79a6456c0f1906fc70a80607e2395fc8|C:\Users\ryann\Documents\PlantProject\project\Fonts\trocchi.fnt|font\trocchi.fnt
 967dd13213e13512cee7596ad3a8b028|C:\Users\ryann\Documents\PlantProject\project\Fonts\trocchi.png|font\trocchi.png
+ca1b60fbed2cf4ecedbc77444063cf12|C:\Users\ryann\Documents\PlantProject\project\Fonts\simplymono.fnt|font\simplymono.fnt
+7c10a67503c8b418a3f7a3948b6dc560|C:\Users\ryann\Documents\PlantProject\project\Fonts\simplymono.png|font\simplymono.png
 81df72057059bb2536851ac73f108b9c|C:\Users\ryann\Documents\PlantProject\project\Title\BaseDrop.png|TITLE\BaseDrop.png
 0620bf82820c776264abcb565d5dd17d|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundSun.png|TITLE\TitleBackgroundSun.png
 32ce646dbdea1b1bdca870bfe175f15c|C:\Users\ryann\Documents\PlantProject\project\Title\TitleBackgroundSunRay.png|TITLE\TitleBackgroundSunRay.png
@@ -26,11 +29,15 @@ d175bcc9bc52718f2c04effc605de9db|C:\Users\ryann\Documents\PlantProject\project\T
 4751cab5f404df150af2e94ff3857cbd|C:\Users\ryann\Documents\PlantProject\project\Title\EquippedBoard.png|TITLE\EquippedBoard.png
 fabbb9c59ced30c910aac7e6a67c1eb2|C:\Users\ryann\Documents\PlantProject\project\Title\PlantedBoard.png|TITLE\PlantedBoard.png
 2bfc7e0646d454bae3a808f8a4fcb57a|C:\Users\ryann\Documents\PlantProject\project\Title\TitleShadowCircle.png|TITLE\TitleShadowCircle.png
-3fb9016b866cb651679b56ad5097aed0|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_Shadow.png|PORTRAITS\ISAKI\Isaki_Shadow.png
-8fffa5b5515543697087e084f19f1d24|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_1.png|PORTRAITS\ISAKI\Isaki_1.png
+053514f3844adea7c821c933017f9fa9|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_Shadow.png|PORTRAITS\ISAKI\Isaki_Shadow.png
+5fa51b6c2f8efe4f5d12646526ac9d87|C:\Users\ryann\Documents\PlantProject\project\Portraits\Isaki\Isaki_Highlight.png|PORTRAITS\ISAKI\Isaki_Highlight.png
+089ba48fc715f9590da7d7f66be554d7|C:\Users\ryann\Documents\PlantProject\project\Portraits\Eternity\Eternity_Shadow.png|PORTRAITS\ETERNITY\Eternity_Shadow.png
+be2006f378f5a7e18c81a7bce1745448|C:\Users\ryann\Documents\PlantProject\project\Portraits\Eternity\Eternity_Highlight.png|PORTRAITS\ETERNITY\Eternity_Highlight.png
 3539430a6b0e7ed34f373b849a2c0c24|C:\Users\ryann\Documents\PlantProject\project\Portraits\Marisa\Marisa_1.png|PORTRAITS\MARISA\Marisa_1.png
-bb8fa43177ad3e483cb42b154e529670|C:\Users\ryann\Documents\PlantProject\project\Shrubs\ShrubShadow.png|SPRITES\GENERAL\ShrubShadow.png
+d307c6b725e3c2fd364f3f48eb3beada|C:\Users\ryann\Documents\PlantProject\project\Shrubs\ShrubShadow.png|SPRITES\GENERAL\ShrubShadow.png
 02338d5f01963fbc654dc241272a9d63|C:\Users\ryann\Documents\PlantProject\project\Shrubs\ShrubsShooters.png|SPRITES\GENERAL\ShrubsShooters.png
+f64568982ff1961b2b7694f6fe89b3e1|C:\Users\ryann\Documents\PlantProject\project\Sprites\UIElements.png|SPRITES\GENERAL\UIElements.png
+af3182d299569b6f18a6c9fbad7d60fa|C:\Users\ryann\Documents\PlantProject\project\Sprites\HeartIcon.png|SPRITES\GENERAL\HeartIcon.png
 4891c409efb0ac40cd4c8243a746a93c|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\arml.png|SPRITES\MARISA\arml.png
 eff9d5163b61c783b11580ebe9de01eb|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\armr.png|SPRITES\MARISA\armr.png
 65cc65dc6e8650430f21641daec0c7f5|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\broom.png|SPRITES\MARISA\broom.png
@@ -49,3 +56,4 @@ bdb69883a5710b52defd8715ef555c59|C:\Users\ryann\Documents\PlantProject\project\S
 e633ab2e44a1e1d9e273c43c5816d1e2|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Ice_Shot.png|SPRITES\MARISA\Ice_Shot.png
 6ed350e4340c43deb0103c535692ef23|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\Lightning_Ray.png|SPRITES\MARISA\Lightning_Ray.png
 0e3a6096212efdffd9be6c2dbea24b1e|C:\Users\ryann\Documents\PlantProject\project\Sprites\blank_void.png|blank_void.png
+38b741f8740142178f09b950c6bc4779|C:\Users\ryann\Documents\PlantProject\project\Sprites\Eternity_Boss.png|Eternity_Boss.png

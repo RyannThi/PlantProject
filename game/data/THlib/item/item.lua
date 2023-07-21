@@ -460,10 +460,10 @@ function item:PlayerMiss()
     if lstg.var.lifeleft > 0 then
         for i = 1, 7 do
             local a = 90 + (i - 4) * 18 + self.x * 0.26
-            New(item_power, self.x, self.y + 10, 3, a)
+            --New(item_power, self.x, self.y + 10, 3, a)
         end
     else
-        New(item_power_full, self.x, self.y + 10)
+        --New(item_power_full, self.x, self.y + 10)
     end
 end
 

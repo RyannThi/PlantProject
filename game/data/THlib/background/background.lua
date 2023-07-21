@@ -257,3 +257,5 @@ end
 
 Include 'THlib/background/temple/temple.lua'
 Include 'THlib/background/spellcard/spellcard.lua'
+Include 'THlib/background/tkz_stage3/stage3bg.lua'
+Include 'THlib/background/magic_forest/magic_forest.lua'

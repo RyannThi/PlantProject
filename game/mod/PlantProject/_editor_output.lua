@@ -68,8 +68,20 @@ SetSplash(true)
 	    return a + (b - a) * t
 	end
 
+-- Format Score
+	function FormatScore(num)
+	    local str = string.format('%012d', num)
+	    return string.format('%s,%s,%s,%s',
+	            str:sub(1,3), str:sub(4,6),str:sub(7,9),str:sub(10,12))
+	end
+
+-- archive space: MUSIC\
+MusicRecord('bgm:'..'TitleTheme','MUSIC\\TitleTheme.ogg',0,0)
+-- archive space: 
 lstg.LoadFont('font:'..'trocchi','font\\trocchi.fnt',true)
 --- Load Font Image "trocchi"
+lstg.LoadFont('font:'..'simplymono','font\\simplymono.fnt',true)
+--- Load Font Image "simplymono"
 -- archive space: TITLE\
 _LoadImageFromFile('image:'..'BaseDrop','TITLE\\BaseDrop.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'TitleBackgroundSun','TITLE\\TitleBackgroundSun.png',true,0,0,false,0)
@@ -106,7 +118,11 @@ _LoadImageFromFile('image:'..'TitleShadowCircle','TITLE\\TitleShadowCircle.png',
 -- archive space: 
 -- archive space: PORTRAITS\ISAKI\
 _LoadImageFromFile('image:'..'Isaki_Shadow','PORTRAITS\\ISAKI\\Isaki_Shadow.png',true,0,0,false,0)
-_LoadImageFromFile('image:'..'Isaki_1','PORTRAITS\\ISAKI\\Isaki_1.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'Isaki_Highlight','PORTRAITS\\ISAKI\\Isaki_Highlight.png',true,0,0,false,0)
+-- archive space: 
+-- archive space: PORTRAITS\ETERNITY\
+_LoadImageFromFile('image:'..'Eternity_Shadow','PORTRAITS\\ETERNITY\\Eternity_Shadow.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'Eternity_Highlight','PORTRAITS\\ETERNITY\\Eternity_Highlight.png',true,0,0,false,0)
 -- archive space: 
 -- archive space: PORTRAITS\MARISA\
 _LoadImageFromFile('image:'..'Marisa_1','PORTRAITS\\MARISA\\Marisa_1.png',true,0,0,false,0)
@@ -116,8 +132,10 @@ _LoadImageFromFile('image:'..'ShrubShadow','SPRITES\\GENERAL\\ShrubShadow.png',t
 SetImageCenter("image:ShrubShadow",0,1008)
 _LoadImageGroupFromFile('image:'..'ShrubsShooters','SPRITES\\GENERAL\\ShrubsShooters.png',true,8,1,0,0,false)
 for _=1,8 do
-	SetImageCenter("image:ShrubsShooters" .. _,0,312)
+	SetImageCenter("image:ShrubsShooters" .. _,456,312)
 end
+_LoadImageGroupFromFile('image:'..'UIElements','SPRITES\\GENERAL\\UIElements.png',true,4,2,0,0,false)
+_LoadImageFromFile('image:'..'HeartIcon','SPRITES\\GENERAL\\HeartIcon.png',true,0,0,false,0)
 -- archive space: 
 -- archive space: SPRITES\MARISA\
 _LoadImageFromFile('image:'..'arml','SPRITES\\MARISA\\arml.png',true,0,0,false,0)
@@ -155,12 +173,13 @@ _editor_class["Base_Drop"].init=function(self,_x,_y,_)
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
 	self.positions = {
+		[0] = { screen.width,       screen.height - 480 },
 		{ screen.width,       screen.height - 480 }, 
 		{ screen.width - 853, screen.height - 480 }, 
 		{ screen.width,       screen.height       }, 
 		{ screen.width - 853, screen.height       }
 	}
-	self.positionIndex = 1
+	self.positionIndex = 0
 	BaseDrop = self
 	last=New(_editor_class["Background_Sun"],0,0,_)
 	_connect(self,last,0,false)
@@ -182,6 +201,7 @@ _editor_class["Base_Drop"].init=function(self,_x,_y,_)
 	_connect(self,last,0,false)
 	last=New(_editor_class["Loadout_Select"],0,0,_)
 	_connect(self,last,0,false)
+	last=New(_editor_class["Blackout_Overlay"],self.x,self.y,_)
 end
 _editor_class["Base_Drop"].frame=function(self)
 	if KeyIsPressed"shoot" then
@@ -265,7 +285,7 @@ _editor_class["Title_Logo"]=Class(_object)
 _editor_class["Title_Logo"].init=function(self,_x,_y,_)
 	self.x,self.y=_x,_y
 	self.img="image:TitleLogo"
-	self.layer=LAYER_TOP+1
+	self.layer=LAYER_TOP+100
 	self.group=GROUP_GHOST
 	self.hide=false
 	self.bound=false
@@ -547,120 +567,126 @@ _editor_class["MainMenu_Manager"].init=function(self,_x,_y,_)
 		"image:TitleSelections4"
 	}
 	
-	
+	self.waitTimer = 10
 end
 _editor_class["MainMenu_Manager"].frame=function(self)
 	self.class.base.frame(self)
 	_set_rel_pos(self,0,0,self.rot,false)
 	if BaseDrop.positionIndex == 1 then
-		if self.optionsIn == false then
-			if is_up_held then
-				self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
-				PlaySound("select00",0.1,0,false)
-			end
-			
-			if is_down_held then
-				self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
-				PlaySound("select00",0.1,0,false)
-			end
-			
-			if KeyIsPressed"shoot" then
-				if (self.selectionIndex == 1) then
-					BaseDrop.positionIndex = 3
+		self.waitTimer = self.waitTimer - 1
+		if self.waitTimer <= 0 then
+			if self.optionsIn == false then
+				if is_up_held then
+					self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
+					PlaySound("select00",0.1,0,false)
 				end
-				if (self.selectionIndex == 2) then
-					BaseDrop.positionIndex = 2
+				
+				if is_down_held then
+					self.selectionIndex = Wrap(self.selectionIndex + 1, 1, 5)
+					PlaySound("select00",0.1,0,false)
 				end
-				if (self.selectionIndex == 3) then 
-					self.selectionOptionsIndex = 1
-					self.optionsIn = true;
+				
+				if KeyIsPressed"shoot" then
+					if (self.selectionIndex == 1) then
+						BaseDrop.positionIndex = 3
+					end
+					if (self.selectionIndex == 2) then
+						BaseDrop.positionIndex = 2
+					end
+					if (self.selectionIndex == 3) then 
+						self.selectionOptionsIndex = 1
+						self.optionsIn = true;
+					end
+					if (self.selectionIndex == 4) then
+						stage.QuitGame()
+					end
+					PlaySound("ok00",0.1,0,false)
 				end
-				if (self.selectionIndex == 4) then
-					stage.QuitGame()
+			else
+				if is_up_held then
+					self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex - 1, 1, 7)
+					PlaySound("select00",0.1,0,false)
 				end
-				PlaySound("ok00",0.1,0,false)
-			end
-		else
-			if is_up_held then
-				self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex - 1, 1, 7)
-				PlaySound("select00",0.1,0,false)
-			end
-			
-			if is_down_held then
-				self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex + 1, 1, 7)
-				PlaySound("select00",0.1,0,false)
-			end
-			
-			if self.selectionOptionsIndex == 1 then
-				if is_left_held then self.resolutionPick = Wrap(self.resolutionPick - 1, 1, 8); PlaySound("select00",0.1,0,false) end
-				if is_right_held then self.resolutionPick = Wrap(self.resolutionPick + 1, 1, 8); PlaySound("select00",0.1,0,false) end
-			elseif self.selectionOptionsIndex == 2 then
-				if is_left_held then self.windowed = not self.windowed; PlaySound("select00",0.1,0,false) end
-				if is_right_held then self.windowed = not self.windowed; PlaySound("select00",0.1,0,false) end
-			elseif self.selectionOptionsIndex == 3 then
-				if is_left_held then self.vsync = not self.vsync; PlaySound("select00",0.1,0,false) end
-				if is_right_held then self.vsync = not self.vsync; PlaySound("select00",0.1,0,false) end
-			elseif self.selectionOptionsIndex == 4 then
-				if is_left_held and KeyIsPressed"slow" then
-					self.bgm = Wrap(self.bgm - 1, 0, 101); PlaySound("select00",0.1,0,false)
-				elseif is_left_held then
-					self.bgm = Wrap(self.bgm - 10, 0, 101); PlaySound("select00",0.1,0,false)
+				
+				if is_down_held then
+					self.selectionOptionsIndex = Wrap(self.selectionOptionsIndex + 1, 1, 7)
+					PlaySound("select00",0.1,0,false)
 				end
-				if is_right_held and KeyIsPressed"slow" then
-					self.bgm = Wrap(self.bgm + 1, 0, 101); PlaySound("select00",0.1,0,false)
-				elseif is_right_held then
-					self.bgm = Wrap(self.bgm + 10, 0, 101); PlaySound("select00",0.1,0,false)
-				end
-			elseif self.selectionOptionsIndex == 5 then
-				if is_left_held and KeyIsPressed"slow" then
-					self.sfx = Wrap(self.sfx - 1, 0, 101); PlaySound("select00",0.1,0,false)
-				elseif is_left_held then
-					self.sfx = Wrap(self.sfx - 10, 0, 101); PlaySound("select00",0.1,0,false)
-				end
-				if is_right_held and KeyIsPressed"slow" then
-					self.bgm = Wrap(self.sfx + 1, 0, 101); PlaySound("select00",0.1,0,false)
-				elseif is_right_held then
-					self.sfx = Wrap(self.sfx + 10, 0, 101); PlaySound("select00",0.1,0,false)
-				end
-			end
-			
-			if KeyIsPressed"shoot" then
+				
 				if self.selectionOptionsIndex == 1 then
-					self.resolutionPick = Wrap(self.resolutionPick + 1, 1, 8)
+					if is_left_held then self.resolutionPick = Wrap(self.resolutionPick - 1, 1, 8); PlaySound("select00",0.1,0,false) end
+					if is_right_held then self.resolutionPick = Wrap(self.resolutionPick + 1, 1, 8); PlaySound("select00",0.1,0,false) end
 				elseif self.selectionOptionsIndex == 2 then
-					self.windowed = not self.windowed
+					if is_left_held then self.windowed = not self.windowed; PlaySound("select00",0.1,0,false) end
+					if is_right_held then self.windowed = not self.windowed; PlaySound("select00",0.1,0,false) end
 				elseif self.selectionOptionsIndex == 3 then
-					self.vsync = not self.vsync
+					if is_left_held then self.vsync = not self.vsync; PlaySound("select00",0.1,0,false) end
+					if is_right_held then self.vsync = not self.vsync; PlaySound("select00",0.1,0,false) end
 				elseif self.selectionOptionsIndex == 4 then
-					self.bgm = Wrap(self.bgm + 10, 0, 101)
+					if is_left_held and KeyIsPressed"slow" then
+						self.bgm = Wrap(self.bgm - 1, 0, 101); PlaySound("select00",0.1,0,false)
+					elseif is_left_held then
+						self.bgm = Wrap(self.bgm - 10, 0, 101); PlaySound("select00",0.1,0,false)
+					end
+					if is_right_held and KeyIsPressed"slow" then
+						self.bgm = Wrap(self.bgm + 1, 0, 101); PlaySound("select00",0.1,0,false)
+					elseif is_right_held then
+						self.bgm = Wrap(self.bgm + 10, 0, 101); PlaySound("select00",0.1,0,false)
+					end
 				elseif self.selectionOptionsIndex == 5 then
-					self.sfx = Wrap(self.sfx + 10, 0, 101)
-				elseif self.selectionOptionsIndex == 6 then
-					setting.resx = self.resolutions[self.resolutionPick][1]
-					setting.resy = self.resolutions[self.resolutionPick][2]
-					setting.windowed = self.windowed
-					setting.vsync = self.vsync
-					setting.bgmvolume = self.bgm
-					setting.sevolume = self.sfx
-					SetBGMVolume(setting.bgmvolume * 0.01)
-					SetSEVolume(setting.sevolume * 0.01)
-					saveConfigure()
-					ChangeVideoMode(setting.resx, setting.resy, setting.windowed, setting.vsync)
-					ResetScreen()
-					self.optionsIn = false
+					if is_left_held and KeyIsPressed"slow" then
+						self.sfx = Wrap(self.sfx - 1, 0, 101); PlaySound("select00",0.1,0,false)
+					elseif is_left_held then
+						self.sfx = Wrap(self.sfx - 10, 0, 101); PlaySound("select00",0.1,0,false)
+					end
+					if is_right_held and KeyIsPressed"slow" then
+						self.bgm = Wrap(self.sfx + 1, 0, 101); PlaySound("select00",0.1,0,false)
+					elseif is_right_held then
+						self.sfx = Wrap(self.sfx + 10, 0, 101); PlaySound("select00",0.1,0,false)
+					end
 				end
-				PlaySound("ok00",0.1,0,false)
+				
+				if KeyIsPressed"shoot" then
+					if self.selectionOptionsIndex == 1 then
+						self.resolutionPick = Wrap(self.resolutionPick + 1, 1, 8)
+					elseif self.selectionOptionsIndex == 2 then
+						self.windowed = not self.windowed
+					elseif self.selectionOptionsIndex == 3 then
+						self.vsync = not self.vsync
+					elseif self.selectionOptionsIndex == 4 then
+						self.bgm = Wrap(self.bgm + 10, 0, 101)
+					elseif self.selectionOptionsIndex == 5 then
+						self.sfx = Wrap(self.sfx + 10, 0, 101)
+					elseif self.selectionOptionsIndex == 6 then
+						setting.resx = self.resolutions[self.resolutionPick][1]
+						setting.resy = self.resolutions[self.resolutionPick][2]
+						setting.windowed = self.windowed
+						setting.vsync = self.vsync
+						setting.bgmvolume = self.bgm
+						setting.sevolume = self.sfx
+						SetBGMVolume(setting.bgmvolume * 0.01)
+						SetSEVolume(setting.sevolume * 0.01)
+						saveConfigure()
+						ChangeVideoMode(setting.resx, setting.resy, setting.windowed, setting.vsync)
+						ResetScreen()
+						self.optionsIn = false
+					end
+					PlaySound("ok00",0.1,0,false)
+				end
 			end
+			
+			self.optionsText = {
+				"Resolution: " .. self.resolutions[self.resolutionPick][1] .. "x" .. self.resolutions[self.resolutionPick][2],
+				"\nWindowed: " .. tostring(self.windowed),
+				"\n\nVsync: " .. tostring(self.vsync),
+				"\n\n\nBGM Volume: " .. self.bgm,
+				"\n\n\n\nSFX Volume: " .. self.sfx,
+				"\n\n\n\n\nSave and Apply"
+			}
 		end
 		
-		self.optionsText = {
-			"Resolution: " .. self.resolutions[self.resolutionPick][1] .. "x" .. self.resolutions[self.resolutionPick][2],
-			"\nWindowed: " .. tostring(self.windowed),
-			"\n\nVsync: " .. tostring(self.vsync),
-			"\n\n\nBGM Volume: " .. self.bgm,
-			"\n\n\n\nSFX Volume: " .. self.sfx,
-			"\n\n\n\n\nSave and Apply"
-		}
+	else
+		self.waitTimer = 10
 	end
 end
 _editor_class["MainMenu_Manager"].render=function(self)
@@ -977,7 +1003,7 @@ _editor_class["Act_Select"].init=function(self,_x,_y,_)
 		"Act 3"
 	}
 	self.actShadows = {
-		{{"image:Isaki_Shadow", "image:Isaki_1"}, {"img_void", "img_void"}},
+		{{"image:Isaki_Shadow", "image:Isaki_Highlight"}, {"image:Eternity_Shadow", "image:Eternity_Highlight"}},
 		{{"img_void", "img_void"}, {"img_void", "img_void"}},
 		{{"img_void", "img_void"}, {"img_void", "img_void"}},
 		{{"img_void", "img_void"}, {"img_void", "img_void"}},
@@ -1129,8 +1155,13 @@ _editor_class["Loadout_Select"].frame=function(self)
 				if KeyIsPressed"shoot" then
 					if self.selectionIndex == 1 then
 						lstg.var.equipCard = {}
+						lstg.var.plantCard = {}
 						lstg.var.equipCard[1] = self.equippedPlants[1]
 						lstg.var.equipCard[2] = self.equippedPlants[2]
+						for i = 1, #self.plantedPlants do
+							lstg.var.plantCard[i] = self.plantedPlants[i]
+						end
+						lstg.var.selectedStage = ActSelect.selectionIndex
 						stage.group.Start(stage.groups['Act1'], 0)
 					elseif self.selectionIndex == 2 then
 						self.menuType = 2
@@ -1417,6 +1448,262 @@ _editor_class["Loadout_Select"].render=function(self)
 	
 	SetViewMode'world'
 end
+_editor_class["Blackout_Overlay"]=Class(_object)
+_editor_class["Blackout_Overlay"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="white"
+	self.layer=LAYER_TOP+99
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 853, 480
+	_object.set_color(self,"",255,0,0,0)
+	self.turnOff = false
+	self.alp = 255
+	last=New(_editor_class["Blackout_Fade"],self.x,self.y,_)
+	lasttask=task.New(self,function()
+		while self.turnOff == false do
+			task._Wait(1)
+		end
+		do
+			local _beg_alp=255 local alp=_beg_alp  local _w_alp=0 local _end_alp=0 local _d_w_alp=90/(30-1)
+			for _=1,30 do
+				_object.set_color(self,"",alp,0,0,0)
+				self.alp = alp
+				task._Wait(1)
+				_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)*sin(_w_alp)+(_beg_alp)
+			end
+		end
+		_del(self,true)
+	end)
+end
+_editor_class["Blackout_Overlay"].frame=function(self)
+	if KeyIsPressed"shoot" and self.turnOff == false then
+		BaseDrop.positionIndex = 1
+		self.turnOff = true
+		PlaySound("ok00",0.1,self.x/256,false)
+		PlaySound("changeitem",1,self.x/256,false)
+		LoadMusicRecord("bgm:TitleTheme")
+		_play_music("bgm:TitleTheme")
+	end
+	self.class.base.frame(self)
+end
+_editor_class["Blackout_Overlay"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetFontState("font:trocchi","",Color(self.alp,255,255,255))
+	lstg.RenderText("font:trocchi","Press Shoot\nKey",700,240,1/2.25 - 0.2,5)
+	SetViewMode'world'
+end
+_editor_class["Blackout_Fade"]=Class(_object)
+_editor_class["Blackout_Fade"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="white"
+	self.layer=LAYER_TOP+101
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 853, 480
+	_object.set_color(self,"",255,0,0,0)
+	self.turnOff = false
+	self.alp = 255
+	lasttask=task.New(self,function()
+		do
+			local _beg_alp=255 local alp=_beg_alp  local _w_alp=0 local _end_alp=0 local _d_w_alp=90/(15-1)
+			for _=1,15 do
+				_object.set_color(self,"",alp,0,0,0)
+				self.alp = alp
+				task._Wait(1)
+				_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)*sin(_w_alp)+(_beg_alp)
+			end
+		end
+		_del(self,true)
+	end)
+end
+_editor_class["Blackout_Fade"].frame=function(self)
+	self.class.base.frame(self)
+end
+_editor_class["Blackout_Fade"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["UI_Manager"]=Class(_object)
+_editor_class["UI_Manager"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP+10
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1/2.25, 1/2.25
+	lstg.var.selectedShrub = 1
+	self.repeatSlot = 0
+end
+_editor_class["UI_Manager"].frame=function(self)
+	if KeyIsPressed"spell" then
+		lstg.var.selectedShrub = Wrap(lstg.var.selectedShrub + 1, 1, 3)
+		PlaySound("select00",0.1,0,false)
+	end
+	self.class.base.frame(self)
+end
+_editor_class["UI_Manager"].render=function(self)
+	SetViewMode'ui'
+	self.class.base.render(self)
+	--[[ --- High Score]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements1",753, 440,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:simplymono","",Color(255,200,200,200))
+	lstg.RenderText("font:simplymono",FormatScore(self.timer),753, 440-25,self.hscale - 0.25,5)
+	--[[ ]]
+	
+	--[[ --- Score]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements2",753, 440-50,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:simplymono","",Color(255,255,255,255))
+	lstg.RenderText("font:simplymono",FormatScore(self.timer),753, 440-50-25,self.hscale - 0.25,5)
+	--[[ ]]
+	
+	--[[ --- Lives]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements3",753, 440-100,0,self.hscale, self.vscale,0.5)
+	for _=1,lstg.var.lifeleft do
+		Render("image:HeartIcon",753 - (22 * (lstg.var.lifeleft - 1))/2 + (22 * (_ - 1)), 440-100-25,0,self.hscale - 0.385, self.vscale - 0.385,0.5)
+	end
+	--[[ ]]
+	
+	--[[ --- Point Item]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements4",753, 440-150,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:simplymono","",Color(255,190,190,255))
+	lstg.RenderText("font:simplymono",self.timer,753, 440-150-25,self.hscale - 0.25,5)
+	--[[ ]]
+	
+	--[[ --- Graze]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements5",753, 440-200,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:simplymono","",Color(255,255,255,255))
+	lstg.RenderText("font:simplymono",self.timer,753, 440-200-25,self.hscale - 0.25,5)
+	--[[ ]]
+	
+	--[[ --- Seeds]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements8",753, 440-250,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:simplymono","",Color(255,255,230,180))
+	lstg.RenderText("font:simplymono",self.timer,753, 440-250-25,self.hscale - 0.25,5)
+	--[[ ]]
+	
+	--[[ --- Equipped Shrubs]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements6",100, 440,0,self.hscale, self.vscale,0.5)
+	SetImageState("image:ShopSlot","",Color(255,255,255,255))
+	if lstg.var.selectedShrub == 1 then
+		SetImageState("image:ShopSlot","",Color(255,255,255,255))
+	else
+		SetImageState("image:ShopSlot","",Color(255,100,100,100))
+	end
+	Render("image:ShopSlot",100 - 30, 440 - 50,0,self.hscale  - 0.15, self.vscale - 0.15,0.5)
+	if lstg.var.selectedShrub == 2 then
+		SetImageState("image:ShopSlot","",Color(255,255,255,255))
+	else
+		SetImageState("image:ShopSlot","",Color(255,100,100,100))
+	end
+	Render("image:ShopSlot",100 + 30, 440 - 50,0,self.hscale  - 0.15, self.vscale - 0.15,0.5)
+	if lstg.var.equipCard[1] ~= 0 then
+		if lstg.var.selectedShrub == 1 then
+			SetImageState("image:ShrubsCards" .. lstg.var.equipCard[1],"",Color(255,255,255,255))
+		else
+			SetImageState("image:ShrubsCards" .. lstg.var.equipCard[1],"",Color(255,100,100,100))
+		end
+		Render("image:ShrubsCards" .. lstg.var.equipCard[1],100 - 30, 440 - 50,0,self.hscale  - 0.275, self.vscale - 0.275,0.5)
+	end
+	if lstg.var.equipCard[2] ~= 0 then
+		if lstg.var.selectedShrub == 2 then
+			SetImageState("image:ShrubsCards" .. lstg.var.equipCard[2],"",Color(255,255,255,255))
+		else
+			SetImageState("image:ShrubsCards" .. lstg.var.equipCard[2],"",Color(255,100,100,100))
+		end
+		Render("image:ShrubsCards" .. lstg.var.equipCard[2],100 + 30, 440 - 50,0,self.hscale  - 0.275, self.vscale - 0.275,0.5)
+	end
+	--[[ ]]
+	
+	--[[ --- Planted Shrubs]]
+	
+	--[[ ]]
+	
+	Render("image:UIElements7",100, 440-100,0,self.hscale, self.vscale,0.5)
+	local offsetX = 0;
+	local offsetY = 0;
+	
+	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+		self.repeatSlot = 4
+	elseif lstg.var.selectedStage == 3 then
+		self.repeatSlot = 5
+	elseif lstg.var.selectedStage == 4 then
+		self.repeatSlot = 6
+	end
+	
+	for i = 1, self.repeatSlot do
+		if i % 2 ~= 0 then
+			offsetX = 0
+		else
+			offsetX = 60
+		end
+		if i > 4 then
+			offsetY = 120
+		elseif i > 2 then
+			offsetY = 60
+		end
+		SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+		Render("image:ShopSlotSeller", 70 + offsetX, 440 - 150 - offsetY, self.hscale - 0.15, self.vscale - 0.15)
+		if lstg.var.plantCard[i] ~= 0 then
+			SetImageState("image:ShrubsCards" .. lstg.var.plantCard[i], "", Color(255, 255, 255, 255))
+			Render("image:ShrubsCards" .. lstg.var.plantCard[i], 70 + offsetX, 440 - 150 - offsetY, 0, self.hscale  - 0.275, self.vscale - 0.275)
+		end
+	end
+	--[[ ]]
+	
+	--[[ --- Logo and FPS]]
+	
+	--[[ ]]
+	
+	Render("image:TitleLogo",753, 440-350 + (sin(self.timer) * 4),0,self.hscale - 0.275, self.vscale - 0.275,0.5)
+	SetFontState("font:trocchi","",Color(255,255,255,255))
+	lstg.RenderText("font:trocchi",string.format("%.1ffps", GetFPS()),800, 20,self.hscale - 0.3,0)
+	SetViewMode'world'
+end
 _editor_class["Plant_Manager"]=Class(_object)
 _editor_class["Plant_Manager"].init=function(self,_x,_y,_)
 	self.x,self.y=_x,_y
@@ -1432,14 +1719,204 @@ _editor_class["Plant_Manager"].init=function(self,_x,_y,_)
 	self._servants={}
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1/2.25, 1/2.25
+	function self.HighlightPlant(loopAmount, plantIndex)
+		for i = 1, loopAmount do
+			if lstg.var.plantCard[i] ~= 0 then
+				if i == plantIndex then
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(200, 255, 255, 255))
+				else
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
+				end
+			end
+		end
+	end
+	
+	lstg.var.highlightedPlant = 1
+	
+	function self.PlayerWithinRange(plantIndex)
+		if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+			if player.x > -224 and player.x < -224/2 and plantIndex == 1 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -224/2 and player.x < 0 and plantIndex == 2 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 0 and player.x < 224/2 and plantIndex == 3 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 224/2 and player.x < 224 and plantIndex == 4 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			return false
+		end
+		if lstg.var.selectedStage == 3 then
+			if player.x > -224 and player.x < -134 and plantIndex == 1 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -134 and player.x < -44 and plantIndex == 2 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -44 and player.x < 46 and plantIndex == 3 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 46 and player.x < 136 and plantIndex == 4 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 136 and player.x < 224 and plantIndex == 5 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			return false
+		end
+		if lstg.var.selectedStage == 4 then
+			if player.x > -224 and player.x < -149.4 and plantIndex == 1 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -149.4 and player.x < -74.8 and plantIndex == 2 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -74.8 and player.x < -0.2 and plantIndex == 3 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > -0.2 and player.x < 74.4 and plantIndex == 4 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 74.4 and player.x < 149 and plantIndex == 5 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			if player.x > 149 and player.x < 224 and plantIndex == 6 then
+				lstg.var.highlightedPlant = plantIndex
+				return true
+			end
+			return false
+		end
+	end
+end
+_editor_class["Plant_Manager"].frame=function(self)
+	self.class.base.frame(self)
+	--[[if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+		if player.x > -224 and player.x < -224/2 then
+			self.HighlightPlant(4, 1)
+		end
+		if player.x > -224/2 and player.x < 0 then
+			self.HighlightPlant(4, 2)
+		end
+		if player.x > 0 and player.x < 224/2 then
+			self.HighlightPlant(4, 3)
+		end
+		if player.x > 224/2 and player.x < 224 then
+			self.HighlightPlant(4, 4)
+		end
+	end--]]
 end
 _editor_class["Plant_Manager"].render=function(self)
-	for i = 1, 4 do
-		Render("image:ShrubShadow", -224 + ((i - 1) * 112), -224, 0, self.hscale, self.vscale)
-		Render("image:ShrubsShooters" .. i, -224 + ((i - 1) * 112), -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+		for i = 1, 4 do
+			Render("image:ShrubShadow", -224 + ((i - 1) * 224/2), -224, 0, self.hscale, self.vscale)
+			self.PlayerWithinRange(i)
+			if lstg.var.plantCard[i] ~= 0 then
+				if self.PlayerWithinRange(i) then
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(200, 255, 255, 255))
+				else
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
+				end
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 224/2 + ((i - 1) * 224/2) - 2, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+			end
+		end
+	elseif lstg.var.selectedStage == 3 then
+		for i = 1, 5 do
+			Render("image:ShrubShadow", -224 + ((i - 1) * 224/2.5), -224, 0, self.hscale - (0.2/2.25), self.vscale)
+			self.PlayerWithinRange(i)
+			if lstg.var.plantCard[i] ~= 0 then
+				if self.PlayerWithinRange(i) then
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(200, 255, 255, 255))
+				else
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
+				end
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 90 + ((i - 1) * 90) + 8, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+			end
+		end
+	elseif lstg.var.selectedStage == 4 then
+		for i = 1, 6 do
+			Render("image:ShrubShadow", -224 + ((i - 1) * 224/3), -224, 0, self.hscale - (0.325/2.25), self.vscale)
+			self.PlayerWithinRange(i)
+			if lstg.var.plantCard[i] ~= 0 then
+				if self.PlayerWithinRange(i) then
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(200, 255, 255, 255))
+				else
+					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
+				end
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 74.6 + ((i - 1) * 74.6) + 17, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+			end
+		end
 	end
 	
 	self.class.base.render(self)
+end
+_editor_class["Stage_Sections"]=Class(_object)
+_editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, forceFormation)
+	self.x,self.y=_x,_y
+	self.img="img_void"
+	self.layer=LAYER_TOP
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	StageManager = self
+	self.hasFinished = false
+	self.formationQueueNext = false
+	self.formations = {
+		{1, 2, 3, 4, 5, 6},
+		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{1, 2, 3, 4, 5, 6, 11, 12, 13, 14},
+		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}
+	}
+	function self.finishFormation()
+		self.formationQueueNext = true
+	end
+	function self.startFormation(formationIndex)
+		if formationIndex == 1 then
+			for _=1,_infinite do
+				PlaySound("tan00",0.1,self.x/256,false)
+				last_list=_create_bullet_group(arrow_big,COLOR_RED,self.x,self.y,5,0,3,3,0,360,true,0,true,true,0,false,self)
+				task._Wait(30)
+			end
+			task._Wait(60)
+			self.finishFormation()
+		else
+		end
+	end
+	lasttask=task.New(self,function()
+		for _=1,amount do
+			if forceFormation then
+				self.startFormation(self.formations[4][forceFormation])
+			else
+				self.startFormation(self.formations[stageIndex][ran:Int(1, #self.formations[stageIndex])])
+			end
+			while self.formationQueueNext == false do
+				task._Wait(1)
+			end
+			self.formationQueueNext = false
+		end
+	end)
 end
 _editor_class["Base_Shot"]=Class(_object)
 _editor_class["Base_Shot"].init=function(self,_x,_y,_)
@@ -1464,6 +1941,7 @@ _editor_class["Base_Shot"].colli=function(self)
 	self.class.base.colli(self)
 end
 _editor_class["Base_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Marisa_Shot")
 end
 _editor_class["Base_Shot"].del=function(self)
 	self.class.base.del(self)
@@ -1491,6 +1969,7 @@ _editor_class["Earth_Shot"].colli=function(self)
 	self.class.base.colli(self)
 end
 _editor_class["Earth_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Earth_Shot")
 end
 _editor_class["Earth_Shot"].del=function(self)
 	self.class.base.del(self)
@@ -1529,6 +2008,7 @@ _editor_class["Fire_Shot"].colli=function(self)
 	self.class.base.colli(self)
 end
 _editor_class["Fire_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Fire_Shot")
 end
 _editor_class["Fire_Shot"].del=function(self)
 	self.class.base.del(self)
@@ -1567,6 +2047,7 @@ _editor_class["Ice_Shot"].colli=function(self)
 	self.class.base.colli(self)
 end
 _editor_class["Ice_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Ice_Shot")
 end
 _editor_class["Ice_Shot"].del=function(self)
 	self.class.base.del(self)
@@ -1609,6 +2090,41 @@ _editor_class["Lightning_Shot"].kill=function(self)
 end
 _editor_class["Lightning_Shot"].del=function(self)
 	self.class.base.del(self)
+end
+_editor_class["Shot_Effect"]=Class(_object)
+_editor_class["Shot_Effect"].init=function(self,_x,_y,ang, img)
+	self.x,self.y=_x,_y
+	self.img=img .. 1
+	self.layer=LAYER_PLAYER_BULLET+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1/4, 1/4
+	self.rot = ran:Int(-2, 2) + ang
+	_object.set_color(self,"mul+add",155,255,255,255)
+	lasttask=task.New(self,function()
+		for _=1,4 do
+			self.img = img .. _
+			task._Wait(2)
+		end
+	end)
+	lasttask=task.New(self,function()
+		do
+			local _beg_alp=155 local alp=_beg_alp  local _w_alp=0 local _end_alp=0 local _d_w_alp=90/(10-1)
+			for _=1,10 do
+				_object.set_color(self,"mul+add",alp,255,255,255)
+				task._Wait(4)
+				_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)*sin(_w_alp)+(_beg_alp)
+			end
+		end
+		_del(self,true)
+	end)
 end
 Marisa=Class(player_class)
 Marisa.init=function(self)
@@ -1671,6 +2187,7 @@ Marisa.init=function(self)
 		else
 		end
 	end
+	player.nextspell = 999999999
 end
 Marisa.frame=function(self)
 	task.Do(self)	player_class.frame(self)
@@ -1719,6 +2236,8 @@ Marisa.frame=function(self)
 		self.broomlerp = LerpDecel(self.broomlerp, 0, 0.1)
 		self.torsolerp = LerpDecel(self.torsolerp, 0, 0.1)
 	end
+	self.options = {lstg.var.equipCard[1], lstg.var.equipCard[2]}
+	
 	if KeyIsDown"slow" == false then
 		self.optionCurrentPosition[1][1] = LerpDecel(self.optionCurrentPosition[1][1], self.optionPosition[1][1], 0.1)
 		self.optionCurrentPosition[1][2] = LerpDecel(self.optionCurrentPosition[1][2], self.optionPosition[1][2], 0.1)
@@ -1800,36 +2319,68 @@ Marisa.shoot=function(self)
 	self.optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
 end
 Marisa.spell=function(self)
-	player.nextspell = 120
-	PlaySound("nep00",0.8,self.x/1024,false)
-	New(player_spell_mask,255,255,255,30,60,30)
 end
 Marisa.special=function(self)
-	player.nextsp = 120
+	player.nextsp = 20
 	PlaySound("slash",0.8,self.x/1024,false)
+	local optionSel = lstg.var.equipCard[lstg.var.selectedShrub]
+	local plantSel = lstg.var.plantCard[lstg.var.highlightedPlant]
+	
+	lstg.var.equipCard[lstg.var.selectedShrub] = plantSel
+	lstg.var.plantCard[lstg.var.highlightedPlant] = optionSel
 end
-table.insert(player_list, {'Marisa Kirisame','Marisa','Marisa'})_editor_class["Boss"]=Class(boss)
-_editor_class["Boss"].cards={}
-_editor_class["Boss"].name="Name"
-_editor_class["Boss"].bgm=""
-_editor_class["Boss"]._bg=nil
-_editor_class["Boss"].difficulty="All"
-_editor_class["Boss"].init=function(self,cards)
-	boss.init(self,240,384,_editor_class["Boss"].name,cards,New(spellcard_background),_editor_class["Boss"].difficulty)
+table.insert(player_list, {'Marisa Kirisame','Marisa','Marisa'})_editor_class["Eternity"]=Class(boss)
+_editor_class["Eternity"].cards={}
+_editor_class["Eternity"].name="Eternity Larva"
+_editor_class["Eternity"].bgm=""
+_editor_class["Eternity"]._bg=nil
+_editor_class["Eternity"].difficulty="All"
+_editor_class["Eternity"].init=function(self,cards)
+	boss.init(self,240,384,_editor_class["Eternity"].name,cards,New(spellcard_background),_editor_class["Eternity"].difficulty)
+	self._wisys = BossWalkImageSystem(self)
+	self._wisys:SetImage("Eternity_Boss.png",3,4,{4,4,4},{1,2},6,16,16)
+	self.hscale, self.vscale = 1/2.25, 1/2.25
 end
-_tmp_sc=boss.card.New("",2,5,60,1800,{0,0,0},false)
+_tmp_sc=boss.card.New("bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",2,5,25,1800,{0,0,0},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
+		self.timeDie = 25 * 60
+		for _=1,_infinite do
+			task._Wait(1)
+		end
+	end)
+	lasttask=task.New(self,function()
 		task.MoveTo(0,122,60,MOVE_NORMAL)
+		do
+			local _h_a=(100-(-100))/2 local _t_a=(100+(-100))/2 local a=_h_a*sin(0)+_t_a local _w_a=0 local _d_w_a=1.5
+			for _=1,_infinite do
+				self.x,self.y=a,self.y
+				task._Wait(1)
+				_w_a=_w_a+_d_w_a a=_h_a*sin(_w_a)+_t_a
+			end
+		end
 	end)
 end
 function _tmp_sc:del()
 end
 _tmp_sc.perform=false
-table.insert(_editor_class["Boss"].cards,_tmp_sc)
-
+table.insert(_editor_class["Eternity"].cards,_tmp_sc)
+table.insert(_sc_table,{"Eternity","bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",_tmp_sc,#_editor_class["Eternity"].cards,false})
+_tmp_sc=boss.card.New("「」",2,5,60,1800,{0,0,0},false)
+function _tmp_sc:before()
+end
+function _tmp_sc:init()
+	lasttask=task.New(self,function()
+		task.MoveTo(0,120,60,MOVE_NORMAL)
+	end)
+end
+function _tmp_sc:del()
+end
+_tmp_sc.perform=false
+table.insert(_editor_class["Eternity"].cards,_tmp_sc)
+table.insert(_sc_table,{"Eternity","「」",_tmp_sc,#_editor_class["Eternity"].cards,false})
 -- Title Screen
 	stage_init = stage.New("menu", true, true)
 	function stage_init:init()
@@ -1864,14 +2415,16 @@ stage.group.DefStageFunc('Scene@Act1','init',function(self)
 	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
 	lasttask=task.New(self,function()
 		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
-		New(_editor_class["temple_background"] or temple_background)
+		lstg.var.lifeleft = 2
+		New(_editor_class["magic_forest_background"] or magic_forest_background)
 		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
+		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
 		task._Wait(60)
 		local _boss_wait=true
-		local _ref=New(_editor_class["Boss"],_editor_class["Boss"].cards)
+		local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
 		last=_ref
 		if _boss_wait then while IsValid(_ref) do task.Wait() end end
-		task._Wait(180)
+		task._Wait(9999999)
 	end)
 	task.New(self,function()
 		while coroutine.status(self.task[1])~='dead' do task.Wait() end

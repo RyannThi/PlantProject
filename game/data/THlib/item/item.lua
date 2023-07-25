@@ -168,9 +168,9 @@ function item_faith:init(x, y)
     item.init(self, x, y, 5)
 end
 function item_faith:collect()
-    local var = lstg.var
-    New(float_text, 'item', '10000', self.x, self.y + 6, 0.75, 90, 60, 0.5, 0.5, Color(0x8000C000), Color(0x0000C000))
-    var.faith = var.faith + 100
+    --local var = lstg.var
+    --New(float_text, 'item', '10000', self.x, self.y + 6, 0.75, 90, 60, 0.5, 0.5, Color(0x8000C000), Color(0x0000C000))
+    scoredata.seedAmount = scoredata.seedAmount + 1
 end
 
 item_faith_minor = Class(object)

@@ -1,13 +1,4 @@
 {
-	"seedAmount": 11000,
-	"attemptCount": [
-		0,
-		0,
-		0
-	],
-	"hiscore": {
-		"Scene@Act1@Marisa": 433400
-	},
 	"shrubLevelUp": [
 		1,
 		1,
@@ -18,25 +9,8 @@
 		1,
 		1
 	],
-	"spell_card_hist": {
-		"All": {
-			"「」": {
-				"Marisa": [
-					1,
-					9
-				]
-			},
-			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
-				"Marisa": [
-					4,
-					35
-				],
-				"marisa_player": [
-					0,
-					1
-				]
-			}
-		}
+	"hiscore": {
+		"Scene@Act1@Marisa": 1686420
 	},
 	"clearCount": [
 		[
@@ -52,14 +26,40 @@
 			0
 		]
 	],
+	"attemptCount": [
+		0,
+		0,
+		0
+	],
 	"ownedCards": [
-		0,
-		10,
-		3,
-		0,
 		1,
-		1,
-		11,
-		4
-	]
+		18,
+		4,
+		0,
+		8,
+		2,
+		29,
+		9
+	],
+	"seedAmount": 3480,
+	"spell_card_hist": {
+		"All": {
+			"「」": {
+				"Marisa": [
+					4,
+					20
+				]
+			},
+			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
+				"Marisa": [
+					6,
+					82
+				],
+				"marisa_player": [
+					0,
+					1
+				]
+			}
+		}
+	}
 }

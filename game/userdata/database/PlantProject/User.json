@@ -9,9 +9,43 @@
 		1,
 		1
 	],
-	"hiscore": {
-		"Scene@Act1@Marisa": 1686420
+	"spell_card_hist": {
+		"All": {
+			"「」": {
+				"Marisa": [
+					20,
+					25
+				]
+			},
+			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
+				"Marisa": [
+					22,
+					45
+				]
+			}
+		}
 	},
+	"ownedCards": [
+		0,
+		2,
+		1,
+		2,
+		0,
+		1,
+		1,
+		1
+	],
+	"hiscore": {
+		"Scene@Act2@Marisa": 0,
+		"Scene@Act1@Marisa": 3370600,
+		"Scene@Act0@Marisa": 4231890
+	},
+	"seedAmount": 20002,
+	"attemptCount": [
+		0,
+		0,
+		0
+	],
 	"clearCount": [
 		[
 			0,
@@ -25,41 +59,5 @@
 			0,
 			0
 		]
-	],
-	"attemptCount": [
-		0,
-		0,
-		0
-	],
-	"ownedCards": [
-		1,
-		18,
-		4,
-		0,
-		8,
-		2,
-		29,
-		9
-	],
-	"seedAmount": 3480,
-	"spell_card_hist": {
-		"All": {
-			"「」": {
-				"Marisa": [
-					4,
-					20
-				]
-			},
-			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
-				"Marisa": [
-					6,
-					82
-				],
-				"marisa_player": [
-					0,
-					1
-				]
-			}
-		}
-	}
+	]
 }

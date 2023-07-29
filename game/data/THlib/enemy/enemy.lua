@@ -75,34 +75,37 @@ function enemybase:frame()
 end
 
 function enemybase:colli(other)
-    if other.dmg then
-        lstg.var.score = lstg.var.score + 10
-        local dmg = other.dmg
-        Damage(self, dmg)
-        if self._master and self._dmg_transfer and IsValid(self._master) then
-            Damage(self._master, dmg * self._dmg_transfer)
-        end
-    end
-    other.killerenemy = self
-    if not (other.killflag) then
-        Kill(other)
-    end
-    if not other.mute then
-        if self.dmg_factor then
-            if self.hp > 100 then
-                PlaySound('damage00', 0.4, self.x / 200)
-            else
-                PlaySound('damage01', 0.6, self.x / 200)
+    if other.plantShot or self.group == GROUP_ENEMY then
+        if self == _boss and other.plantShot then return end
+        if other.dmg then
+            lstg.var.score = lstg.var.score + 10
+            local dmg = other.dmg
+            Damage(self, dmg)
+            if self._master and self._dmg_transfer and IsValid(self._master) then
+                Damage(self._master, dmg * self._dmg_transfer)
             end
-        else
-            if self.hp > 60 then
-                if self.hp > self.maxhp * 0.2 then
+        end
+        other.killerenemy = self
+        if not (other.killflag) then
+            Kill(other)
+        end
+        if not other.mute then
+            if self.dmg_factor then
+                if self.hp > 100 then
                     PlaySound('damage00', 0.4, self.x / 200)
                 else
                     PlaySound('damage01', 0.6, self.x / 200)
                 end
             else
-                PlaySound('damage00', 0.35, self.x / 200, true)
+                if self.hp > 60 then
+                    if self.hp > self.maxhp * 0.2 then
+                        PlaySound('damage00', 0.4, self.x / 200)
+                    else
+                        PlaySound('damage01', 0.6, self.x / 200)
+                    end
+                else
+                    PlaySound('damage00', 0.35, self.x / 200, true)
+                end
             end
         end
     end

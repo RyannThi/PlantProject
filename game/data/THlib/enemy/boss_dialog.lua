@@ -135,7 +135,7 @@ end
 --！警告：未适配宽屏等非传统版面
 dialog_displayer = Class(object)
 function dialog_displayer:init(p_dialog)
-    self.layer = LAYER_TOP + 9
+    self.layer = LAYER_TOP + 11
     self.char = {}
     self.char[1] = {}
     self.char[-1] = {}
@@ -381,7 +381,7 @@ end
 boss.dialog.character = Class(object)
 local character = boss.dialog.character
 function character:init(img, pos, x, y, vs, hs, num)
-    self.layer = LAYER_TOP + 9
+    self.layer = LAYER_TOP + 11
     self.bound = false
     self.pos = pos
     self.x, self.y = x, y
@@ -402,11 +402,11 @@ function character:frame()
     task.Do(self)
     local v = 1.25 --移动速率
     if self.act then
-        self.layer = LAYER_TOP + 9-- + self.num
+        self.layer = LAYER_TOP + 11-- + self.num
         self.t = min(self.t + v, 16)
         self.cnm = sin((self.t) * (90 / 16)) ^ 2--阿塔拉希no函数式，我爽了你呢
     else
-        self.layer = LAYER_TOP + 8-- + self.num
+        self.layer = LAYER_TOP + 11-- + self.num
         self.t = max(self.t - v, 0)
         self.cnm = sin((self.t) * (90 / 16)) ^ 2
     end

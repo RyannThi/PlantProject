@@ -14,11 +14,11 @@ function temple_background:init()
 	Set3D('up',0,1,0)
 	Set3D('z',1,10)
 	--Set3D('z',1,100)
-	Set3D('fovy',0.6)
-	Set3D('fog',5,10,Color(0xFFFFFFFF))
+	Set3D('fovy',0.5)
+	Set3D('fog',5,10.40,Color(255, 128, 245, 211))
 	--Set3D('fog',100,1000,Color(0xFFFFFFFF))
 	--
-	self.speed=0.02
+	self.speed=0.015
 	self.z=0
 end
 

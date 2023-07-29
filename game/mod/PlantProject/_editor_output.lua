@@ -68,6 +68,67 @@ SetSplash(true)
 	    return a + (b - a) * t
 	end
 
+-- Death Weapon Alt
+	death_weapon_alt = Class(object)
+	
+	function death_weapon_alt:init(x, y, dmg)
+	    self.x = x
+	    self.y = y
+	    self._dmg = dmg
+	    self.group = GROUP_GHOST
+	    self.hide = true
+	end
+	
+	function death_weapon_alt:frame()
+	    if self.timer >= 90 then
+	        Del(self)
+	    end
+	    for i, o in ObjList(GROUP_ENEMY) do
+	        if o.colli == true then
+	            if Dist(self, o) < 40 and self.timer < 30 then
+	                Damage(o, self._dmg)
+	                if o.dmgsound == 1 then
+	                    if o.dmg_factor then
+	                        if o.hp > 100 then
+	                            PlaySound('damage00', 0.3, o.x / 200)
+	                        else
+	                            PlaySound('damage01', 0.6, o.x / 200)
+	                        end
+	                    else
+	                        if o.hp > o.maxhp * 0.2 then
+	                            PlaySound('damage00', 0.3, o.x / 200)
+	                        else
+	                            PlaySound('damage01', 0.8, o.x / 200)
+	                        end
+	                    end
+	                end
+	            end
+	        end
+	    end
+	    for i, o in ObjList(GROUP_NONTJT) do
+	        if o.colli == true then
+	            if Dist(self, o) < 40 and self.timer < 30 then
+	                Damage(o, self._dmg)
+	                if o.dmgsound == 1 then
+	                    if o.dmg_factor then
+	                        if o.hp > 100 then
+	                            PlaySound('damage00', 0.3, o.x / 200)
+	                        else
+	                            PlaySound('damage01', 0.6, o.x / 200)
+	                        end
+	                    else
+	                        if o.hp > o.maxhp * 0.2 then
+	                            PlaySound('damage00', 0.3, o.x / 200)
+	                        else
+	                            PlaySound('damage01', 0.8, o.x / 200)
+	                        end
+	                    end
+	                end
+	            end
+	        end
+	    end
+	end
+
 -- Format Score
 	function FormatScore(num)
 	    local str = string.format('%012d', num)
@@ -75,6 +136,7 @@ SetSplash(true)
 	            str:sub(1,3), str:sub(4,6),str:sub(7,9),str:sub(10,12))
 	end
 
+Include'Vector.lua'
 -- archive space: MUSIC\
 MusicRecord('bgm:'..'TitleTheme','MUSIC\\TitleTheme.ogg',0,0)
 -- archive space: 
@@ -222,6 +284,9 @@ _LoadImageFromFile('image:'..'legr','SPRITES\\MARISA\\legr.png',true,0,0,false,0
 _LoadImageFromFile('image:'..'skirt','SPRITES\\MARISA\\skirt.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'torso','SPRITES\\MARISA\\torso.png',true,0,0,false,0)
 _LoadImageFromFile('image:'..'waist_ribbon','SPRITES\\MARISA\\waist_ribbon.png',true,0,0,false,0)
+MarisaWigNode=(64)
+_LoadImageGroupFromFile('image:'..'wig','SPRITES\\MARISA\\wig.png',false,1,MarisaWigNode,0,0,false)
+SetTextureSamplerState("image:wig", "linear+wrap")
 _LoadImageGroupFromFile('image:'..'Marisa_Shot','SPRITES\\MARISA\\Marisa_Shot.png',true,4,1,0,0,false)
 _LoadImageFromFile('image:'..'Hakkero','SPRITES\\MARISA\\Hakkero.png',true,0,0,false,0)
 _LoadImageGroupFromFile('image:'..'Fire_Shot','SPRITES\\MARISA\\Fire_Shot.png',true,4,1,0,0,false)
@@ -229,6 +294,10 @@ _LoadImageGroupFromFile('image:'..'Earth_Shot','SPRITES\\MARISA\\Earth_Shot.png'
 _LoadImageGroupFromFile('image:'..'Ice_Shot','SPRITES\\MARISA\\Ice_Shot.png',true,4,1,0,0,false)
 _LoadImageFromFile('image:'..'Lightning_Ray','SPRITES\\MARISA\\Lightning_Ray.png',true,0,0,false,0)
 SetImageCenter("image:Lightning_Ray",0, 32)
+_LoadImageGroupFromFile('image:'..'Poison_Shot','SPRITES\\MARISA\\Poison_Shot.png',true,4,1,0,0,false)
+_LoadImageGroupFromFile('image:'..'Water_Shot','SPRITES\\MARISA\\Water_Shot.png',true,4,1,0,0,false)
+_LoadImageGroupFromFile('image:'..'Wind_Shot','SPRITES\\MARISA\\Wind_Shot.png',true,4,1,0,0,false)
+_LoadImageGroupFromFile('image:'..'Metal_Shot','SPRITES\\MARISA\\Metal_Shot.png',true,4,1,0,0,false)
 -- archive space: 
 _editor_class["Base_Drop"]=Class(_object)
 _editor_class["Base_Drop"].init=function(self,_x,_y,_)
@@ -532,12 +601,15 @@ _editor_class["Title_Cliff"].init=function(self,_x,_y,_)
 	self._servants={}
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1 / 2.25, 1 / 2.25
+	for _=1,160 do
+		last=New(_editor_class["Title_Leaf"],ran:Int(-500, 853*2), ran:Float(700, 900),{ran:Int(-1400, 853*2), ran:Float(700, -900)})
+	end
 end
 _editor_class["Title_Cliff"].frame=function(self)
 	self.class.base.frame(self)
 	_set_rel_pos(self,0,0,self.rot,false)
-	if self.timer % 25 == 0 then
-		last=New(_editor_class["Title_Leaf"],853*2 + 35, ran:Float(700, 900),_)
+	if self.timer % 17 == 0 then
+		last=New(_editor_class["Title_Leaf"],853*2 + 35, ran:Float(700, 900),{0,0})
 	else
 	end
 end
@@ -596,7 +668,7 @@ _editor_class["Title_BGM"].render=function(self)
 	SetViewMode'world'
 end
 _editor_class["Title_Leaf"]=Class(_object)
-_editor_class["Title_Leaf"].init=function(self,_x,_y,_)
+_editor_class["Title_Leaf"].init=function(self,_x,_y,posaddon)
 	self.x,self.y=_x,_y
 	self.img="image:TitleLeaves" .. ran:Int(1, 9)
 	self.layer=LAYER_TOP
@@ -612,13 +684,14 @@ _editor_class["Title_Leaf"].init=function(self,_x,_y,_)
 	self.scale = ran:Float(-0.3, -0.45)
 	self.xspeed = ran:Float(1, 2)
 	self.yspeed = ran:Float(1, 0.1)
+	self.posaddon = posaddon
 	self.hscale, self.vscale = (1 / 2.25) + self.scale, (1 / 2.25) + self.scale
 	self.vx, self.vy = ran:Float(-1, -2), ran:Float(-1, -0.1)
 	self.omiga = ran:Float(-1, 1)
 end
 _editor_class["Title_Leaf"].frame=function(self)
-	self.x = BaseDrop.x - self.timer * self.xspeed + 853 * 2
-	self.y = BaseDrop.y - self.timer * self.yspeed + 853
+	self.x = BaseDrop.x - self.timer * self.xspeed + 853 * 2 - self.posaddon[1]
+	self.y = BaseDrop.y - self.timer * self.yspeed + 853 - self.posaddon[2]
 	if self.x <= -853 then
 		_del(self,true)
 	else
@@ -630,7 +703,7 @@ _editor_class["Title_Leaf"].render=function(self)
 	self.class.base.render(self)
 	SetViewMode'world'
 end
---[[ ]]
+--[[ No Comments]]
 
 _editor_class["MainMenu_Manager"]=Class(_object)
 _editor_class["MainMenu_Manager"].init=function(self,_x,_y,_)
@@ -920,17 +993,18 @@ _editor_class["Shop_Manager"].init=function(self,_x,_y,_)
 	}
 	
 	self.shrubDmg = {
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
-		{4, 6, 8},
+		{0, 10, 10, "Max"},
+		{0, 23, 30, "Max"},
+		{0, 14, 13, "Max"},
+		{0, 19, 8, "Max"},
+		{0, 25, 20, "Max"},
+		{0, 25, 32, "Max"},
+		{0, 16, 20, "Max"},
+		{0, 15, 25, "Max"},
 	}
 	
 	self.shrubDesc = {
+		[0] = "aaa",
 		"The basic plant. \nNothing much special, \nbut packs decent strength.",
 		"The water plant. \nSplish splash! A little \nweak, but splashes enemies in area.",
 		"The fire plant. \nFerocious, but small ranged. \nGreat damage but weak reach.",
@@ -942,24 +1016,35 @@ _editor_class["Shop_Manager"].init=function(self,_x,_y,_)
 	}
 	
 	self.shrubInfoCosts = {
-		{1000, 5000, 6000}, -- prices > earth (first is buy price)
-		{1500, 5000, 6000}, -- prices > earth (first is buy price)
-		{2000, 5000, 6000}, -- prices > earth (first is buy price)
-		{1600, 5000, 6000}, -- prices > earth (first is buy price)
-		{3000, 5000, 6000}, -- prices > earth (first is buy price)
-		{1200, 5000, 6000}, -- prices > earth (first is buy price)
-		{1100, 5000, 6000}, -- prices > earth (first is buy price)
-		{1400, 5000, 6000} -- prices > earth (first is buy price)
+		{100, 300, 350, 0}, -- prices > earth (first is buy price)
+		{150, 350, 380, 0}, -- prices > water (first is buy price)
+		{170, 375, 400, 0}, -- prices > fire (first is buy price)
+		{120, 320, 380, 0}, -- prices > ice (first is buy price)
+		{130, 340, 360, 0}, -- prices > poison (first is buy price)
+		{130, 300, 340, 0}, -- prices > lightning (first is buy price)
+		{110, 310, 340, 0}, -- prices > wind (first is buy price)
+		{130, 360, 390, 0}  -- prices > metal (first is buy price)
 	} -- shrub types
 	
 	self.yuukaTalk = {
 		"Welcome to my stand! There's \nquite a bit of variety I'd say.",
-		"If you'd like, I could help you \nout by enhancing these things."
+		"If you'd like, I could help you \nout by enhancing these things.",
+		"Honestly, it's kinda boring \nrunning this...",
+		"These shrubs are so peculiar.\nI wonder why they're all over...",
+		"The earth shrub's the most \nnatural looking one, I guess.",
+		"The water shrub's all slimy!\nI haven't drinking from it, though.",
+		"The fire shrub's pretty hot.\nBe careful not to burn yourself.",
+		"The ice shrub's super spiky.\nIt could burn you too, beware.",
+		"The poison shrub has such a\ngood smell...",
+		"The lightning shrub is tingly.\nIt's quite hard to harvest.",
+		"The wind shrub is so curvy.\nIt keeps escaping my grasp.",
+		"The metal plant is the heaviest.\nI can barely hold it."
 	}
 	
 	self.yuukaTalkIndex = ran:Int(1, #self.yuukaTalk)
 	
-	scoredata.shrubLevelUp = {1, 1, 1, 1, 1, 1, 1, 1}
+	if not scoredata.shrubLevelUp then scoredata.shrubLevelUp = {1, 1, 1, 1, 1, 1, 1, 1} end
+	scoredata.seedAmount = 20002
 end
 _editor_class["Shop_Manager"].frame=function(self)
 	self.class.base.frame(self)
@@ -987,12 +1072,28 @@ _editor_class["Shop_Manager"].frame=function(self)
 		
 		if BaseDrop.x < 20 then
 			if KeyIsPressed"shoot" then
-				scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] = scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] + 1
-				scoredata.seedAmount = scoredata.seedAmount + 20
-				PlaySound("ok00",0.1,0,false)
-				PlaySound("astralup",0.8,0,false)
-				PlaySound("nice",0.8,0,false)
-				PlaySound("item01",0.8,0,false)
+				if scoredata.seedAmount >= self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][1] then
+					scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] = scoredata.ownedCards[Wrap(self.selectionIndex, 1, 9)] + 1
+					scoredata.seedAmount = scoredata.seedAmount - self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][1]
+					PlaySound("ok00",0.1,0,false)
+					PlaySound("astralup",0.8,0,false)
+					PlaySound("nice",0.8,0,false)
+					PlaySound("item01",0.8,0,false)
+				else
+					PlaySound("invalid", 0.1, 0, false)
+				end
+			end
+			if KeyIsPressed"special" and scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] < 3 then
+				if scoredata.seedAmount >= self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1] then
+					scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] = scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1
+					scoredata.seedAmount = scoredata.seedAmount - self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)]]
+					PlaySound("ok00",0.1,0,false)
+					PlaySound("astralup",0.8,0,false)
+					PlaySound("nice",0.8,0,false)
+					PlaySound("item01",0.8,0,false)
+				else
+					PlaySound("invalid", 0.1, 0, false)
+				end
 			end
 		end
 		
@@ -1079,7 +1180,7 @@ _editor_class["Shop_Manager"].render=function(self)
 	lstg.RenderText("font:trocchi", self.shrubNames[Wrap(self.selectionIndex, 1, 9)], self.x + 670, self.y + 222, self.hscale - 0.2, 5)
 	lstg.RenderText("font:trocchi",
 	"Current Level: ".. scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] ..
-	"\nAttack DMG: " .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)]] .. ">" .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1] ..
+	"\nAttack DMG: " .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)]] .. "%>" .. self.shrubDmg[Wrap(self.selectionIndex, 1, 9)][scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] + 1] .. "%" ..
 	"\nPress Shoot to Buy\nPress Special to Upgrade" ..
 	"\n\n" .. self.shrubDesc[Wrap(self.selectionIndex, 1, 9)]
 	, self.x + 500, self.y + 190, self.hscale - 0.3, 0)
@@ -1096,7 +1197,7 @@ _editor_class["Shop_Manager"].render=function(self)
 		"Your seeds: " .. scoredata.seedAmount ..
 		"\nBuy price: " .. self.shrubInfoCosts[Wrap(self.selectionIndex, 1, 9)][1] ..
 		"\nCurrent shrub level: " .. scoredata.shrubLevelUp[Wrap(self.selectionIndex, 1, 9)] ..
-		"\nUpgrade price: " .. "Max Amount Reached"
+		"\nUpgrade price: " .. "Max"
 		, self.x + 680, self.y + 190, self.hscale - 0.3, 0)
 	end
 	
@@ -1203,7 +1304,7 @@ _editor_class["Act_Select"].render=function(self)
 	end
 	
 	SetFontState("font:trocchi", "", Color(255,255,255,255))
-	
+	if not scoredata.hiscore then scoredata.hiscore = {} end
 	if self.selectionIndex > 1 then
 		lstg.RenderText("font:trocchi",
 		"Attempt Times\n" .. scoredata.attemptCount[self.selectionIndex-1] ..
@@ -1259,6 +1360,7 @@ _editor_class["Loadout_Select"].init=function(self,_x,_y,_)
 	self.slotCardOffsetInventory = {0, 0, 0, 0, 0, 0, 0, 0}
 	self.slotCardOffsetPlant = {0, 0, 0, 0, 0, 0}
 	self.takeOff = false
+	self.wiglerp = 0
 end
 _editor_class["Loadout_Select"].frame=function(self)
 	self.class.base.frame(self)
@@ -1286,7 +1388,7 @@ _editor_class["Loadout_Select"].frame=function(self)
 							lstg.var.plantCard[i] = self.plantedPlants[i]
 						end
 						lstg.var.selectedStage = ActSelect.selectionIndex
-						stage.group.Start(stage.groups['Act1'], 0)
+						stage.group.Start(stage.groups['Act' .. ActSelect.selectionIndex - 1], 0)
 					elseif self.selectionIndex == 2 then
 						self.menuType = 2
 					elseif self.selectionIndex == 3 then
@@ -1454,7 +1556,44 @@ _editor_class["Loadout_Select"].render=function(self)
 	Render("image:arml",   self.x - 5 + self.mPos.x, self.y - 4 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
 	Render("image:armr",   self.x + 5 + self.mPos.x, self.y - 4 - self.mPos.y,  0,                             self.hscale - 0.2, self.vscale - 0.2)
 	Render("image:skirt",  self.x + self.mPos.x,     self.y - 16 - self.mPos.y,  0 + (sin(self.timer * 3) * 8), self.hscale - 0.2, self.vscale - 0.2)
-	Render("image:hair",   self.x + self.mPos.x,     self.y + 10 - self.mPos.y, 0 + (sin(self.timer * 6) * 6), self.hscale - 0.2, self.vscale - 0.2)
+	--Render("image:hair",   self.x + self.mPos.x,     self.y + 10 - self.mPos.y, 0 + (sin(self.timer * 6) * 6), self.hscale - 0.2, self.vscale - 0.2)
+	
+	local n = MarisaWigNode
+	local wigsizew, wigsizeh = 72 * self.hscale * 0.65, 168 * self.vscale * 0.65
+	local anchor = Vector(0,18) + Vector.fromAngle(-90+self.wiglerp) * 29 * self.hscale
+	local wigflow, wigspeed, wigstrength, wigstrengthmove, wigmove = 40, 5, 60, 16, 2
+	local pos = Vector(0,0)
+	local prevpos = Vector(0,0)
+	local prevnormal = Vector(-1,0)
+	local prevang = -90 - 5 * self.wiglerp
+	local ang = 0
+	for i=1,n do
+		local t = i/n
+		local fxt = 1-math.pow(1-t,2)
+		local wigstr = LerpDecel(wigstrength/n,wigstrengthmove/n,math.abs(self.wiglerp))
+		ang = prevang + fxt * wigstr * sin(fxt * wigflow + self.timer * wigspeed)
+		ang = ang + wigmove * self.wiglerp * fxt
+		local pos = prevpos + wigsizeh/n * Vector.fromAngle(ang)
+		local off = (pos-prevpos).normalized
+		local normal = off:perpendicular()
+		local finalpos = Vector(self.x + self.mPos.x,self.y + 10 - self.mPos.y) + anchor + pos
+		local finalprev = Vector(self.x + self.mPos.x,self.y + 10 - self.mPos.y) + anchor + prevpos
+		
+		local vlt = finalprev - prevnormal * wigsizew
+		local vrt = finalprev + prevnormal * wigsizew
+		local vrb = finalpos  + normal * wigsizew
+		local vlb = finalpos  - normal * wigsizew
+		Render4V("image:wig"..i,
+				vlt.x, vlt.y,0,
+				vrt.x, vrt.y,0,
+				vrb.x, vrb.y,0,
+				vlb.x, vlb.y,0)
+		
+		prevpos = pos
+		prevnormal = normal
+		prevang = ang
+	end
+	
 	Render("image:hat",    self.x + self.mPos.x,     self.y + 14 - self.mPos.y, 0,                             self.hscale - 0.2, self.vscale - 0.2)
 	Render("image:hattop", self.x + self.mPos.x,     self.y + 24 - self.mPos.y, 0 + (sin(self.timer) * 10),    self.hscale - 0.2, self.vscale - 0.2)
 	
@@ -1852,6 +1991,41 @@ _editor_class["Plant_Manager"].init=function(self,_x,_y,_)
 	self._servants={}
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1/2.25, 1/2.25
+	lasttask=task.New(self,function()
+		do
+			local _h_scaling=(1-(0.8))/2 local _t_scaling=(1+(0.8))/2 local scaling=_h_scaling*sin(1)+_t_scaling local _w_scaling=1 local _d_w_scaling=2.8
+			for _=1,_infinite do
+				self.scaling = scaling
+				task._Wait(1)
+				_w_scaling=_w_scaling+_d_w_scaling scaling=_h_scaling*sin(_w_scaling)+_t_scaling
+			end
+		end
+	end)
+	PlantManager = self
+	
+	self.shadowColor = {
+		[0] = Color(255, 255, 255, 255),
+		Color(255, 83, 244, 147),
+		Color(255, 84, 84, 242),
+		Color(255, 239, 120, 83),
+		Color(255, 82, 216, 246),
+		Color(255, 179, 83, 239),
+		Color(255, 239, 211, 83),
+		Color(255, 160, 205, 239),
+		Color(255, 180, 176, 196),
+	}
+	
+	self.plantShot = {
+		_editor_class["Earth_Shrub_Shot"],
+		_editor_class["Water_Shrub_Shot"],
+		_editor_class["Fire_Shrub_Shot"],
+		_editor_class["Ice_Shrub_Shot"],
+		_editor_class["Poison_Shrub_Shot"],
+		_editor_class["Lightning_Shrub_Shot"],
+		_editor_class["Wind_Shrub_Shot"],
+		_editor_class["Metal_Shrub_Shot"]
+	}
+	
 	function self.HighlightPlant(loopAmount, plantIndex)
 		for i = 1, loopAmount do
 			if lstg.var.plantCard[i] ~= 0 then
@@ -1940,24 +2114,21 @@ _editor_class["Plant_Manager"].init=function(self,_x,_y,_)
 end
 _editor_class["Plant_Manager"].frame=function(self)
 	self.class.base.frame(self)
-	--[[if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
-		if player.x > -224 and player.x < -224/2 then
-			self.HighlightPlant(4, 1)
+	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+		for i = 1, 4 do
+			if lstg.var.plantCard[i] ~= 0 then
+				New(self.plantShot[lstg.var.plantCard[i]], -224 + 112/2 + (112 * (i - 1)), -240,_)
+			end
 		end
-		if player.x > -224/2 and player.x < 0 then
-			self.HighlightPlant(4, 2)
+		if self.timer % 300 == 0 then
+			last=New(_editor_class["PlantEnemy"],-224 + 112/2 + (112 * ran:Int(1, 4) - 112), 240,_)
 		end
-		if player.x > 0 and player.x < 224/2 then
-			self.HighlightPlant(4, 3)
-		end
-		if player.x > 224/2 and player.x < 224 then
-			self.HighlightPlant(4, 4)
-		end
-	end--]]
+	end
 end
 _editor_class["Plant_Manager"].render=function(self)
 	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
 		for i = 1, 4 do
+			SetImageState("image:ShrubShadow", "", self.shadowColor[lstg.var.plantCard[i]])
 			Render("image:ShrubShadow", -224 + ((i - 1) * 224/2), -224, 0, self.hscale, self.vscale)
 			self.PlayerWithinRange(i)
 			if lstg.var.plantCard[i] ~= 0 then
@@ -1966,11 +2137,12 @@ _editor_class["Plant_Manager"].render=function(self)
 				else
 					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
 				end
-				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 224/2 + ((i - 1) * 224/2) - 2, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 224/2 + ((i - 1) * 224/2) - 2, -245, 0, self.hscale * 0.528, self.vscale * 0.528 * self.scaling)
 			end
 		end
 	elseif lstg.var.selectedStage == 3 then
 		for i = 1, 5 do
+			SetImageState("image:ShrubShadow", "", self.shadowColor[lstg.var.plantCard[i]])
 			Render("image:ShrubShadow", -224 + ((i - 1) * 224/2.5), -224, 0, self.hscale - (0.2/2.25), self.vscale)
 			self.PlayerWithinRange(i)
 			if lstg.var.plantCard[i] ~= 0 then
@@ -1979,11 +2151,12 @@ _editor_class["Plant_Manager"].render=function(self)
 				else
 					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
 				end
-				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 90 + ((i - 1) * 90) + 8, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 90 + ((i - 1) * 90) + 8, -245, 0, self.hscale * 0.528, self.vscale * 0.528 * self.scaling)
 			end
 		end
 	elseif lstg.var.selectedStage == 4 then
 		for i = 1, 6 do
+			SetImageState("image:ShrubShadow", "", self.shadowColor[lstg.var.plantCard[i]])
 			Render("image:ShrubShadow", -224 + ((i - 1) * 224/3), -224, 0, self.hscale - (0.325/2.25), self.vscale)
 			self.PlayerWithinRange(i)
 			if lstg.var.plantCard[i] ~= 0 then
@@ -1992,7 +2165,7 @@ _editor_class["Plant_Manager"].render=function(self)
 				else
 					SetImageState("image:ShrubsShooters" .. lstg.var.plantCard[i], "", Color(100, 155, 155, 155))
 				end
-				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 74.6 + ((i - 1) * 74.6) + 17, -245, 0, self.hscale * 0.528, self.vscale * 0.528)
+				Render("image:ShrubsShooters" .. lstg.var.plantCard[i], -224 + 74.6 + ((i - 1) * 74.6) + 17, -245, 0, self.hscale * 0.528, self.vscale * 0.528 * self.scaling)
 			end
 		end
 	end
@@ -2023,8 +2196,8 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}
 	}
 	self.waveText = {
-		"Scarlet Slash", "b", "c", "d",
-		"e", "f", "g", "h",
+		"Scarlet Slash", "Maroon Carousel", "Ginger Entanglement", "Scintillant Sparkling",
+		"Classical Dreamstrings", "Dreamy Orthodoxy", "Enchanting Wheel", "Parallel Walkaround",
 		"i", "j", "k", "l",
 		"m", "n", "o", "p",
 		"q", "r",
@@ -2103,7 +2276,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 		end
 		if formationIndex == 2 then
 			for _=1,3 do
-				task._Wait(30)
+				task._Wait(45)
 				last=New(EnemySimple,14,180,0, 240,{0,15,3},1,false,true,true,function(self)
 					task.New(self,function()
 						self.x = 0
@@ -2212,6 +2385,752 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 				task._Wait(60*3.75)
 			end
 			task._Wait(60*2)
+			self.finishFormation()
+		end
+		if formationIndex == 3 then
+			last=New(EnemySimple,9,50,0, 254,{0,10,4},(60*3.7),false,true,true,function(self)
+				task.New(self,function()
+					task.MoveTo(0,120,60,MOVE_DECEL)
+					for _=1,(60*4)/60 do
+						PlaySound("tan00",0.1,self.x/256,false)
+						last_list=_create_bullet_group(ball_huge,COLOR_ORANGE,self.x,self.y,15,0,3,3,0,360,true,0,true,true,0,false,self)
+						for k, unit in ipairs(last_list) do
+							_object.set_color(unit,"mul+add",255,255,255,255)
+						end
+						do local a,_d_a=(Angle(self, player)),(360/15) for _=1,15 do
+							last_list=_create_bullet_group(arrow_big,COLOR_ORANGE,self.x,self.y,5,0,2,4,a,360,false,0,true,true,0,false,self)
+							for k, unit in ipairs(last_list) do
+								_object.set_color(unit,"mul+add",255,255,255,255)
+							end
+						a=a+_d_a end end
+						task._Wait(60)
+					end
+					task._Wait(60)
+					task.MoveTo(0,256,90,MOVE_ACCEL)
+					_del(self,true)
+				end)
+			end)
+			task._Wait(60)
+			for _=1,(60*4)/60 do
+				last=New(EnemySimple,1,30,240,200,{0,2,1},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							for _=1,_infinite do
+								last_list=_create_bullet_group(arrow_small,COLOR_ORANGE,self.x,self.y,5,0,3,3,0,70,true,0,true,true,0,false,self)
+								PlaySound("kira00",0.1,self.x/256,false)
+								task._Wait(60)
+							end
+						end)
+						task.CRMoveTo(60*4,MODE_NORMAL,110, 100, 0, 180, -110, 110, -240, 200)
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,1,30,-240,200,{0,2,1},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							for _=1,_infinite do
+								last_list=_create_bullet_group(arrow_small,COLOR_ORANGE,self.x,self.y,5,0,3,3,0,70,true,0,true,true,0,false,self)
+								PlaySound("kira00",0.1,self.x/256,false)
+								task._Wait(30)
+							end
+						end)
+						task.CRMoveTo(60*4,MODE_NORMAL,-110, 100, 0, 180, 110, 110, 240, 200)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(60)
+			end
+			task._Wait(120)
+			do
+				local _beg_posx=-150 local posx=_beg_posx local _end_posx=150 local _d_posx=(_end_posx-_beg_posx)/(8-1)
+				for _=1,8 do
+					last=New(EnemySimple,7,50,posx, 254,{0,2,1},1,false,true,true,function(self)
+						task.New(self,function()
+							task.MoveTo(self.x, 150,60,MOVE_DECEL)
+							PlaySound("kira00",0.1,self.x/256,false)
+							local starang=(Angle(self, player))
+							do local rot,_d_rot,dist,_d_dist=(starang),(360/60),(30*2),(5*2) for _=1,60 do
+								if dist > 60*2 then
+									dist = 30*2
+								end
+								if dist < 45*2 then
+									last=New(_straight,butterfly,COLOR_ORANGE,self.x + (dist-25) * cos(rot),self.y + (dist-25) * sin(rot),2,rot,false,0,true,true,0,false,0,0,0,false)
+								end
+							rot=rot+_d_rot dist=dist+_d_dist end end
+							do local rot,_d_rot,dist,_d_dist=(starang),(-360/60),(30*2),(5*2) for _=1,60 do
+								if dist > 60*2 then
+									dist = 30*2
+								end
+								if dist < 45*2 then
+									last=New(_straight,butterfly,COLOR_ORANGE,self.x + (dist-25) * cos(rot),self.y + (dist-25) * sin(rot),2,rot,false,0,true,true,0,false,0,0,0,false)
+								end
+							rot=rot+_d_rot dist=dist+_d_dist end end
+							task._Wait(60)
+							task.MoveTo(self.x, 256,90,MOVE_ACC_DEC)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(15)
+					posx=posx+_d_posx
+				end
+			end
+			task._Wait(60)
+			do
+				local _beg_posx=150 local posx=_beg_posx local _end_posx=-150 local _d_posx=(_end_posx-_beg_posx)/(8-1)
+				for _=1,8 do
+					last=New(EnemySimple,7,50,posx, 254,{0,2,1},1,false,true,true,function(self)
+						task.New(self,function()
+							task.MoveTo(self.x, 150,60,MOVE_DECEL)
+							PlaySound("kira00",0.1,self.x/256,false)
+							local starang=(Angle(self, player))
+							do local rot,_d_rot,dist,_d_dist=(starang),(360/60),(30*2),(5*2) for _=1,60 do
+								if dist > 60*2 then
+									dist = 30*2
+								end
+								if dist < 45*2 then
+									last=New(_straight,butterfly,COLOR_ORANGE,self.x + (dist-25) * cos(rot),self.y + (dist-25) * sin(rot),2,rot,false,0,true,true,0,false,0,0,0,false)
+								end
+							rot=rot+_d_rot dist=dist+_d_dist end end
+							do local rot,_d_rot,dist,_d_dist=(starang),(-360/60),(30*2),(5*2) for _=1,60 do
+								if dist > 60*2 then
+									dist = 30*2
+								end
+								if dist < 45*2 then
+									last=New(_straight,butterfly,COLOR_ORANGE,self.x + (dist-25) * cos(rot),self.y + (dist-25) * sin(rot),2,rot,false,0,true,true,0,false,0,0,0,false)
+								end
+							rot=rot+_d_rot dist=dist+_d_dist end end
+							task._Wait(60)
+							task.MoveTo(self.x, 256,90,MOVE_ACC_DEC)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(15)
+					posx=posx+_d_posx
+				end
+			end
+			last=New(EnemySimple,9,100,0, -254,{0,10,5},60,false,true,false,function(self)
+				task.New(self,function()
+					self.colli = false
+					lasttask=task.New(self,function()
+						do
+							local _beg_alp=0 local alp=_beg_alp  local _w_alp=-90 local _end_alp=255 local _d_w_alp=180/(110-1)
+							for _=1,110 do
+								_object.set_color(self,"",alp,255,255,255)
+								task._Wait(1)
+								_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)/2*sin(_w_alp)+((_end_alp+_beg_alp)/2)
+							end
+						end
+						self.colli = true
+					end)
+					task.MoveTo(0,120,120,MOVE_ACC_DEC)
+					New(boss_cast_ef,self.x,self.y,360,255,0,0,60,2,false)
+					task._Wait(60)
+					do
+						local r=Angle(self, player) local _d_r=(360/8)
+						local nEdges=5 local _d_nEdges=(1)
+						for _=1,8 do
+							--[[ increment of angle for different polygons]]
+							
+							--[[ nEdges]]
+							
+							do
+								local _beg_jr=0 local jr=_beg_jr local _end_jr=360 local _d_jr=(_end_jr-_beg_jr)/(nEdges)
+								for _=1,nEdges do
+									--[[ iterate a circle and give it nEdges chops, store angles into jr]]
+									
+									--[[ nBullets per edge - 1 (because vertices should be counted only once)]]
+									
+									do
+										local _beg_kvx=cos(r+jr) local kvx=_beg_kvx local _end_kvx=cos(r+jr+_d_jr) local _d_kvx=(_end_kvx-_beg_kvx)/(5)
+										local _beg_kvy=sin(r+jr) local kvy=_beg_kvy local _end_kvy=sin(r+jr+_d_jr) local _d_kvy=(_end_kvy-_beg_kvy)/(5)
+										for _=1,5 do
+											--[[ iterate in the edge.]]
+											
+											last=New(_straight,arrow_mid,COLOR_ORANGE,self.x,self.y,3,0,false,0,true,true,0,false,0,0,0,false)
+											last.navi = true
+											last.vx, last.vy = 3*kvx, 3*kvy
+											_object.set_color(last,"mul+add",255,255,255,255)
+											kvx=kvx+_d_kvx
+											kvy=kvy+_d_kvy
+										end
+									end
+									jr=jr+_d_jr
+								end
+							end
+							PlaySound("tan00",0.1,self.x/256,false)
+							task._Wait(15)
+							r=r+_d_r
+							nEdges=nEdges+_d_nEdges
+						end
+					end
+					task._Wait(60)
+					task.MoveTo(self.x, self.y + 200,90,MOVE_ACCEL)
+					_del(self,true)
+				end)
+			end)
+			_object.set_color(last,"",0,255,255,255)
+			task._Wait(120)
+			last=New(EnemySimple,9,100,-60, -254,{0,10,5},60,false,true,false,function(self)
+				task.New(self,function()
+					self.colli = false
+					lasttask=task.New(self,function()
+						do
+							local _beg_alp=0 local alp=_beg_alp  local _w_alp=-90 local _end_alp=255 local _d_w_alp=180/(110-1)
+							for _=1,110 do
+								_object.set_color(self,"",alp,255,255,255)
+								task._Wait(1)
+								_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)/2*sin(_w_alp)+((_end_alp+_beg_alp)/2)
+							end
+						end
+						self.colli = true
+					end)
+					task.MoveTo(-60,120,120,MOVE_ACC_DEC)
+					New(boss_cast_ef,self.x,self.y,360,255,0,0,60,2,false)
+					task._Wait(60)
+					do
+						local r=Angle(self, player) local _d_r=(360/8)
+						local nEdges=5 local _d_nEdges=(1)
+						for _=1,8 do
+							--[[ increment of angle for different polygons]]
+							
+							--[[ nEdges]]
+							
+							do
+								local _beg_jr=0 local jr=_beg_jr local _end_jr=360 local _d_jr=(_end_jr-_beg_jr)/(nEdges)
+								for _=1,nEdges do
+									--[[ iterate a circle and give it nEdges chops, store angles into jr]]
+									
+									--[[ nBullets per edge - 1 (because vertices should be counted only once)]]
+									
+									do
+										local _beg_kvx=cos(r+jr) local kvx=_beg_kvx local _end_kvx=cos(r+jr+_d_jr) local _d_kvx=(_end_kvx-_beg_kvx)/(5)
+										local _beg_kvy=sin(r+jr) local kvy=_beg_kvy local _end_kvy=sin(r+jr+_d_jr) local _d_kvy=(_end_kvy-_beg_kvy)/(5)
+										for _=1,5 do
+											--[[ iterate in the edge.]]
+											
+											last=New(_straight,arrow_mid,COLOR_ORANGE,self.x,self.y,3,0,false,0,true,true,0,false,0,0,0,false)
+											last.navi = true
+											last.vx, last.vy = 3*kvx, 3*kvy
+											_object.set_color(last,"mul+add",255,255,255,255)
+											kvx=kvx+_d_kvx
+											kvy=kvy+_d_kvy
+										end
+									end
+									jr=jr+_d_jr
+								end
+							end
+							PlaySound("tan00",0.1,self.x/256,false)
+							task._Wait(15)
+							r=r+_d_r
+							nEdges=nEdges+_d_nEdges
+						end
+					end
+					task._Wait(60)
+					task.MoveTo(self.x, self.y + 200,90,MOVE_ACCEL)
+					_del(self,true)
+				end)
+			end)
+			_object.set_color(last,"",0,255,255,255)
+			last=New(EnemySimple,9,100,60, -254,{0,10,5},60,false,true,false,function(self)
+				task.New(self,function()
+					self.colli = false
+					lasttask=task.New(self,function()
+						do
+							local _beg_alp=0 local alp=_beg_alp  local _w_alp=-90 local _end_alp=255 local _d_w_alp=180/(110-1)
+							for _=1,110 do
+								_object.set_color(self,"",alp,255,255,255)
+								task._Wait(1)
+								_w_alp=_w_alp+_d_w_alp alp=(_end_alp-_beg_alp)/2*sin(_w_alp)+((_end_alp+_beg_alp)/2)
+							end
+						end
+						self.colli = true
+					end)
+					task.MoveTo(60,120,120,MOVE_ACC_DEC)
+					New(boss_cast_ef,self.x,self.y,360,255,0,0,60,2,false)
+					task._Wait(60)
+					do
+						local r=Angle(self, player) local _d_r=(360/8)
+						local nEdges=5 local _d_nEdges=(1)
+						for _=1,8 do
+							--[[ increment of angle for different polygons]]
+							
+							--[[ nEdges]]
+							
+							do
+								local _beg_jr=0 local jr=_beg_jr local _end_jr=360 local _d_jr=(_end_jr-_beg_jr)/(nEdges)
+								for _=1,nEdges do
+									--[[ iterate a circle and give it nEdges chops, store angles into jr]]
+									
+									--[[ nBullets per edge - 1 (because vertices should be counted only once)]]
+									
+									do
+										local _beg_kvx=cos(r+jr) local kvx=_beg_kvx local _end_kvx=cos(r+jr+_d_jr) local _d_kvx=(_end_kvx-_beg_kvx)/(5)
+										local _beg_kvy=sin(r+jr) local kvy=_beg_kvy local _end_kvy=sin(r+jr+_d_jr) local _d_kvy=(_end_kvy-_beg_kvy)/(5)
+										for _=1,5 do
+											--[[ iterate in the edge.]]
+											
+											last=New(_straight,arrow_mid,COLOR_ORANGE,self.x,self.y,3,0,false,0,true,true,0,false,0,0,0,false)
+											last.navi = true
+											last.vx, last.vy = 3*kvx, 3*kvy
+											_object.set_color(last,"mul+add",255,255,255,255)
+											kvx=kvx+_d_kvx
+											kvy=kvy+_d_kvy
+										end
+									end
+									jr=jr+_d_jr
+								end
+							end
+							PlaySound("tan00",0.1,self.x/256,false)
+							task._Wait(15)
+							r=r+_d_r
+							nEdges=nEdges+_d_nEdges
+						end
+					end
+					task._Wait(60)
+					task.MoveTo(self.x, self.y + 200,90,MOVE_ACCEL)
+					_del(self,true)
+				end)
+			end)
+			_object.set_color(last,"",0,255,255,255)
+			task._Wait(60*6)
+			self.finishFormation()
+		end
+		if formationIndex == 4 then
+			for _=1,8 do
+				last=New(EnemySimple,8,70,ran:Int(-160, 160),240,{0,5,2},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							do
+								local _beg_time=6 local time=_beg_time  local _w_time=0 local _end_time=1 local _d_w_time=90/(50-1)
+								local ang_add=0 local _d_ang_add=(5)
+								local _beg_off=40 local off=_beg_off  local _w_off=-90 local _end_off=-20 local _d_w_off=180/(50-1)
+								for _=1,50 do
+									PlaySound("tan00",0.1,self.x/256,false)
+									do local ang,_d_ang=(ang_add),(360/5) for _=1,5 do
+										last_list=_create_bullet_group(grain_b,COLOR_ROYAL_BLUE,self.x + off * cos(ang),self.y + off * sin(ang),2,0,3,3,ang,360,false,0,true,true,0,false,self)
+									ang=ang+_d_ang end end
+									task._Wait(time)
+									_w_time=_w_time+_d_w_time time=(_end_time-_beg_time)*sin(_w_time)+(_beg_time)
+									ang_add=ang_add+_d_ang_add
+									_w_off=_w_off+_d_w_off off=(_end_off-_beg_off)/2*sin(_w_off)+((_end_off+_beg_off)/2)
+								end
+							end
+						end)
+						task.MoveTo(self.x, self.y-ran:Int(60, 100),60,MOVE_DECEL)
+						task._Wait(60)
+						task.MoveTo(self.x, 255,90,MOVE_ACCEL)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(120)
+			end
+			task._Wait(60*2)
+			self.finishFormation()
+		end
+		if formationIndex == 5 then
+			for _=1,2 do
+				for _=1,10 do
+					last=New(EnemySimple,3,10,150, 255,{0,1,1},1,false,true,true,function(self)
+						task.New(self,function()
+							lasttask=task.New(self,function()
+								task._Wait(ran:Int(40,120))
+								PlaySound("kira00",0.1,self.x/256,false)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,3,3,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,2,2,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,1,1,0,10,true,0,true,true,0,false,self)
+							end)
+							task.CRMoveTo(360-30,MODE_NORMAL,150-20, 0, -250, 0)
+							_del(self,true)
+						end)
+					end)
+					last=New(EnemySimple,3,10,120, 255,{0,1,1},1,false,true,true,function(self)
+						task.New(self,function()
+							lasttask=task.New(self,function()
+								task._Wait(ran:Int(40,120))
+								PlaySound("kira00",0.1,self.x/256,false)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,3,3,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,2,2,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,1,1,0,10,true,0,true,true,0,false,self)
+							end)
+							task.CRMoveTo(360-30,MODE_NORMAL,110-20, 30, -250, 30)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(30)
+				end
+				for _=1,10 do
+					last=New(EnemySimple,3,10,-150, 255,{0,1,1},1,false,true,true,function(self)
+						task.New(self,function()
+							lasttask=task.New(self,function()
+								task._Wait(ran:Int(40,120))
+								PlaySound("kira00",0.1,self.x/256,false)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,3,3,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,2,2,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,1,1,0,10,true,0,true,true,0,false,self)
+							end)
+							task.CRMoveTo(360-30,MODE_NORMAL,-150+20, 0, 250, 0)
+							_del(self,true)
+						end)
+					end)
+					last=New(EnemySimple,3,10,-120, 255,{0,1,1},1,false,true,true,function(self)
+						task.New(self,function()
+							lasttask=task.New(self,function()
+								task._Wait(ran:Int(40,120))
+								PlaySound("kira00",0.1,self.x/256,false)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,3,3,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,2,2,0,10,true,0,true,true,0,false,self)
+								last_list=_create_bullet_group(ball_small,COLOR_BLUE,self.x,self.y,9,0,1,1,0,10,true,0,true,true,0,false,self)
+							end)
+							task.CRMoveTo(360-30,MODE_NORMAL,-110+20, 30, 250, 30)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(30)
+				end
+			end
+			task._Wait(60*3)
+			self.finishFormation()
+		end
+		if formationIndex == 6 then
+			last=New(EnemySimple,9,200,0, 240,{0,15,5},60,false,true,true,function(self)
+				task.New(self,function()
+					lasttask=task.New(self,function()
+						task._Wait(60)
+						for _=1,_infinite do
+							last_list=_create_bullet_group(grain_a,COLOR_DEEP_PURPLE,self.x,self.y,21,0,1,1,0,360,true,0,true,true,0,false,self)
+							PlaySound("old_kira00",0.1,self.x/256,false)
+							task._Wait(120)
+						end
+					end)
+					lasttask=task.New(self,function()
+						task._Wait(60)
+						do local ang,_d_ang=(0),(25) for _=1,_infinite do
+							lasttask=task.New(self,function()
+								do local ang2,_d_ang2=(ang),(360/(12/2)) for _=1,12 do
+									self.bulx = self.x + 20 * cos(ang)
+									self.buly = self.y + 20 * sin(ang)
+									last=New(_straight,ball_big,COLOR_DEEP_PURPLE,self.bulx + 30 * cos(ang2),self.buly + 30 * sin(ang2),3,ang,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("kira00",0.1,self.x/256,false)
+									task._Wait(1)
+								ang2=ang2+_d_ang2 end end
+							end)
+							lasttask=task.New(self,function()
+								do local ang2,_d_ang2=(ang),(-360/(12/2)) for _=1,12 do
+									self.bulx = self.x + 20 * cos(ang+180)
+									self.buly = self.y + 20 * sin(ang+180)
+									last=New(_straight,ball_big,COLOR_DEEP_PURPLE,self.bulx + 30 * cos(ang2),self.buly + 30 * sin(ang2),3,ang+180,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("kira00",0.1,self.x/256,false)
+									task._Wait(1)
+								ang2=ang2+_d_ang2 end end
+							end)
+							task._Wait(30)
+						ang=ang+_d_ang end end
+					end)
+					task.MoveTo(0,140,60,MOVE_DECEL)
+					lasttask=task.New(self,function()
+						task._Wait(60*9)
+						do
+							local _beg_posy=140 local posy=_beg_posy local _end_posy=240 local _w_posy=0  local _d_w_posy=1/(90-1)
+							for _=1,90 do
+								self.y = posy
+								task._Wait(1)
+								_w_posy=_w_posy+_d_w_posy posy=(_end_posy-_beg_posy)*_w_posy^2+_beg_posy
+							end
+						end
+						_del(self,true)
+					end)
+					do
+						local _h_posx=(100-(-100))/2 local _t_posx=(100+(-100))/2 local posx=_h_posx*sin(0)+_t_posx local _w_posx=0 local _d_w_posx=1.5
+						for _=1,_infinite do
+							self.x,self.y=posx, self.y
+							task._Wait(1)
+							_w_posx=_w_posx+_d_w_posx posx=_h_posx*sin(_w_posx)+_t_posx
+						end
+					end
+				end)
+			end)
+			task._Wait(30)
+			for _=1,8 do
+				last=New(EnemySimple,26,10,-240, 100,{0,1,1},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							for _=1,_infinite do
+								last_list=_create_bullet_group(grain_a,COLOR_DEEP_PURPLE,self.x,self.y,3,0,3,4,0,0,true,0,true,true,0,false,self)
+								PlaySound("tan00",0.1,self.x/256,false)
+								task._Wait(33)
+							end
+						end)
+						task.MoveTo(240, 50,60*3,MOVE_NORMAL)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(45)
+				last=New(EnemySimple,26,10,240, 100,{0,1,1},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							for _=1,_infinite do
+								last_list=_create_bullet_group(grain_a,COLOR_DEEP_PURPLE,self.x,self.y,3,0,3,4,0,0,true,0,true,true,0,false,self)
+								PlaySound("tan00",0.1,self.x/256,false)
+								task._Wait(33)
+							end
+						end)
+						task.MoveTo(-240, 50,60*3,MOVE_NORMAL)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(45)
+			end
+			task._Wait(60*3)
+			self.finishFormation()
+		end
+		if formationIndex == 7 then
+			do
+				local _beg_posx=160 local posx=_beg_posx local _end_posx=-160 local _d_posx=(_end_posx-_beg_posx)/(5-1)
+				for _=1,5 do
+					last=New(EnemySimple,9,90,posx, 240,{0,14,4},1,false,true,true,function(self)
+						task.New(self,function()
+							task.MoveTo(self.x, 120,90,MOVE_DECEL)
+							for _=1,2 do
+								do local ang,_d_ang=(ran:Int(0, 360)),(360/15) for _=1,15 do
+									last=New(_straight,ball_big,COLOR_RED,self.x,self.y,5,ang,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("tan00",0.1,self.x/256,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										lasttask=task.New(self,function()
+											_object.set_color(self,"mul+add",255,255,255,255)
+											SetV2(self,5,ang,true,false)
+											task._Wait(5)
+											do local s,_d_s=(5),(-1.65) for _=1,4 do
+												SetV2(self,s,ang,true,false)
+												task._Wait(3)
+											s=s+_d_s end end
+											_set_a(self,0.05,self.rot-90,false)
+											PlaySound("kira00",0.1,self.x/256,false)
+											task._Wait(60)
+											PlaySound("kira01",0.1,self.x/256,false)
+											do local a,_d_a,b,_d_b=(0),(4),(1),(0.4) for _=1,5 do
+												last_list=_create_bullet_group(ball_mid,COLOR_RED,self.x,self.y,1,0,b,b,self.rot-a-90,360,false,0,true,true,0,false,self)
+											a=a+_d_a b=b+_d_b end end
+											_kill(self,false)
+										end)
+									end)
+									task._Wait(5)
+								ang=ang+_d_ang end end
+								do local ang,_d_ang=(ran:Int(0, 360)),(-360/15) for _=1,15 do
+									last=New(_straight,ball_big,COLOR_BLUE,self.x,self.y,5,ang,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("tan00",0.1,self.x/256,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										lasttask=task.New(self,function()
+											_object.set_color(self,"mul+add",255,255,255,255)
+											SetV2(self,5,ang,true,false)
+											task._Wait(5)
+											do local s,_d_s=(5),(-1.65) for _=1,4 do
+												SetV2(self,s,ang,true,false)
+												task._Wait(3)
+											s=s+_d_s end end
+											_set_a(self,0.05,self.rot-90,false)
+											PlaySound("kira00",0.1,self.x/256,false)
+											task._Wait(60)
+											PlaySound("kira01",0.1,self.x/256,false)
+											do local a,_d_a,b,_d_b=(0),(4),(1),(0.4) for _=1,5 do
+												last_list=_create_bullet_group(ball_mid,COLOR_BLUE,self.x,self.y,1,0,b,b,self.rot-a+90,360,false,0,true,true,0,false,self)
+											a=a+_d_a b=b+_d_b end end
+											_kill(self,false)
+										end)
+									end)
+									task._Wait(5)
+								ang=ang+_d_ang end end
+								task._Wait(60)
+							end
+							task._Wait(60)
+							task.MoveTo(self.x, 240,60,MOVE_ACCEL)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(60)
+					posx=posx+_d_posx
+				end
+			end
+			do
+				local _beg_posx=-160 local posx=_beg_posx local _end_posx=160 local _d_posx=(_end_posx-_beg_posx)/(5-1)
+				for _=1,5 do
+					last=New(EnemySimple,9,90,posx, 240,{0,14,4},1,false,true,true,function(self)
+						task.New(self,function()
+							task.MoveTo(self.x, 120,90,MOVE_DECEL)
+							for _=1,2 do
+								do local ang,_d_ang=(ran:Int(0, 360)),(360/15) for _=1,15 do
+									last=New(_straight,ball_big,COLOR_RED,self.x,self.y,5,ang,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("tan00",0.1,self.x/256,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										lasttask=task.New(self,function()
+											_object.set_color(self,"mul+add",255,255,255,255)
+											SetV2(self,5,ang,true,false)
+											task._Wait(5)
+											do local s,_d_s=(5),(-1.65) for _=1,4 do
+												SetV2(self,s,ang,true,false)
+												task._Wait(3)
+											s=s+_d_s end end
+											_set_a(self,0.05,self.rot-90,false)
+											PlaySound("kira00",0.1,self.x/256,false)
+											task._Wait(60)
+											PlaySound("kira01",0.1,self.x/256,false)
+											do local a,_d_a,b,_d_b=(0),(4),(1),(0.4) for _=1,5 do
+												last_list=_create_bullet_group(ball_mid,COLOR_RED,self.x,self.y,1,0,b,b,self.rot-a-90,360,false,0,true,true,0,false,self)
+											a=a+_d_a b=b+_d_b end end
+											_kill(self,false)
+										end)
+									end)
+									task._Wait(5)
+								ang=ang+_d_ang end end
+								do local ang,_d_ang=(ran:Int(0, 360)),(-360/15) for _=1,15 do
+									last=New(_straight,ball_big,COLOR_BLUE,self.x,self.y,5,ang,false,0,true,true,0,false,0,0,0,false)
+									PlaySound("tan00",0.1,self.x/256,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										lasttask=task.New(self,function()
+											_object.set_color(self,"mul+add",255,255,255,255)
+											SetV2(self,5,ang,true,false)
+											task._Wait(5)
+											do local s,_d_s=(5),(-1.65) for _=1,4 do
+												SetV2(self,s,ang,true,false)
+												task._Wait(3)
+											s=s+_d_s end end
+											_set_a(self,0.05,self.rot-90,false)
+											PlaySound("kira00",0.1,self.x/256,false)
+											task._Wait(60)
+											PlaySound("kira01",0.1,self.x/256,false)
+											do local a,_d_a,b,_d_b=(0),(4),(1),(0.4) for _=1,5 do
+												last_list=_create_bullet_group(ball_mid,COLOR_BLUE,self.x,self.y,1,0,b,b,self.rot-a+90,360,false,0,true,true,0,false,self)
+											a=a+_d_a b=b+_d_b end end
+											_kill(self,false)
+										end)
+									end)
+									task._Wait(5)
+								ang=ang+_d_ang end end
+								task._Wait(60)
+							end
+							task._Wait(60)
+							task.MoveTo(self.x, 240,60,MOVE_ACCEL)
+							_del(self,true)
+						end)
+					end)
+					task._Wait(60)
+					posx=posx+_d_posx
+				end
+			end
+			task._Wait(60*14)
+			self.finishFormation()
+		end
+		if formationIndex == 8 then
+			for _=1,18 do
+				last=New(EnemySimple,8,40,240, 140,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						task.BezierMoveTo(120,MOVE_DECEL,200, -100, 120, -180)
+						PlaySound("tan00",0.1,self.x/256,false)
+						last_list=_create_bullet_group(arrow_mid,COLOR_BLUE,self.x,self.y,5,0,3,3,-90 - 20,40,false,0,true,true,0,false,self)
+						for _,unit in ipairs(last_list) do
+							_set_g(unit,-0.04)
+							unit.navi = true
+						end
+						task.CRMoveTo(480,MOVE_ACCEL,40, 50, 190, 90, -20, 240)
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,8,40,-240, 140,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						task.BezierMoveTo(120,MOVE_DECEL,-200, -100, -120, -180)
+						PlaySound("tan00",0.1,self.x/256,false)
+						last_list=_create_bullet_group(arrow_mid,COLOR_BLUE,self.x,self.y,5,0,3,3,-90 + 20,40,false,0,true,true,0,false,self)
+						for _,unit in ipairs(last_list) do
+							_set_g(unit,-0.04)
+							unit.navi = true
+						end
+						task.CRMoveTo(480,MOVE_ACCEL,-40, 50, -190, 90, 20, 240)
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,7,40,60, 240,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							task._Wait(60*2)
+							PlaySound("tan01",0.1,self.x/256,false)
+							last_list=_create_bullet_group(ball_mid_c,COLOR_RED,self.x,self.y,11,0,2,2,0,360,true,0,true,true,0,false,self)
+						end)
+						task.CRMoveTo(60*3.25,MOVE_DECEL,140, 60, 0, 120, -240, 0 )
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,7,40,-60, 240,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							task._Wait(60*2)
+							PlaySound("tan01",0.1,self.x/256,false)
+							last_list=_create_bullet_group(ball_mid_c,COLOR_RED,self.x,self.y,11,0,2,2,0,360,true,0,true,true,0,false,self)
+						end)
+						task.CRMoveTo(60*3.25,MOVE_DECEL,-140, 60, 0, 120, 240, 0)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(45)
+			end
+			task._Wait(60*5)
+			self.finishFormation()
+		end
+		if formationIndex == 9 then
+			for _=1,18 do
+				last=New(EnemySimple,8,40,240, 140,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						task.BezierMoveTo(120,MOVE_DECEL,200, -100, 120, -180)
+						PlaySound("tan00",0.1,self.x/256,false)
+						last_list=_create_bullet_group(arrow_mid,COLOR_BLUE,self.x,self.y,5,0,3,3,-90 - 20,40,false,0,true,true,0,false,self)
+						for _,unit in ipairs(last_list) do
+							_set_g(unit,-0.04)
+							unit.navi = true
+						end
+						task.CRMoveTo(480,MOVE_ACCEL,40, 50, 190, 90, -20, 240)
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,8,40,-240, 140,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						task.BezierMoveTo(120,MOVE_DECEL,-200, -100, -120, -180)
+						PlaySound("tan00",0.1,self.x/256,false)
+						last_list=_create_bullet_group(arrow_mid,COLOR_BLUE,self.x,self.y,5,0,3,3,-90 + 20,40,false,0,true,true,0,false,self)
+						for _,unit in ipairs(last_list) do
+							_set_g(unit,-0.04)
+							unit.navi = true
+						end
+						task.CRMoveTo(480,MOVE_ACCEL,-40, 50, -190, 90, 20, 240)
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,7,40,60, 240,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							task._Wait(60*2)
+							PlaySound("tan01",0.1,self.x/256,false)
+							last_list=_create_bullet_group(ball_mid_c,COLOR_RED,self.x,self.y,11,0,2,2,0,360,true,0,true,true,0,false,self)
+						end)
+						task.CRMoveTo(60*3.25,MOVE_DECEL,140, 60, 0, 120, -240, 0 )
+						_del(self,true)
+					end)
+				end)
+				last=New(EnemySimple,7,40,-60, 240,{0,3,2},1,false,true,true,function(self)
+					task.New(self,function()
+						lasttask=task.New(self,function()
+							task._Wait(60*2)
+							PlaySound("tan01",0.1,self.x/256,false)
+							last_list=_create_bullet_group(ball_mid_c,COLOR_RED,self.x,self.y,11,0,2,2,0,360,true,0,true,true,0,false,self)
+						end)
+						task.CRMoveTo(60*3.25,MOVE_DECEL,-140, 60, 0, 120, 240, 0)
+						_del(self,true)
+					end)
+				end)
+				task._Wait(45)
+			end
+			task._Wait(60*5)
 			self.finishFormation()
 		end
 	end
@@ -2348,6 +3267,99 @@ _editor_class["Spell_Cutin"].init=function(self,_x,_y,char)
 		end)
 	end)
 end
+_editor_class["DebugENM"]=Class(enemy)
+_editor_class["DebugENM"].init=function(self,_x,_y,_)
+	enemy.init(self,9,10000,false,true,false)
+	self.x,self.y=_x,_y
+	self.drop={0,0,0}
+	task.New(self,function() self.protect=true task.Wait(1) self.protect=false end)
+	self.x, self.y = 0, 144
+	self.layer = LAYER_TOP + 999
+	self.hp = 10000
+	self.damage_frames = {}
+	for i=1, 60 do
+	    self.damage_frames[i] = 0
+	end
+end
+_editor_class["DebugENM"].frame=function(self)
+	local damage_frame = 10000 - self.hp
+	for i=59, 1, -1 do
+	     self.damage_frames[i+1] = self.damage_frames[i]
+	end
+	self.damage_frames[1] = damage_frame
+	local average_damage = 0
+	for i=1, 60 do
+	    average_damage = average_damage + self.damage_frames[i]
+	end
+	self.average_damage = average_damage
+	self.class.base.frame(self)
+	self.hp = 10000
+end
+_editor_class["DebugENM"].render=function(self)
+	SetViewMode'ui'
+	lstg.RenderText('menu', 'AVG DMG = ' .. self.average_damage ..  ' \n', 445, 160, 0.425, 0)
+	SetViewMode'world'
+	self.class.base.render(self)
+end
+_editor_class["PlantEnemy"]=Class(enemy)
+_editor_class["PlantEnemy"].init=function(self,_x,_y,_)
+	enemy.init(self,7,30,false,true,true)
+	self.x,self.y=_x,_y
+	self.drop={0,8,0}
+	task.New(self,function() self.protect=true task.Wait(1) self.protect=false end)
+	self.bound = false
+	_object.set_color(self,"",115,255,255,255)
+	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+		self.hscale, self.vscale = 2, 2
+	elseif lstg.var.selectedStage == 3 then
+		self.hscale, self.vscale = 1, 1
+	elseif lstg.var.selectedStage == 3 then
+		self.hscale, self.vscale = 1, 1
+	end
+	self.vx, self.vy = 0, -1
+end
+_editor_class["PlantEnemy"].frame=function(self)
+	self.class.base.frame(self)
+	if self.y <= -240 then
+		if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+			if self.x > -224 and self.x < -224/2 and lstg.var.plantCard[1] ~= 0 then
+				PlaySound("down",0.1,self.x/256,false)
+				PlaySound("don00",0.1,self.x/256,false)
+				lstg.var.plantCard[1] = 0
+				_del(self,true)
+				return
+			end
+			if self.x > -224/2 and self.x < 0 and lstg.var.plantCard[2] ~= 0 then
+				PlaySound("down",0.1,self.x/256,false)
+				PlaySound("don00",0.1,self.x/256,false)
+				lstg.var.plantCard[2] = 0
+				_del(self,true)
+				return
+			end
+			if self.x > 0 and self.x < 224/2 and lstg.var.plantCard[3] ~= 0 then
+				PlaySound("down",0.1,self.x/256,false)
+				PlaySound("don00",0.1,self.x/256,false)
+				lstg.var.plantCard[3] = 0
+				_del(self,true)
+				return
+			end
+			if self.x > 224/2 and self.x < 224 and lstg.var.plantCard[4] ~= 0 then
+				PlaySound("down",0.1,self.x/256,false)
+				PlaySound("don00",0.1,self.x/256,false)
+				lstg.var.plantCard[4] = 0
+				_del(self,true)
+				return
+			end
+			PlaySound("pldead00", 0.5)
+			PlaySound("down",0.1,self.x/256,false)
+			PlaySound("don00",0.1,self.x/256,false)
+			PlaySound("hyz_eterase",0.1,self.x/256,false)
+			player.death = 100			_del(self,true)
+		else
+		end
+	else
+	end
+end
 _editor_class["Base_Shot"]=Class(_object)
 _editor_class["Base_Shot"].init=function(self,_x,_y,_)
 	player_bullet_straight.init(self,"image:Marisa_Shot1",_x,_y,16,90,2)
@@ -2385,6 +3397,15 @@ _editor_class["Earth_Shot"].init=function(self,_x,_y,speed)
 	self.hscale, self.vscale = 1/4, 1/4
 	_object.set_color(self,"mul+add",55,255,255,255)
 	self.a, self.b, self.rect = 16, 8,false
+	if scoredata.shrubLevelUp[1] == 1 then
+		self.dmg = 1.1
+	end
+	if scoredata.shrubLevelUp[1] == 2 then
+		self.dmg = 1.3
+	end
+	if scoredata.shrubLevelUp[1] == 3 then
+		self.dmg = 1.5
+	end
 end
 _editor_class["Earth_Shot"].frame=function(self)
 	task.Do(self)
@@ -2404,9 +3425,51 @@ end
 _editor_class["Earth_Shot"].del=function(self)
 	self.class.base.del(self)
 end
+_editor_class["Water_Shot"]=Class(_object)
+_editor_class["Water_Shot"].init=function(self,_x,_y,speed)
+	player_bullet_straight.init(self,"image:Water_Shot1",_x,_y,speed,90,0.05)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	SetV2(self,speed,90 + ran:Int(5, -5),true,false)
+	if scoredata.shrubLevelUp[2] == 1 then
+		self.dmg = 0.04
+	end
+	if scoredata.shrubLevelUp[2] == 2 then
+		self.dmg = 0.07
+	end
+	if scoredata.shrubLevelUp[2] == 3 then
+		self.dmg = 0.12
+	end
+end
+_editor_class["Water_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Water_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Water_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Water_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Water_Shot", 1/1)
+	for _=1,8 do
+		last=New(_editor_class["Shot_Effect"],self.x + ran:Int(-10, 10),self.y + ran:Int(-10, 10),self.rot, "image:Water_Shot", 1/3)
+	end
+	New(death_weapon_alt, self.x, self.y, self.dmg)
+end
+_editor_class["Water_Shot"].del=function(self)
+	self.class.base.del(self)
+end
 _editor_class["Fire_Shot"]=Class(_object)
 _editor_class["Fire_Shot"].init=function(self,_x,_y,speed)
-	player_bullet_straight.init(self,"image:Fire_Shot1",_x,_y,speed,ran:Int(60, 180-60),1.5)
+	player_bullet_straight.init(self,"image:Fire_Shot1",_x,_y,speed,ran:Int(60, 180-60),1.1)
 	self.hp = 10
 	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
 	self._servants = {}
@@ -2424,6 +3487,15 @@ _editor_class["Fire_Shot"].init=function(self,_x,_y,speed)
 		end
 		_del(self,true)
 	end)
+	if scoredata.shrubLevelUp[3] == 1 then
+		self.dmg = 1.1
+	end
+	if scoredata.shrubLevelUp[3] == 2 then
+		self.dmg = 1.3
+	end
+	if scoredata.shrubLevelUp[3] == 3 then
+		self.dmg = 1.5
+	end
 end
 _editor_class["Fire_Shot"].frame=function(self)
 	task.Do(self)
@@ -2463,6 +3535,15 @@ _editor_class["Ice_Shot"].init=function(self,_x,_y,angle)
 		end
 		_del(self,true)
 	end)
+	if scoredata.shrubLevelUp[4] == 1 then
+		self.dmg = 1.8-0.6
+	end
+	if scoredata.shrubLevelUp[4] == 2 then
+		self.dmg = 2.1-0.6
+	end
+	if scoredata.shrubLevelUp[4] == 3 then
+		self.dmg = 2.25-0.6
+	end
 end
 _editor_class["Ice_Shot"].frame=function(self)
 	task.Do(self)
@@ -2480,6 +3561,55 @@ _editor_class["Ice_Shot"].kill=function(self)
 	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Ice_Shot")
 end
 _editor_class["Ice_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Poison_Shot"]=Class(_object)
+_editor_class["Poison_Shot"].init=function(self,_x,_y,angle)
+	player_bullet_straight.init(self,"image:Poison_Shot1",_x,_y,5,angle,0.6)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	lasttask=task.New(self,function()
+		do
+			local _beg_mov=5 local mov=_beg_mov local _end_mov=0 local _w_mov=0 local _d_w_mov=1/(60-1)
+			for _=1,60 do
+				SetV2(self,mov,self.rot,true,false)
+				task._Wait(1)
+				_w_mov=_w_mov+_d_w_mov mov=(_beg_mov-_end_mov)*(_w_mov-1)^2+_end_mov
+			end
+		end
+		task._Wait(120)
+		_del(self,true)
+	end)
+	if scoredata.shrubLevelUp[5] == 1 then
+		self.dmg = 0.6
+	end
+	if scoredata.shrubLevelUp[5] == 2 then
+		self.dmg = 0.8
+	end
+	if scoredata.shrubLevelUp[5] == 3 then
+		self.dmg = 1
+	end
+end
+_editor_class["Poison_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Poison_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Poison_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Poison_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Poison_Shot")
+end
+_editor_class["Poison_Shot"].del=function(self)
 	self.class.base.del(self)
 end
 _editor_class["Lightning_Shot"]=Class(_object)
@@ -2503,6 +3633,15 @@ _editor_class["Lightning_Shot"].init=function(self,_x,_y,angle)
 		end
 		_del(self,true)
 	end)
+	if scoredata.shrubLevelUp[6] == 1 then
+		self.dmg = 0.06
+	end
+	if scoredata.shrubLevelUp[6] == 2 then
+		self.dmg = 0.09
+	end
+	if scoredata.shrubLevelUp[6] == 3 then
+		self.dmg = 0.14
+	end
 end
 _editor_class["Lightning_Shot"].frame=function(self)
 	task.Do(self)
@@ -2521,8 +3660,119 @@ end
 _editor_class["Lightning_Shot"].del=function(self)
 	self.class.base.del(self)
 end
+_editor_class["Wind_Shot"]=Class(_object)
+_editor_class["Wind_Shot"].init=function(self,_x,_y,angle)
+	player_bullet_straight.init(self,"image:Wind_Shot1",_x,_y,16,angle,0.4)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/4, 1/4
+	_object.set_color(self,"mul+add",55,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	if scoredata.shrubLevelUp[7] == 1 then
+		self.dmg = 0.4
+	end
+	if scoredata.shrubLevelUp[7] == 2 then
+		self.dmg = 0.5
+	end
+	if scoredata.shrubLevelUp[7] == 3 then
+		self.dmg = 0.7
+	end
+end
+_editor_class["Wind_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Wind_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Wind_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Wind_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Wind_Shot")
+end
+_editor_class["Wind_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Metal_Shot"]=Class(_object)
+_editor_class["Metal_Shot"].init=function(self,_x,_y,_)
+	player_bullet_straight.init(self,"image:Metal_Shot1",_x,_y,10,90,30)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hscale, self.vscale = 1/2.5, 1/2.5
+	_object.set_color(self,"mul+add",100,255,255,255)
+	self.a, self.b, self.rect = 24,12,false
+	if scoredata.shrubLevelUp[8] == 1 then
+		self.dmg = 48
+	end
+	if scoredata.shrubLevelUp[8] == 2 then
+		self.dmg = 60
+	end
+	if scoredata.shrubLevelUp[8] == 3 then
+		self.dmg = 82
+	end
+end
+_editor_class["Metal_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Metal_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Metal_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Metal_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Metal_Shot", 1/2.5)
+	PlaySound("msl2",0.1,self.x/256,false)
+end
+_editor_class["Metal_Shot"].del=function(self)
+	self.class.base.del(self)
+end
+_editor_class["Earth_Shrub_Shot"]=Class(_object)
+_editor_class["Earth_Shrub_Shot"].init=function(self,_x,_y,_)
+	player_bullet_straight.init(self,"image:Marisa_Shot1",_x,_y,16,90,0)
+	self.hp = 10
+	self._blend, self._a, self._r, self._g, self._b = "", 255, 255, 255, 255
+	self._servants = {}
+	self.hide = true
+	self.plantShot = true
+	self.hscale, self.vscale = 1/2.5, 1/2.5
+	_object.set_color(self,"mul+add",25,255,255,255)
+	self.a, self.b, self.rect = 16, 8,false
+	if PlantManager.timer % 16 ~= 0 then
+		_del(self,true)
+	else
+		self.hide = false
+		self.dmg = 2
+	end
+end
+_editor_class["Earth_Shrub_Shot"].frame=function(self)
+	task.Do(self)
+	player_bullet_straight.frame(self)
+	self.class.base.frame(self)
+end
+_editor_class["Earth_Shrub_Shot"].render=function(self)
+	player_bullet_straight.render(self)
+	self.class.base.render(self)
+end
+_editor_class["Earth_Shrub_Shot"].colli=function(self)
+	self.class.base.colli(self)
+end
+_editor_class["Earth_Shrub_Shot"].kill=function(self)
+	last=New(_editor_class["Shot_Effect"],self.x,self.y,self.rot, "image:Earth_Shot", 1/2.5)
+end
+_editor_class["Earth_Shrub_Shot"].del=function(self)
+	self.class.base.del(self)
+end
 _editor_class["Shot_Effect"]=Class(_object)
-_editor_class["Shot_Effect"].init=function(self,_x,_y,ang, img)
+_editor_class["Shot_Effect"].init=function(self,_x,_y,ang, img, size)
 	self.x,self.y=_x,_y
 	self.img=img .. 1
 	self.layer=LAYER_PLAYER_BULLET+5
@@ -2535,7 +3785,11 @@ _editor_class["Shot_Effect"].init=function(self,_x,_y,ang, img)
 	self.colli=false
 	self._servants={}
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
-	self.hscale, self.vscale = 1/4, 1/4
+	if size then
+		self.hscale, self.vscale = size, size
+	else
+		self.hscale, self.vscale = 1/4, 1/4
+	end
 	self.rot = ran:Int(-2, 2) + ang
 	_object.set_color(self,"mul+add",155,255,255,255)
 	lasttask=task.New(self,function()
@@ -2580,7 +3834,12 @@ Marisa.init=function(self)
 	self.skirtlerp = 0
 	self.broomlerp = 0
 	self.torsolerp = 0
-	self.options = {lstg.var.equipCard[1], lstg.var.equipCard[2]}
+	self.wiglerp = 0
+	local equipcards = {0,0}
+	if lstg.var.equipCard then
+		equipcards = {lstg.var.equipCard[1], lstg.var.equipCard[2]} 
+	end
+	self.options = equipcards
 	self.optionPosition = {
 		{-30, 0, -15, 30},
 		{30, 0, 15, 30}
@@ -2589,12 +3848,14 @@ Marisa.init=function(self)
 		{0, 0},
 		{0, 0}
 	}
-	function self.optionFire(x, y, shrubIndex)
+	self.metalTimer = 0
+	function self:optionFire(x, y, shrubIndex)
 		if shrubIndex == 1 then
 			do local speed,_d_speed=(10),(16) for _=1,2 do
 				last=New(_editor_class["Earth_Shot"],x, y,speed)
 			speed=speed+_d_speed end end
 		elseif shrubIndex == 2 then
+			last=New(_editor_class["Water_Shot"],x, y,10)
 		elseif shrubIndex == 3 then
 			for _=1,6 do
 				last=New(_editor_class["Fire_Shot"],x, y,ran:Float(4, 12))
@@ -2611,9 +3872,32 @@ Marisa.init=function(self)
 					last=New(_editor_class["Ice_Shot"],x, y,-self.timer + ang + (360/3)/2 + (360/3)/2)
 				ang=ang+_d_ang end end
 			end
+		elseif shrubIndex == 5 then
+			if x > player.x then
+				do local ang,_d_ang=(0),(360/5) for _=1,5 do
+					last=New(_editor_class["Poison_Shot"],x, y,self.timer + ang)
+					last=New(_editor_class["Poison_Shot"],x, y,self.timer + ang + (360/3)/2)
+				ang=ang+_d_ang end end
+			else
+				do local ang,_d_ang=(0),(360/5) for _=1,5 do
+					last=New(_editor_class["Poison_Shot"],x, y,-self.timer + ang + (360/3)/2)
+					last=New(_editor_class["Poison_Shot"],x, y,-self.timer + ang + (360/3)/2 + (360/3)/2)
+				ang=ang+_d_ang end end
+			end
 		elseif shrubIndex == 6 then
 			last=New(_editor_class["Lightning_Shot"],x, y,90)
 			last=New(_editor_class["Lightning_Shot"],x, y,-90)
+		elseif shrubIndex == 7 then
+			do local a,_d_a=(90 - 15 * 3.5),(15) for _=1,8 do
+				last=New(_editor_class["Wind_Shot"],x, y,a)
+			a=a+_d_a end end
+		elseif shrubIndex == 8 then
+			if player.metalTimer == 0 then
+				last=New(_editor_class["Metal_Shot"],x, y,_)
+				player.metalTimer = 10
+			else
+				player.metalTimer = player.metalTimer - 1
+			end
 		else
 		end
 	end
@@ -2621,12 +3905,13 @@ Marisa.init=function(self)
 end
 Marisa.frame=function(self)
 	task.Do(self)	player_class.frame(self)
-	if KeyIsDown"left" and KeyIsDown"right" then
+	if (KeyIsDown"left" and KeyIsDown"right") or not (KeyIsDown"left" or KeyIsDown"right") then
 		self.armllerp = LerpDecel(self.armllerp, 0, 0.1)
 		self.armrlerp = LerpDecel(self.armllerp, 0, 0.1)
 		self.legllerp = LerpDecel(self.legllerp, 0, 0.1)
 		self.legrlerp = LerpDecel(self.legrlerp, 0, 0.1)
 		self.hairlerp = LerpDecel(self.hairlerp, 0, 0.1)
+		self.wiglerp = LerpDecel(self.wiglerp, 0, 0.1)
 		self.hatlerp = LerpDecel(self.hatlerp, 0, 0.1)
 		self.hattoplerp = LerpDecel(self.hattoplerp, 0, 0.1)
 		self.skirtlerp = LerpDecel(self.skirtlerp, 0, 0.1)
@@ -2638,6 +3923,7 @@ Marisa.frame=function(self)
 		self.legllerp = LerpDecel(self.legllerp, 20, 0.1)
 		self.legrlerp = LerpDecel(self.legrlerp, 20, 0.1)
 		self.hairlerp = LerpDecel(self.hairlerp, 20, 0.1)
+		self.wiglerp = LerpDecel(self.wiglerp, 1, 0.1)
 		self.hatlerp = LerpDecel(self.hatlerp, 15, 0.1)
 		self.hattoplerp = LerpDecel(self.hattoplerp, 20, 0.1)
 		self.skirtlerp = LerpDecel(self.skirtlerp, 30, 0.1)
@@ -2649,24 +3935,18 @@ Marisa.frame=function(self)
 		self.legllerp = LerpDecel(self.legllerp, -20, 0.1)
 		self.legrlerp = LerpDecel(self.legrlerp, -20, 0.1)
 		self.hairlerp = LerpDecel(self.hairlerp, -20, 0.1)
+		self.wiglerp = LerpDecel(self.wiglerp, -1, 0.1)
 		self.hatlerp = LerpDecel(self.hatlerp, -15, 0.1)
 		self.hattoplerp = LerpDecel(self.hattoplerp, -20, 0.1)
 		self.skirtlerp = LerpDecel(self.skirtlerp, -30, 0.1)
 		self.broomlerp = LerpDecel(self.broomlerp, -15, 0.1)
 		self.torsolerp = LerpDecel(self.torsolerp, -15, 0.1)
-	else
-		self.armllerp = LerpDecel(self.armllerp, 0, 0.1)
-		self.armrlerp = LerpDecel(self.armllerp, 0, 0.1)
-		self.legllerp = LerpDecel(self.legllerp, 0, 0.1)
-		self.legrlerp = LerpDecel(self.legrlerp, 0, 0.1)
-		self.hairlerp = LerpDecel(self.hairlerp, 0, 0.1)
-		self.hatlerp = LerpDecel(self.hatlerp, 0, 0.1)
-		self.hattoplerp = LerpDecel(self.hattoplerp, 0, 0.1)
-		self.skirtlerp = LerpDecel(self.skirtlerp, 0, 0.1)
-		self.broomlerp = LerpDecel(self.broomlerp, 0, 0.1)
-		self.torsolerp = LerpDecel(self.torsolerp, 0, 0.1)
 	end
-	self.options = {lstg.var.equipCard[1], lstg.var.equipCard[2]}
+	local equipcards = {0,0}
+	if lstg.var.equipCard then
+		equipcards = {lstg.var.equipCard[1], lstg.var.equipCard[2]} 
+	end
+	self.options = equipcards
 	
 	if KeyIsDown"slow" == false then
 		self.optionCurrentPosition[1][1] = LerpDecel(self.optionCurrentPosition[1][1], self.optionPosition[1][1], 0.1)
@@ -2684,6 +3964,14 @@ Marisa.frame=function(self)
 end
 Marisa.render=function(self)
 	player_class.render(self)
+	SetImageState("image:Hakkero", "mul+add", Color(255, 255, 255, 255))
+	if (scoredata.shrubLevelUp[lstg.var.equipCard[1]] == 3) then
+		Render("image:Hakkero", self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.timer * -1, 1/2.2, 1/2.2)
+	end
+	if (scoredata.shrubLevelUp[lstg.var.equipCard[1]] == 2) then
+		Render("image:Hakkero", self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.timer * -1, 1/2.6, 1/2.6)
+	end
+	
 	if self.options[1] ~= 0 then
 		SetImageState("image:Hakkero", "", Color(255, 255, 255, 255))
 	else
@@ -2691,6 +3979,17 @@ Marisa.render=function(self)
 	end
 	
 	Render("image:Hakkero", self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.timer * -1, 1/3.75, 1/3.75)
+	SetFontState("font:simplymono", "", Color(255, 255, 255, 255))
+	lstg.RenderText("font:simplymono", tostring(scoredata.shrubLevelUp[lstg.var.equipCard[1]] or ""),
+					self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], 0.1, 5)
+	
+	SetImageState("image:Hakkero", "mul+add", Color(255, 255, 255, 255))
+	if (scoredata.shrubLevelUp[lstg.var.equipCard[2]] == 3) then
+		Render("image:Hakkero", self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.timer * 1, 1/2.2, 1/2.2)
+	end
+	if (scoredata.shrubLevelUp[lstg.var.equipCard[2]] == 2) then
+		Render("image:Hakkero", self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.timer * 1, 1/2.6, 1/2.6)
+	end
 	
 	if self.options[2] ~= 0 then
 		SetImageState("image:Hakkero", "", Color(255, 255, 255, 255))
@@ -2699,31 +3998,42 @@ Marisa.render=function(self)
 	end
 	
 	Render("image:Hakkero", self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.timer * 1, 1/3.75, 1/3.75)
+	SetFontState("font:simplymono", "", Color(255, 255, 255, 255))
+	lstg.RenderText("font:simplymono", tostring(scoredata.shrubLevelUp[lstg.var.equipCard[2]] or ""),
+					self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], 0.1, 5)
+	
+	local colorNormal = Color(255,255,255,255)
+	local colorProtect = Color(255,50,50,255)
+	local wigcolor = colorNormal
 	
 	if self.protect % 4 == 0 then
-		SetImageState("image:legl", "", Color(255, 255, 255, 255))
-		SetImageState("image:legr", "", Color(255, 255, 255, 255))
-		SetImageState("image:broom", "", Color(255, 255, 255, 255))
-		SetImageState("image:torso", "", Color(255, 255, 255, 255))
-		SetImageState("image:arml", "", Color(255, 255, 255, 255))
-		SetImageState("image:armr", "", Color(255, 255, 255, 255))
-		SetImageState("image:skirt", "", Color(255, 255, 255, 255))
-		SetImageState("image:hair", "", Color(255, 255, 255, 255))
-		SetImageState("image:hat", "", Color(255, 255, 255, 255))
-		SetImageState("image:hattop", "", Color(255, 255, 255, 255))
+		SetImageState("image:legl", "", colorNormal)
+		SetImageState("image:legr", "", colorNormal)
+		SetImageState("image:broom", "", colorNormal)
+		SetImageState("image:torso", "", colorNormal)
+		SetImageState("image:arml", "", colorNormal)
+		SetImageState("image:armr", "", colorNormal)
+		SetImageState("image:skirt", "", colorNormal)
+		SetImageState("image:hair", "", colorNormal)
+		SetImageState("image:hat", "", colorNormal)
+		SetImageState("image:hattop", "", colorNormal)
+		wigcolor = colorNormal
 	else
-		SetImageState("image:legl", "", Color(255, 50, 50, 255))
-		SetImageState("image:legr", "", Color(255, 50, 50, 255))
-		SetImageState("image:broom", "", Color(255, 50, 50, 255))
-		SetImageState("image:torso", "", Color(255, 50, 50, 255))
-		SetImageState("image:arml", "", Color(255, 50, 50, 255))
-		SetImageState("image:armr", "", Color(255, 50, 50, 255))
-		SetImageState("image:skirt", "", Color(255, 50, 50, 255))
-		SetImageState("image:hair", "", Color(255, 50, 50, 255))
-		SetImageState("image:hat", "", Color(255, 50, 50, 255))
-		SetImageState("image:hattop", "", Color(255, 50, 50, 255))
+		SetImageState("image:legl", "", colorProtect)
+		SetImageState("image:legr", "", colorProtect)
+		SetImageState("image:broom", "", colorProtect)
+		SetImageState("image:torso", "", colorProtect)
+		SetImageState("image:arml", "", colorProtect)
+		SetImageState("image:armr", "", colorProtect)
+		SetImageState("image:skirt", "", colorProtect)
+		SetImageState("image:hair", "", colorProtect)
+		SetImageState("image:hat", "", colorProtect)
+		SetImageState("image:hattop", "", colorProtect)
+		wigcolor = colorProtect
 	end
 	
+	
+	--
 	Render("image:legl", self.x - 2, self.y - 4, 0 - (sin(self.timer) * 6) + self.legllerp, self.hscale, self.vscale)
 	Render("image:legr", self.x + 2, self.y - 4, 0 + (sin(self.timer) * 6) + self.legrlerp, self.hscale, self.vscale)
 	Render("image:broom", self.x, self.y - 2, 0 + self.broomlerp, self.hscale, self.vscale)
@@ -2731,7 +4041,45 @@ Marisa.render=function(self)
 	Render("image:arml", self.x - 3, self.y + 4, 0 + self.armllerp, self.hscale, self.vscale)
 	Render("image:armr", self.x + 3, self.y + 4, 0 + self.armrlerp, self.hscale, self.vscale)
 	Render("image:skirt", self.x, self.y - 2, 0 + (sin(self.timer * 3) * 8) + self.skirtlerp, self.hscale, self.vscale)
-	Render("image:hair", self.x, self.y + 12, 0 + (sin(self.timer * 6) * 6) + self.hairlerp, self.hscale, self.vscale)
+	--Render("image:hair", self.x, self.y + 12, 0 + (sin(self.timer * 6) * 6) + self.hairlerp, self.hscale, self.vscale)
+	
+	local n = MarisaWigNode
+	local wigsizew, wigsizeh = 72 * self.hscale * 1.1, 168 * self.vscale * 1.1 
+	local anchor = Vector(0,18) + Vector.fromAngle(-90+self.hairlerp) * 29 * self.hscale
+	local wigflow, wigspeed, wigstrength, wigstrengthmove, wigmove = 40, 5, 60, 16, 2
+	local pos = Vector(0,0)
+	local prevpos = Vector(0,0)
+	local prevnormal = Vector(-1,0)
+	local prevang = -90 - 5 * self.wiglerp
+	local ang = 0
+	for i=1,n do
+		local t = i/n
+		local fxt = 1-math.pow(1-t,2)
+		local wigstr = LerpDecel(wigstrength/n,wigstrengthmove/n,math.abs(self.wiglerp))
+		ang = prevang + fxt * wigstr * sin(fxt * wigflow + self.timer * wigspeed)
+		ang = ang + wigmove * self.wiglerp * fxt
+		local pos = prevpos + wigsizeh/n * Vector.fromAngle(ang)
+		local off = (pos-prevpos).normalized
+		local normal = off:perpendicular()
+		local finalpos = Vector(player.x,player.y) + anchor + pos
+		local finalprev = Vector(player.x,player.y) + anchor + prevpos
+		
+		local vlt = finalprev - prevnormal * wigsizew
+		local vrt = finalprev + prevnormal * wigsizew
+		local vrb = finalpos  + normal * wigsizew
+		local vlb = finalpos  - normal * wigsizew
+		SetImageState("image:wig"..i, "", wigcolor)
+		Render4V("image:wig"..i,
+				vlt.x, vlt.y,0,
+				vrt.x, vrt.y,0,
+				vrb.x, vrb.y,0,
+				vlb.x, vlb.y,0)
+		
+		prevpos = pos
+		prevnormal = normal
+		prevang = ang
+	end
+	
 	Render("image:hat", self.x, self.y + 14, 0 + self.hatlerp, self.hscale, self.vscale)
 	Render("image:hattop", self.x, self.y + 21, 0 + (sin(self.timer) * 10) + self.hattoplerp, self.hscale, self.vscale)
 		for i = 1, 4 do
@@ -2745,8 +4093,8 @@ Marisa.shoot=function(self)
 	PlaySound("plst00",0.3,self.x/1024,false)
 	last=New(_editor_class["Base_Shot"],self.x - 8,self.y + 4,_)
 	last=New(_editor_class["Base_Shot"],self.x + 8,self.y + 4,_)
-	self.optionFire(self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.options[1])
-	self.optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
+	self:optionFire(self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.options[1])
+	self:optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
 end
 Marisa.spell=function(self)
 end
@@ -2771,7 +4119,20 @@ _editor_class["Eternity"].init=function(self,cards)
 	self._wisys:SetImage("Eternity_Boss.png",3,4,{4,4,4},{1,2},6,16,16)
 	self.hscale, self.vscale = 1/2.25, 1/2.25
 end
-_tmp_sc=boss.card.New("bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",2,5,25,1000,{0,0,0},false)
+_tmp_sc=boss.dialog.New(true)
+function _tmp_sc:init()
+	lstg.player.dialog=true
+	_dialog_can_skip=true
+	self.dialog_displayer=New(dialog_displayer)
+	lasttask=task.New(self,function()
+		boss.dialog.sentence(self,"image:Marisa_1","left",[===[Crazy to think that shrubs like these haven't
+popped up in Gensokyo before, not like this.]===],600,1,1,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
+		boss.dialog.sentence(self,"image:Marisa_1","right",[===[Have you seen any more of these magnificent
+shards falling anywhere nearby?]===],600,1,1,1,1,(550 - -1 * 150),116,(550 - -1 * 100),230,1,false)
+	end)
+end
+table.insert(_editor_class["Eternity"].cards,_tmp_sc)
+_tmp_sc=boss.card.New("bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",2,5,25,1000,{0,40,15},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
@@ -2831,6 +4192,45 @@ table.insert(_sc_table,{"Eternity","「」",_tmp_sc,#_editor_class["Eternity"].c
 		task.Do(self)
 	end
 
+stage.group.New('menu',{},"Act0",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
+stage.group.AddStage('Act0','Scene@Act0',{lifeleft=7,power=400,faith=50000,bomb=3},true)
+stage.group.DefStageFunc('Scene@Act0','init',function(self)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		lstg.var.lifeleft = 2
+		New(_editor_class["magic_forest_background"] or magic_forest_background)
+		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
+		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
+		task._Wait(60)
+		local _boss_wait=true
+		local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		task._Wait(9999999)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
+end)
 stage.group.New('menu',{},"Act1",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
 stage.group.AddStage('Act1','Scene@Act1',{lifeleft=7,power=400,faith=50000,bomb=3},true)
 stage.group.DefStageFunc('Scene@Act1','init',function(self)
@@ -2845,7 +4245,80 @@ stage.group.DefStageFunc('Scene@Act1','init',function(self)
 		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
 		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
 		task._Wait(60)
-		last=New(_editor_class["Stage_Sections"],self.x,self.y,4, 4, 2)
+		task._Wait(9999999)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
+end)
+stage.group.New('menu',{},"Act2",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
+stage.group.AddStage('Act2','Scene@Act2',{lifeleft=7,power=400,faith=50000,bomb=3},true)
+stage.group.DefStageFunc('Scene@Act2','init',function(self)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		lstg.var.lifeleft = 2
+		New(_editor_class["tkz_stage3_bg"] or tkz_stage3_bg)
+		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
+		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
+		task._Wait(60)
+		local _boss_wait=true
+		local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		task._Wait(9999999)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
+end)
+stage.group.New('menu',{},"Act3",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
+stage.group.AddStage('Act3','Scene@Act3',{lifeleft=7,power=400,faith=50000,bomb=3},true)
+stage.group.DefStageFunc('Scene@Act3','init',function(self)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		lstg.var.lifeleft = 2
+		New(_editor_class["temple_background"] or temple_background)
+		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
+		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
+		task._Wait(60)
 		task._Wait(9999999)
 	end)
 	task.New(self,function()

@@ -77,6 +77,10 @@ end
 function enemybase:colli(other)
     if other.plantShot or self.group == GROUP_ENEMY then
         if self == _boss and other.plantShot then return end
+        if self.group == GROUP_ENEMY and other.plantShot then return end
+        if other.windShot and other.timer > 10 then
+            self.y = self.y + math.max(1 * (scoredata.shrubLevelUp[7] * 0.55), 1)
+        end
         if other.dmg then
             lstg.var.score = lstg.var.score + 10
             local dmg = other.dmg

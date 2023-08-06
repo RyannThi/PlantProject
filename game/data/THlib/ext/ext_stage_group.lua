@@ -108,6 +108,11 @@ function stage.group.frame(self)
     end
     if ext.GetPauseMenuOrder() == 'Continue' then
         lstg.var.timeslow = nil
+        for _,unit in ObjList(GROUP_NONTJT) do
+            _kill(unit,true)
+        end
+        if lstg.var.equipCard[1] == 0 then lstg.var.equipCard[1] = 1 end
+        if lstg.var.equipCard[2] == 0 then lstg.var.equipCard[2] = 1 end
         StopMusic(deathmusic)
         if not Extramode then
             gamecontinueflag = true

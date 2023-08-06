@@ -1,32 +1,28 @@
 {
-	"resy": 480,
-	"keys2": {
-		"special": 70,
-		"up": 101,
-		"down": 98,
-		"left": 97,
-		"right": 99,
-		"slow": 65,
-		"shoot": 83,
-		"spell": 68
-	},
-	"sevolume": 100,
-	"username": "User",
-	"locale": "en_us",
 	"nosplash": true,
-	"timezone": 8,
 	"keys": {
-		"special": 67,
-		"up": 38,
-		"down": 40,
 		"left": 37,
 		"right": 39,
 		"slow": 16,
 		"shoot": 90,
-		"spell": 88
+		"spell": 88,
+		"special": 67,
+		"up": 38,
+		"down": 40
 	},
+	"locale": "en_us",
 	"mod": "PlantProject",
-	"vsync": true,
+	"timezone": 8,
+	"keys2": {
+		"left": 97,
+		"right": 99,
+		"slow": 65,
+		"shoot": 83,
+		"spell": 68,
+		"special": 70,
+		"up": 101,
+		"down": 98
+	},
 	"keysys": {
 		"repfast": 17,
 		"repslow": 16,
@@ -34,8 +30,12 @@
 		"snapshot": 36,
 		"retry": 82
 	},
-	"last_mod": "PlantProject",
-	"bgmvolume": 100,
+	"username": "User",
 	"windowed": true,
-	"resx": 853
+	"resx": 1600,
+	"resy": 900,
+	"last_mod": "PlantProject",
+	"sevolume": 100,
+	"bgmvolume": 100,
+	"vsync": true
 }

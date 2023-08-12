@@ -1,4 +1,14 @@
 {
+	"shrubLevelUp": [
+		3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		3,
+		3
+	],
 	"clearCount": [
 		[
 			0,
@@ -13,43 +23,57 @@
 			0
 		]
 	],
-	"ownedCards": [
-		0,
-		3,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0
-	],
-	"hiscore": {
-		"Scene@Act0@Marisa": 9088030,
-		"Scene@Act2@Marisa": 783840,
-		"Scene@Act3@Marisa": 36930,
-		"Scene@Act1@Marisa": 6370660
-	},
 	"attemptCount": [
 		0,
 		0,
 		0
 	],
-	"shrubLevelUp": [
-		3,
-		3,
-		3,
-		3,
-		3,
-		3,
-		3,
-		3
-	],
 	"spell_card_hist": {
 		"All": {
-			"「」": {
+			"Sure-Fire Vanquishing \"Optically-precise Cleansing\"": {
 				"Marisa": [
-					24,
-					39
+					1,
+					1
+				]
+			},
+			"a": {
+				"Marisa": [
+					2,
+					42
+				],
+				"reimu_player": [
+					0,
+					2
+				]
+			},
+			"Bakery Technique \"Convection Oven\"": {
+				"Marisa": [
+					1,
+					9
+				]
+			},
+			"Red Boundary \"Expand Boundary\"": {
+				"Marisa": [
+					2,
+					3
+				]
+			},
+			"asd": {
+				"Marisa": [
+					0,
+					11
+				]
+			},
+			"s": {
+				"Marisa": [
+					1,
+					21
+				]
+			},
+			"v": {
+				"Marisa": [
+					0,
+					16
 				]
 			},
 			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
@@ -57,9 +81,74 @@
 					28,
 					87
 				]
+			},
+			"「」": {
+				"Marisa": [
+					26,
+					102
+				]
+			},
+			"Salvation of Human Kind \"UFO Shield\"": {
+				"Marisa": [
+					0,
+					10
+				]
+			},
+			"Fantasy Grid \"Tai Chi Shooting\"": {
+				"Marisa": [
+					0,
+					8
+				]
+			},
+			"sad": {
+				"Marisa": [
+					1,
+					15
+				]
+			},
+			"Tottema's Lotus Flower \"Nirvana Utopia\"": {
+				"Marisa": [
+					1,
+					5
+				]
+			},
+			"fg": {
+				"Marisa": [
+					0,
+					8
+				]
+			},
+			"Nature Strike \"Embellish Root\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"Bodhisattva's Banner \"One Dot Six Enclosure\"": {
+				"Marisa": [
+					2,
+					13
+				]
 			}
 		}
 	},
-	"seedAmount": 4662,
-	"prevSeedAmount": 4662
+	"seedAmount": 6797,
+	"ownedCards": [
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0
+	],
+	"prevSeedAmount": 6797,
+	"hiscore": {
+		"SC Debugger@SC Debugger@Marisa": 2156650,
+		"Scene@Act3@Marisa": 36930,
+		"Scene@Act0@Marisa": 9088030,
+		"Scene@Act2@Marisa": 2448081,
+		"Scene@Act1@Marisa": 6370660
+	}
 }

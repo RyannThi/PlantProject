@@ -1,9 +1,11 @@
 fdc683ebce129a5234be34eac184d1a8|C:\Users\ryann\Documents\PlantProject\project\Code\Vector.lua|Vector.lua
-2ab65c554e8112b72049aee00b53cec0|C:\Users\ryann\Documents\PlantProject\project\Music\TitleTheme.ogg|MUSIC\TitleTheme.ogg
+88e6a92d1c0413272252a12a38751411|C:\Users\ryann\Documents\PlantProject\project\Music\TitleTheme.ogg|MUSIC\TitleTheme.ogg
 8dc72ecff2c4c325a6e883312d3d64c4|C:\Users\ryann\Documents\PlantProject\project\Music\Act0Theme.ogg|MUSIC\Act0Theme.ogg
 0df809665970e5a818c7f9673757d3b5|C:\Users\ryann\Documents\PlantProject\project\Music\Act1Theme.ogg|MUSIC\Act1Theme.ogg
+e6a959705baad8de8f75d906bb0f222c|C:\Users\ryann\Documents\PlantProject\project\Music\Act2BossTheme.ogg|MUSIC\Act2BossTheme.ogg
 3c4a74bb02029070b3ef04c11088b38b|C:\Users\ryann\Documents\PlantProject\project\Music\Act3Theme.ogg|MUSIC\Act3Theme.ogg
 c6764e2ab9856d86ddf75beb37cff395|C:\Users\ryann\Documents\PlantProject\project\Music\Act3BossTheme.ogg|MUSIC\Act3BossTheme.ogg
+04d55e34b81b0874de112b8933d1596a|C:\Users\ryann\Documents\PlantProject\project\Music\se_ufo.wav|MUSIC\se_ufo.wav
 79a6456c0f1906fc70a80607e2395fc8|C:\Users\ryann\Documents\PlantProject\project\Fonts\trocchi.fnt|font\trocchi.fnt
 967dd13213e13512cee7596ad3a8b028|C:\Users\ryann\Documents\PlantProject\project\Fonts\trocchi.png|font\trocchi.png
 ca1b60fbed2cf4ecedbc77444063cf12|C:\Users\ryann\Documents\PlantProject\project\Fonts\simplymono.fnt|font\simplymono.fnt
@@ -59,6 +61,7 @@ cf0de4c58ceadbe7e73679e3bc03f4ab|C:\Users\ryann\Documents\PlantProject\project\P
 b3a3b1d46ce60ce098b9941ca470011a|C:\Users\ryann\Documents\PlantProject\project\Portraits\Marisa\Marisa_.png|PORTRAITS\MARISA\Marisa_.png
 c5ce784a1a469c58c97706e195bad82a|C:\Users\ryann\Documents\PlantProject\project\Portraits\Kichi\Kichi_Shadow.png|PORTRAITS\KICHI\Kichi_Shadow.png
 d28804b58e4302deb81a3cffd4c9d668|C:\Users\ryann\Documents\PlantProject\project\Portraits\Kichi\Kichi_Highlight.png|PORTRAITS\KICHI\Kichi_Highlight.png
+b6d1b21549025028a5ab0c2712a5c5fc|C:\Users\ryann\Documents\PlantProject\project\Portraits\Kichi\Kichi_Cutin.png|PORTRAITS\KICHI\Kichi_Cutin.png
 2d5d053c8ea10a3fdac0d94c0e99ec8c|C:\Users\ryann\Documents\PlantProject\project\Portraits\Kichi\Kichi_.png|PORTRAITS\KICHI\Kichi_.png
 c14d8767fa602e083232835c9117f8a1|C:\Users\ryann\Documents\PlantProject\project\Portraits\Karen\Karen_Shadow.png|PORTRAITS\KAREN\Karen_Shadow.png
 801f5d70567b5ef7a78161157f840646|C:\Users\ryann\Documents\PlantProject\project\Portraits\Karen\Karen_Highlight.png|PORTRAITS\KAREN\Karen_Highlight.png
@@ -81,6 +84,9 @@ c37e85309f2decafc107dcd0ac0e8a8a|C:\Users\ryann\Documents\PlantProject\project\S
 8e8554a050640b2779e63b1a2ebe2601|C:\Users\ryann\Documents\PlantProject\project\Sprites\Title_Karen.png|SPRITES\GENERAL\Title_Karen.png
 5770e48e9ff59cb0934ae06dd1681b0f|C:\Users\ryann\Documents\PlantProject\project\Sprites\Title_Reimu.png|SPRITES\GENERAL\Title_Reimu.png
 c840247dd62a4d15ade62ddb825585a4|C:\Users\ryann\Documents\PlantProject\project\Sprites\Title_Kichi.png|SPRITES\GENERAL\Title_Kichi.png
+d804d6720f85440d4242f2cc1cfd1399|C:\Users\ryann\Documents\PlantProject\project\Sprites\KarenRadius.png|SPRITES\GENERAL\KarenRadius.png
+c124ec0718c5e4bc2de59b4989e9ef00|C:\Users\ryann\Documents\PlantProject\project\Sprites\UFO.png|SPRITES\GENERAL\UFO.png
+8fdf8ca0089698fee5a387f926981d71|C:\Users\ryann\Documents\PlantProject\project\Sprites\ReimuBall.png|SPRITES\GENERAL\ReimuBall.png
 4891c409efb0ac40cd4c8243a746a93c|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\arml.png|SPRITES\MARISA\arml.png
 eff9d5163b61c783b11580ebe9de01eb|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\armr.png|SPRITES\MARISA\armr.png
 65cc65dc6e8650430f21641daec0c7f5|C:\Users\ryann\Documents\PlantProject\project\Sprites\Marisa\broom.png|SPRITES\MARISA\broom.png
@@ -106,3 +112,6 @@ c99b59c41ee8613a3432b762f9b58cb4|C:\Users\ryann\Documents\PlantProject\project\S
 0e3a6096212efdffd9be6c2dbea24b1e|C:\Users\ryann\Documents\PlantProject\project\Sprites\blank_void.png|blank_void.png
 38b741f8740142178f09b950c6bc4779|C:\Users\ryann\Documents\PlantProject\project\Sprites\Eternity_Boss.png|Eternity_Boss.png
 113e3830509269ae88c6f3b986ed3aaf|C:\Users\ryann\Documents\PlantProject\project\Sprites\Isaki_Boss.png|Isaki_Boss.png
+c927678c9cec96b134582ed02d646437|C:\Users\ryann\Documents\PlantProject\project\Sprites\Karen_Boss.png|Karen_Boss.png
+72c72792684d4d5ca0979e336385244d|C:\Users\ryann\Documents\PlantProject\project\Sprites\Reimu_Boss.png|Reimu_Boss.png
+77140112319b4998ba14a6efc6c83ecc|C:\Users\ryann\Documents\PlantProject\project\Sprites\Kichi_Boss.png|Kichi_Boss.png

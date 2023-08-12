@@ -5,6 +5,8 @@ lstg.var._boss_class_sc_index = _boss_class_sc_index
 stage_init = stage.New('init', true, true)
 function stage_init:init()
     menu_items = {}
+    lstg.var.equipCard = {1, 1}
+    SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
     for i, v in ipairs(player_list) do
         table.insert(menu_items, { player_list[i][1], function()
             menu.FlyOut(menu_player_select, 'left')

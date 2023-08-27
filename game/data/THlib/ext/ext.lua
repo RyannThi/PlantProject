@@ -59,9 +59,9 @@ function ChangeGameTitle()
         "Luastg Ex Plus 0.82",
     }, " | ")
     if mod then
-        SetTitle(mod .. " | " .. ext)
+        SetTitle("東方葉萌舞　～ Leafwhisper Ode to Blooming v1.0")
     else
-        SetTitle(ext)
+        SetTitle("東方葉萌舞　～ Leafwhisper Ode to Blooming v1.0")
     end
 end
 

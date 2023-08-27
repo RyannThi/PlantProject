@@ -113,6 +113,9 @@ function stage.group.frame(self)
         end
         if lstg.var.equipCard[1] == 0 then lstg.var.equipCard[1] = 1 end
         if lstg.var.equipCard[2] == 0 then lstg.var.equipCard[2] = 1 end
+        for i = 1, 6 do
+            if lstg.var.plantCard[i] == 0 then lstg.var.plantCard[i] = 1 end
+        end
         StopMusic(deathmusic)
         if not Extramode then
             gamecontinueflag = true

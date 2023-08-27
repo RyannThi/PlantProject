@@ -252,6 +252,7 @@ function item_point:init(x, y)
     item.init(self, x, y, 2)
 end
 function item_point:collect()
+    lstg.var.lifePoint = lstg.var.lifePoint + 1
     local var = lstg.var
     if self.attract == 8 then
         New(float_text, 'item', var.pointrate, self.x, self.y + 6, 0.75, 90, 60, 0.5, 0.5, Color(0x80FFFF00), Color(0x00FFFF00))

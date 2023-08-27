@@ -1,138 +1,4 @@
 {
-	"shrubLevelUp": [
-		3,
-		3,
-		3,
-		3,
-		3,
-		3,
-		3,
-		3
-	],
-	"clearCount": [
-		[
-			0,
-			0
-		],
-		[
-			0,
-			0
-		],
-		[
-			0,
-			0
-		]
-	],
-	"attemptCount": [
-		0,
-		0,
-		0
-	],
-	"spell_card_hist": {
-		"All": {
-			"Sure-Fire Vanquishing \"Optically-precise Cleansing\"": {
-				"Marisa": [
-					1,
-					1
-				]
-			},
-			"a": {
-				"Marisa": [
-					2,
-					42
-				],
-				"reimu_player": [
-					0,
-					2
-				]
-			},
-			"Bakery Technique \"Convection Oven\"": {
-				"Marisa": [
-					1,
-					9
-				]
-			},
-			"Red Boundary \"Expand Boundary\"": {
-				"Marisa": [
-					2,
-					3
-				]
-			},
-			"asd": {
-				"Marisa": [
-					0,
-					11
-				]
-			},
-			"s": {
-				"Marisa": [
-					1,
-					21
-				]
-			},
-			"v": {
-				"Marisa": [
-					0,
-					16
-				]
-			},
-			"bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn": {
-				"Marisa": [
-					28,
-					87
-				]
-			},
-			"「」": {
-				"Marisa": [
-					26,
-					102
-				]
-			},
-			"Salvation of Human Kind \"UFO Shield\"": {
-				"Marisa": [
-					0,
-					10
-				]
-			},
-			"Fantasy Grid \"Tai Chi Shooting\"": {
-				"Marisa": [
-					0,
-					8
-				]
-			},
-			"sad": {
-				"Marisa": [
-					1,
-					15
-				]
-			},
-			"Tottema's Lotus Flower \"Nirvana Utopia\"": {
-				"Marisa": [
-					1,
-					5
-				]
-			},
-			"fg": {
-				"Marisa": [
-					0,
-					8
-				]
-			},
-			"Nature Strike \"Embellish Root\"": {
-				"Marisa": [
-					0,
-					1
-				]
-			},
-			"Bodhisattva's Banner \"One Dot Six Enclosure\"": {
-				"Marisa": [
-					2,
-					13
-				]
-			}
-		}
-	},
-	"seedAmount": 6797,
 	"ownedCards": [
 		0,
 		0,
@@ -143,12 +9,120 @@
 		0,
 		0
 	],
-	"prevSeedAmount": 6797,
+	"prevSeedAmount": 1741,
+	"clearCount": [
+		[
+			1,
+			1
+		],
+		[
+			1,
+			1
+		],
+		[
+			2,
+			0
+		]
+	],
 	"hiscore": {
-		"SC Debugger@SC Debugger@Marisa": 2156650,
-		"Scene@Act3@Marisa": 36930,
-		"Scene@Act0@Marisa": 9088030,
-		"Scene@Act2@Marisa": 2448081,
-		"Scene@Act1@Marisa": 6370660
-	}
+		"Scene@Act0@Marisa": 2270720,
+		"SceneStaff@StaffRoll@Marisa": 0,
+		"Scene@Act2@Marisa": 13958390,
+		"Scene@StaffRoll@Marisa": 0,
+		"Scene@Act3@Marisa": 13828041,
+		"Scene@Act1@Marisa": 7814951
+	},
+	"shrubLevelUp": [
+		3,
+		3,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1
+	],
+	"credits": false,
+	"spell_card_hist": {
+		"All": {
+			"Vineyard Scramble \"Overgrown Connections\"": {
+				"Marisa": [
+					2,
+					2
+				]
+			},
+			"Enchanting Flower \"Crystallize Entanglement\"": {
+				"Marisa": [
+					1,
+					2
+				]
+			},
+			"Tottema's Lotus Flower \"Nirvana Utopia\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"\"Leafwhisper Ode to Blooming\"": {
+				"Marisa": [
+					2,
+					2
+				]
+			},
+			"Scatter Sign \"Scattering Metamorphosis\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"Sinusoidal Buoyancy \"Midsummer Frenzy\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"Red Boundary \"Expand Boundary\"": {
+				"Marisa": [
+					1,
+					1
+				]
+			},
+			"Bakery Technique \"Convection Oven\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"Sure-Fire Vanquishing \"Optically-precise Cleansing\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			},
+			"Nature Strike \"Embellish Root\"": {
+				"Marisa": [
+					1,
+					2
+				]
+			},
+			"Bodhisattva's Banner \"One Dot Six Enclosure\"": {
+				"Marisa": [
+					1,
+					1
+				]
+			},
+			"Fantasy Grid \"Tai Chi Shooting\"": {
+				"Marisa": [
+					0,
+					1
+				]
+			}
+		}
+	},
+	"seedAmount": 1741,
+	"attemptCount": [
+		3,
+		3,
+		2
+	]
 }

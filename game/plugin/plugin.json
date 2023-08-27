@@ -1,8 +1,8 @@
 [
 	{
-		"path": "plugin\/ColliderShapeDebugger\/",
+		"enable": false,
+		"directory_mode": true,
 		"name": "ColliderShapeDebugger",
-		"enable": true,
-		"directory_mode": true
+		"path": "plugin\/ColliderShapeDebugger\/"
 	}
 ]

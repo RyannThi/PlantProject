@@ -147,9 +147,12 @@ end
 MusicRecord('bgm:'..'TitleTheme','MUSIC\\TitleTheme.ogg',fromsample(4696650),fromsample(3704400))
 MusicRecord('bgm:'..'Act0Theme','MUSIC\\Act0Theme.ogg',0,0)
 MusicRecord('bgm:'..'Act1Theme','MUSIC\\Act1Theme.ogg',0,0)
-MusicRecord('bgm:'..'Act2BossTheme','MUSIC\\Act2BossTheme.ogg',0,0)
+MusicRecord('bgm:'..'Act2Theme','MUSIC\\Act2Theme.ogg',0,0)
 MusicRecord('bgm:'..'Act3Theme','MUSIC\\Act3Theme.ogg',0,0)
+MusicRecord('bgm:'..'Act1BossTheme','MUSIC\\Act1BossTheme.ogg',0,0)
+MusicRecord('bgm:'..'Act2BossTheme','MUSIC\\Act2BossTheme.ogg',0,0)
 MusicRecord('bgm:'..'Act3BossTheme','MUSIC\\Act3BossTheme.ogg',0,0)
+MusicRecord('bgm:'..'StaffRollTheme','MUSIC\\StaffRollTheme.ogg',0,0)
 LoadSound('se:'..'se_ufo','MUSIC\\se_ufo.wav')
 -- archive space: 
 lstg.LoadFont('font:'..'trocchi','font\\trocchi.fnt',true)
@@ -417,6 +420,15 @@ _LoadImageFromFile('image:'..'KarenRadius','SPRITES\\GENERAL\\KarenRadius.png',t
 LoadAniFromFile('ani:'..'UFO','SPRITES\\GENERAL\\UFO.png',true,4,1,8,0,0,false)
 SetTextureSamplerState('ani:UFO',"point+clamp")
 _LoadImageFromFile('image:'..'ReimuBall','SPRITES\\GENERAL\\ReimuBall.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'EnemyProgressBar','SPRITES\\GENERAL\\EnemyProgressBar.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'EnemyProgressBarIndicator','SPRITES\\GENERAL\\EnemyProgressBarIndicator.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'LifeProgressBar','SPRITES\\GENERAL\\LifeProgressBar.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'LifeProgressBarIndicator','SPRITES\\GENERAL\\LifeProgressBarIndicator.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'StaffRoll','SPRITES\\GENERAL\\StaffRoll.png',true,0,0,false,0)
+SetImageCenter("image:StaffRoll",1920/2, 0)
+_LoadImageFromFile('image:'..'StaffRollBackgroundOne','SPRITES\\GENERAL\\StaffRollBackgroundOne.png',true,0,0,false,0)
+_LoadImageFromFile('image:'..'StaffRollBackgroundTwo','SPRITES\\GENERAL\\StaffRollBackgroundTwo.png',true,0,0,false,0)
+CopyImage("altwhite", "white")
 -- archive space: 
 -- archive space: SPRITES\MARISA\
 _LoadImageFromFile('image:'..'arml','SPRITES\\MARISA\\arml.png',true,0,0,false,0)
@@ -1034,6 +1046,16 @@ _editor_class["MainMenu_Manager"].frame=function(self)
 		self.waitTimer = self.waitTimer - 1
 		if self.waitTimer <= 0 then
 			if self.optionsIn == false then
+				if GetKeyState(KEY.J) then
+					lstg.var.equipCard = {}
+					lstg.var.plantCard = {}
+					lstg.var.equipCard[1] = 1
+					lstg.var.equipCard[2] = 1
+					for i = 1, 4 do
+						lstg.var.plantCard[i] = 0
+					end
+					stage.group.Start(stage.groups['ActJudge'], 0)
+				end
 				if is_up_held then
 					self.selectionIndex = Wrap(self.selectionIndex - 1, 1, 5)
 					PlaySound("select00",0.1,0,false)
@@ -1553,7 +1575,21 @@ _editor_class["Act_Select"].frame=function(self)
 					lstg.var.selectedStage = ActSelect.selectionIndex
 					stage.group.Start(stage.groups['Act' .. ActSelect.selectionIndex - 1], 0)
 				else
-					BaseDrop.positionIndex = 4
+					if self.selectionIndex == 2 then
+						BaseDrop.positionIndex = 4
+					elseif self.selectionIndex == 3 then
+						if (scoredata.clearCount[1][1] + scoredata.clearCount[1][2]) >= 2 then
+							BaseDrop.positionIndex = 4
+						else
+						 	PlaySound("invalid",0.1,0,false)
+						end
+					elseif self.selectionIndex == 4 then
+						if (scoredata.clearCount[2][1] + scoredata.clearCount[2][2]) >= 2 then
+							BaseDrop.positionIndex = 4
+						else
+						 	PlaySound("invalid",0.1,0,false)
+						end
+					end
 				end
 				
 			end
@@ -1684,6 +1720,7 @@ _editor_class["Loadout_Select"].frame=function(self)
 							lstg.var.plantCard[i] = self.plantedPlants[i]
 						end
 						lstg.var.selectedStage = ActSelect.selectionIndex
+						scoredata.attemptCount[ActSelect.selectionIndex - 1] = scoredata.attemptCount[ActSelect.selectionIndex - 1] + 1
 						stage.group.Start(stage.groups['Act' .. ActSelect.selectionIndex - 1], 0)
 					elseif self.selectionIndex == 2 then
 						self.menuType = 2
@@ -2133,13 +2170,42 @@ _editor_class["UI_Manager"].init=function(self,_x,_y,_)
 	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
 	self.hscale, self.vscale = 1/2.25, 1/2.25
 	lstg.var.selectedShrub = 1
+	lstg.var.lifePoint = 0
+	lstg.var.nextFormation = 0
 	self.repeatSlot = 0
+	self.nextLife = 100
+	self.currentLife = 1
+	self.lifeLerpPos = 0
+	
+	if lstg.var.selectedStage == 1 then
+		self.nextWave = 3
+	elseif lstg.var.selectedStage == 2 then
+		self.nextWave = 7
+	elseif lstg.var.selectedStage == 3 then
+		self.nextWave = 9
+	else
+		self.nextWave = 10
+	end
+	
+	self.lifeScores = {100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750}
+	
 end
 _editor_class["UI_Manager"].frame=function(self)
 	if KeyIsPressed"spell" then
 		lstg.var.selectedShrub = Wrap(lstg.var.selectedShrub + 1, 1, 3)
 		PlaySound("select00",0.1,0,false)
 	end
+	self.nextLife = self.lifeScores[self.currentLife] - lstg.var.lifePoint
+	
+	if lstg.var.lifePoint >= self.lifeScores[self.currentLife] then
+		self.currentLife = self.currentLife + 1
+		lstg.var.lifePoint = 0
+		PlaySound("extend",1,0,false)
+		lstg.var.lifeleft = lstg.var.lifeleft + 1
+	end
+	
+	self.lifeLerpPos = ( (self.nextLife - 0) / (self.lifeScores[self.currentLife] - 0) ) * (1 - 0) + 0
+	self.enemyLerpPos = ( (lstg.var.nextFormation - 0) / (self.nextWave - 0) ) * (1 - 0) + 0
 	self.class.base.frame(self)
 end
 _editor_class["UI_Manager"].render=function(self)
@@ -2241,35 +2307,53 @@ _editor_class["UI_Manager"].render=function(self)
 	--[[ ]]
 	
 	Render("image:UIElements7",100, 440-100,0,self.hscale, self.vscale,0.5)
-	local offsetX = 0;
-	local offsetY = 0;
 	
-	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
-		self.repeatSlot = 4
-	elseif lstg.var.selectedStage == 3 then
-		self.repeatSlot = 5
-	elseif lstg.var.selectedStage == 4 then
-		self.repeatSlot = 6
-	end
+		local offsetX = 0;
+		local offsetY = 0;
+		
+		if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
+			self.repeatSlot = 4
+		elseif lstg.var.selectedStage == 3 then
+			self.repeatSlot = 5
+		elseif lstg.var.selectedStage == 4 then
+			self.repeatSlot = 6
+		end
+		
+		for i = 1, self.repeatSlot do
+			if i % 2 ~= 0 then
+				offsetX = 0
+			else
+				offsetX = 60
+			end
+			if i > 4 then
+				offsetY = 120
+			elseif i > 2 then
+				offsetY = 60
+			end
+			SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
+			Render("image:ShopSlotSeller", 70 + offsetX, 440 - 150 - offsetY, self.hscale - 0.15, self.vscale - 0.15)
+			if lstg.var.plantCard[i] ~= 0 then
+				SetImageState("image:ShrubsCards" .. lstg.var.plantCard[i], "", Color(255, 255, 255, 255))
+				Render("image:ShrubsCards" .. lstg.var.plantCard[i], 70 + offsetX, 440 - 150 - offsetY, 0, self.hscale  - 0.275, self.vscale - 0.275)
+			end
+		end
 	
-	for i = 1, self.repeatSlot do
-		if i % 2 ~= 0 then
-			offsetX = 0
-		else
-			offsetX = 60
-		end
-		if i > 4 then
-			offsetY = 120
-		elseif i > 2 then
-			offsetY = 60
-		end
-		SetImageState("image:ShopSlotSeller", "", Color(255, 255, 255, 255))
-		Render("image:ShopSlotSeller", 70 + offsetX, 440 - 150 - offsetY, self.hscale - 0.15, self.vscale - 0.15)
-		if lstg.var.plantCard[i] ~= 0 then
-			SetImageState("image:ShrubsCards" .. lstg.var.plantCard[i], "", Color(255, 255, 255, 255))
-			Render("image:ShrubsCards" .. lstg.var.plantCard[i], 70 + offsetX, 440 - 150 - offsetY, 0, self.hscale  - 0.275, self.vscale - 0.275)
-		end
-	end
+	--[[ ]]
+	
+	--[[ --- Progress Bars]]
+	
+	--[[ ]]
+	
+	Render("image:LifeProgressBar",100, 440-355,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:trocchi","",Color(225,200,215,255))
+	lstg.RenderText("font:trocchi","Next Life: " .. self.nextLife,100, 440-355,self.hscale - 0.325,5)
+	Render("image:EnemyProgressBar",100, 440-395,0,self.hscale, self.vscale,0.5)
+	SetFontState("font:trocchi","",Color(225,255,216,200))
+	lstg.RenderText("font:trocchi","Waves Left: " .. self.nextWave - lstg.var.nextFormation,100, 440-395,self.hscale - 0.325,5)
+	--[[ ]]
+	
+	Render("image:LifeProgressBarIndicator",math.lerp(170, 30, self.lifeLerpPos), 440-355,0,self.hscale, self.vscale,0.5)
+	Render("image:EnemyProgressBarIndicator",math.lerp(30, 170, self.enemyLerpPos), 440-395,0,self.hscale, self.vscale,0.5)
 	--[[ ]]
 	
 	--[[ --- Logo and FPS]]
@@ -2434,7 +2518,7 @@ _editor_class["Plant_Manager"].frame=function(self)
 				New(self.plantShot[lstg.var.plantCard[i]], -224 + 89.6/2 + (89.6 * (i - 1)), -240,_)
 			end
 		end
-		if self.timer % 240 == 0 and self.timer > 60*2 and player.dialog == false then
+		if self.timer % 260 == 0 and self.timer > 60*2 and player.dialog == false then
 			last=New(_editor_class["PlantEnemy"],-224 + 89.6/2 + (89.6 * ran:Int(1, 5) - 89.6), 240,_)
 		end
 	elseif lstg.var.selectedStage == 4 then
@@ -2443,7 +2527,7 @@ _editor_class["Plant_Manager"].frame=function(self)
 				New(self.plantShot[lstg.var.plantCard[i]], -224 + 74.6/2 + (74.6 * (i - 1)), -240,_)
 			end
 		end
-		if self.timer % 200 == 0 and self.timer > 60*2 and player.dialog == false then
+		if self.timer % 240 == 0 and self.timer > 60*2 and player.dialog == false then
 			last=New(_editor_class["PlantEnemy"],-224 + 74.6/2 + (74.6 * ran:Int(1, 5) - 74.6), 240,_)
 		end
 	end
@@ -2529,6 +2613,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 	self.lastNum = 1
 	function self.finishFormation()
 		self.formationQueueNext = true
+		lstg.var.nextFormation = lstg.var.nextFormation + 1
 	end
 	function self.startFormation(formationIndex)
 		last=New(_editor_class["Section_Announcer"],self.x,self.y,self.waveText[formationIndex])
@@ -2600,7 +2685,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 			self.finishFormation()
 		end
 		if formationIndex == 2 then
-			for _=1,3 do
+			for _=1,2 do
 				task._Wait(45)
 				last=New(EnemySimple,14,180,0, 240,{0,15,3},1,false,true,false,function(self)
 					task.New(self,function()
@@ -4094,7 +4179,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 			self.finishFormation()
 		end
 		if formationIndex == 12 then
-			last=New(EnemySimple,9,300,-240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,-240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*7,MOVE_NORMAL,200, 160, -200, 120, 140, 60, -240, 0)
@@ -4112,7 +4197,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 					end
 				end)
 			end)
-			last=New(EnemySimple,9,300,240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*7,MOVE_NORMAL,-200, 160, 200, 120, -140, 60, 240, 0)
@@ -4161,7 +4246,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 				task._Wait(20)
 			end
 			task._Wait(60*2)
-			last=New(EnemySimple,9,300,-240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,-240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*9,MOVE_NORMAL,200, 160, -200, 120, 140, 60, -240, 0)
@@ -4179,7 +4264,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 					end
 				end)
 			end)
-			last=New(EnemySimple,9,300,240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*9,MOVE_NORMAL,-200, 160, 200, 120, -140, 60, 240, 0)
@@ -4198,7 +4283,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 				end)
 			end)
 			task._Wait(60*9)
-			last=New(EnemySimple,9,300,-240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,-240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*9,MOVE_NORMAL,200, 160, -200, 120, 140, 60, -240, 0)
@@ -4216,7 +4301,7 @@ _editor_class["Stage_Sections"].init=function(self,_x,_y,amount, stageIndex, for
 					end
 				end)
 			end)
-			last=New(EnemySimple,9,300,240, 180,{0,15,5},1,false,true,false,function(self)
+			last=New(EnemySimple,9,250,240, 180,{0,15,5},1,false,true,false,function(self)
 				task.New(self,function()
 					lasttask=task.New(self,function()
 						task.Basis2MoveTo(60*9,MOVE_NORMAL,-200, 160, 200, 120, -140, 60, 240, 0)
@@ -5335,6 +5420,7 @@ _editor_class["StageClearDisplayer"].init=function(self,_x,_y,_)
 	_object.set_color(self,"",0,255,255,255)
 	PlaySound("cardget",1,self.x/256,false)
 	self.x,self.y=0,-100
+	if not scoredata.credits then scoredata.credits = false end
 	lasttask=task.New(self,function()
 		do
 			local _beg_alp=0 local alp=_beg_alp  local _w_alp=0 local _end_alp=255 local _d_w_alp=90/(30-1)
@@ -5362,7 +5448,12 @@ _editor_class["StageClearDisplayer"].init=function(self,_x,_y,_)
 				end
 			end)
 			task.Wait(30)
-			stage.group.FinishStage()
+			if lstg.var.selectedStage == 4 and scoredata.credits == false then
+				scoredata.credits = true
+				stage.group.Start(stage.groups['StaffRoll'], 0)
+			else
+				stage.group.FinishStage()
+			end
 		end
 	end)
 end
@@ -5411,6 +5502,64 @@ end
 _editor_class["CharacterTitle"].render=function(self)
 	SetViewMode'ui'
 	self.class.base.render(self)
+	SetViewMode'world'
+end
+_editor_class["StaffRollManager"]=Class(_object)
+_editor_class["StaffRollManager"].init=function(self,_x,_y,_)
+	self.x,self.y=_x,_y
+	self.img="image:StaffRoll"
+	self.layer=LAYER_TOP+5
+	self.group=GROUP_GHOST
+	self.hide=false
+	self.bound=false
+	self.navi=false
+	self.hp=10
+	self.maxhp=10
+	self.colli=false
+	self._servants={}
+	self._blend,self._a,self._r,self._g,self._b='',255,255,255,255
+	self.hscale, self.vscale = 1/2.25, 1/2.25
+	self.vx, self.vy = 0, 1
+	SetImageState("image:StaffRollBackgroundTwo","mul+add",Color(50,255,255,255))
+	SetImageState("altwhite","",Color(255,0,0,0))
+	lasttask=task.New(self,function()
+		do
+			local _beg_col=255 local col=_beg_col  local _w_col=0 local _end_col=0 local _d_w_col=90/(60-1)
+			for _=1,60 do
+				SetImageState("altwhite","",Color(col,0,0,0))
+				task._Wait(1)
+				_w_col=_w_col+_d_w_col col=(_end_col-_beg_col)*sin(_w_col)+(_beg_col)
+			end
+		end
+		while self.y < 1700 do
+			task._Wait(1)
+		end
+		do
+			local _beg_col=0 local col=_beg_col  local _w_col=-90 local _end_col=255 local _d_w_col=90/(60*3-1)
+			for _=1,60*3 do
+				SetImageState("altwhite","",Color(col,0,0,0))
+				task._Wait(1)
+				_w_col=_w_col+_d_w_col col=(_end_col-_beg_col)*sin(_w_col)+(_end_col)
+			end
+		end
+		
+			New(mask_fader,'close')
+			_stop_music()
+			task.Wait(30)
+			stage.group.FinishGroup()
+			for _=1,_infinite do
+				SetImageState("altwhite","",Color(255,0,0,0))
+				task._Wait(1)
+			end
+		
+	end)
+end
+_editor_class["StaffRollManager"].render=function(self)
+	SetViewMode'ui'
+	Render("image:StaffRollBackgroundOne",screen.width/2, screen.height/2,0,self.hscale, self.vscale,0.5)
+	Render("image:StaffRollBackgroundTwo",screen.width/2, screen.height/2,self.timer * 0.1,self.hscale + 0.05, self.vscale + 0.05,0.5)
+	self.class.base.render(self)
+	Render("altwhite",screen.width/2, screen.height/2,0,1920, 1080,0.5)
 	SetViewMode'world'
 end
 _editor_class["DebugENM"]=Class(enemy)
@@ -6754,23 +6903,31 @@ Marisa.render=function(self)
 	end
 end
 Marisa.shoot=function(self)
-	player.nextshoot = 4
-	PlaySound("plst00",0.3,self.x/1024,false)
-	last=New(_editor_class["Base_Shot"],self.x - 8,self.y + 4,_)
-	last=New(_editor_class["Base_Shot"],self.x + 8,self.y + 4,_)
-	self:optionFire(self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.options[1])
-	self:optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
+	if lstg.var.stage_name == "SceneStaff@StaffRoll" then
+		player.nextshoot = 99999999
+	else
+		player.nextshoot = 4
+		PlaySound("plst00",0.3,self.x/1024,false)
+		last=New(_editor_class["Base_Shot"],self.x - 8,self.y + 4,_)
+		last=New(_editor_class["Base_Shot"],self.x + 8,self.y + 4,_)
+		self:optionFire(self.x + self.optionCurrentPosition[1][1], self.y + self.optionCurrentPosition[1][2], self.options[1])
+		self:optionFire(self.x + self.optionCurrentPosition[2][1], self.y + self.optionCurrentPosition[2][2], self.options[2])
+	end
 end
 Marisa.spell=function(self)
 end
 Marisa.special=function(self)
-	player.nextsp = 20
-	PlaySound("slash",0.8,self.x/1024,false)
-	local optionSel = lstg.var.equipCard[lstg.var.selectedShrub]
-	local plantSel = lstg.var.plantCard[lstg.var.highlightedPlant]
-	
-	lstg.var.equipCard[lstg.var.selectedShrub] = plantSel
-	lstg.var.plantCard[lstg.var.highlightedPlant] = optionSel
+	if lstg.var.stage_name == "SceneStaff@StaffRoll" then
+		player.nextsp = 9999
+	else
+		player.nextsp = 20
+		PlaySound("slash",0.8,self.x/1024,false)
+		local optionSel = lstg.var.equipCard[lstg.var.selectedShrub]
+		local plantSel = lstg.var.plantCard[lstg.var.highlightedPlant]
+		
+		lstg.var.equipCard[lstg.var.selectedShrub] = plantSel
+		lstg.var.plantCard[lstg.var.highlightedPlant] = optionSel
+	end
 end
 table.insert(player_list, {'Marisa Kirisame','Marisa','Marisa'})_editor_class["Eternity"]=Class(boss)
 _editor_class["Eternity"].cards={}
@@ -6809,28 +6966,155 @@ relevant to say, I'll be going.]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325
 		boss.dialog.sentence(self,"image:Eternity_1","right",[===[Wait, have you seen these strange sprouts around?]===],600,0.15, 0.15,1,1,(550 - -1 * 150),116,(550 - -1 * 100),230,1,false)
 		boss.dialog.sentence(self,"image:Marisa_2","left",[===[Oh, yeah. Talking about that, you'll be a
 great excuse for me to try testing them out.]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
+		_stop_music()
 		boss.dialog.sentence(self,"image:Eternity_3","right",[===[Huh? What do you mean?]===],600,0.15, 0.15,1,1,(550 - -1 * 150),116,(550 - -1 * 100),230,1,false)
 		boss.dialog.sentence(self,"image:Marisa_1","left",[===[You're the first one to show up that I can play with.
 At least decently.]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
+		LoadMusicRecord("bgm:Act1BossTheme")
+		_play_music("bgm:Act1BossTheme")
+		last=New(_editor_class["SongDisplayer"],self.x,self.y,true)
 		boss.dialog.sentence(self,"image:Marisa_2","left",[===[I've dealt with a couple fairies before, but you're
 the best target so far, so have at it!]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
 	end)
 end
 table.insert(_editor_class["Eternity"].cards,_tmp_sc)
-_tmp_sc=boss.card.New("bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",2,5,25,1000,{0,40,15},false)
+_tmp_sc=boss.card.New("",2,5,60,1400,{0,50,15},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
-		last=New(_editor_class["Spell_Cutin"],self.x,self.y,"Eternity")
-		task.MoveTo(0,122,60,MOVE_NORMAL)
-		do
-			local _h_a=(100-(-100))/2 local _t_a=(100+(-100))/2 local a=_h_a*sin(0)+_t_a local _w_a=0 local _d_w_a=1.5
+		task.MoveTo(0,120,60,MOVE_DECEL)
+		New(boss_cast_ef,self.x,self.y,360,0,255,200,60,2,false)
+		boss.cast(self,60)
+		task._Wait(60)
+		lasttask=task.New(self,function()
 			for _=1,_infinite do
-				self.x,self.y=a,self.y
-				task._Wait(1)
-				_w_a=_w_a+_d_w_a a=_h_a*sin(_w_a)+_t_a
+				last_list=_create_bullet_group(ball_mid,COLOR_RED,self.x + ran:Int(-100, 100),self.y + ran:Int(-20, 20),3,0,2,2,0,80,true,0,true,true,0,false,self)
+				PlaySound("kira02",0.1,self.x/256,false)
+				task._Wait(45)
 			end
+		end)
+		lasttask=task.New(self,function()
+			for _=1,_infinite do
+				last_list=_create_bullet_group(ball_huge,COLOR_DEEP_GREEN,self.x,self.y,3,0,3,3,0,30,true,0,true,true,0,false,self)
+				PlaySound("kira01",0.1,self.x/256,false)
+				task._Wait(60*1.5)
+			end
+		end)
+		for _=1,_infinite do
+			boss.cast(self,60)
+			do
+				local _beg_ang=90-20 local ang=_beg_ang local _end_ang=-90+40 local _d_ang=(_end_ang-_beg_ang)/(20-1)
+				local _beg_ang2=90-45 local ang2=_beg_ang2 local _end_ang2=-90+20 local _d_ang2=(_end_ang2-_beg_ang2)/(20-1)
+				local _beg_ang3=90+20 local ang3=_beg_ang3 local _end_ang3=90-40 +180 local _d_ang3=(_end_ang3-_beg_ang3)/(20-1)
+				local _beg_ang4=90+40 local ang4=_beg_ang4 local _end_ang4=90-20 +180 local _d_ang4=(_end_ang4-_beg_ang4)/(20-1)
+				for _=1,20 do
+					PlaySound("kira01",0.1,self.x/256,false)
+					last_list=_create_bullet_group(kite,COLOR_DEEP_GREEN,self.x + 40 * cos(ang),self.y + 40 * sin(ang),6,0,6,6,ang,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					last_list=_create_bullet_group(kite,COLOR_DEEP_GREEN,self.x + 40 * cos(ang2),self.y + 40 * sin(ang2),6,0,6,6,ang2,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					last_list=_create_bullet_group(kite,COLOR_DEEP_GREEN,self.x + 40 * cos(ang3),self.y + 40 * sin(ang3),6,0,6,6,ang3,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					last_list=_create_bullet_group(kite,COLOR_DEEP_GREEN,self.x + 40 * cos(ang4),self.y + 40 * sin(ang4),6,0,6,6,ang4,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					task._Wait(3)
+					ang=ang+_d_ang
+					ang2=ang2+_d_ang2
+					ang3=ang3+_d_ang3
+					ang4=ang4+_d_ang4
+				end
+			end
+			do
+				local _beg_ang=70 local ang=_beg_ang local _end_ang=-90-35 local _d_ang=(_end_ang-_beg_ang)/(11-1)
+				local _beg_ang2=90+20 local ang2=_beg_ang2 local _end_ang2=90+35 + 180 local _d_ang2=(_end_ang2-_beg_ang2)/(11-1)
+				local _beg_time=3 local time=_beg_time  local _w_time=-90 local _end_time=1 local _d_w_time=180/(11-1)
+				for _=1,11 do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last_list=_create_bullet_group(kite,COLOR_GREEN,self.x + 40 * cos(ang),self.y + 40 * sin(ang),6,0,6,6,ang,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					last_list=_create_bullet_group(kite,COLOR_GREEN,self.x + 40 * cos(ang2),self.y + 40 * sin(ang2),6,0,6,6,ang2,0,false,0,true,true,0,false,self)
+					for _,unit in ipairs(last_list) do
+						lasttask=task.New(unit,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=0 local _end_spd=6 - (_ * 0.6) local _d_w_spd=90/(15-1)
+								for _=1,15 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)*sin(_w_spd)+(_beg_spd)
+								end
+							end
+						end)
+					end
+					task._Wait(time)
+					ang=ang+_d_ang
+					ang2=ang2+_d_ang2
+					_w_time=_w_time+_d_w_time time=(_end_time-_beg_time)/2*sin(_w_time)+((_end_time+_beg_time)/2)
+				end
+			end
+			task.MoveToPlayer(30,-96,96,112,144,16,32,8,16,MOVE_DECEL,MOVE_RANDOM)
+			task._Wait(60)
 		end
 	end)
 end
@@ -6838,20 +7122,295 @@ function _tmp_sc:del()
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Eternity"].cards,_tmp_sc)
-table.insert(_sc_table,{"Eternity","bnvbnvbnvbnvbnvbnvbnvbnvbnvbnvbn",_tmp_sc,#_editor_class["Eternity"].cards,false})
-_tmp_sc=boss.card.New("「」",2,5,60,1200,{0,0,0},false)
+
+_tmp_sc=boss.card.New("Sinusoidal Buoyancy \"Midsummer Frenzy\"",2,5,60,900,{0,40,15},false)
+
+	_editor_class["EternityLaser1"]=Class(laser)
+	_editor_class["EternityLaser1"].init=function(self,_x,_y,rot)
+	laser.init(self,COLOR_DEEP_GREEN,_x,_y,0,128,512,128,8,0,0)
+		
+		PlaySound("boon00",0.1,self.x/256,false)
+		lasttask=task.New(self,function()
+			self.rot = rot
+			laser._TurnHalfOn(self,15,true)
+			task._Wait(45)
+			PlaySound("kira00",0.1,self.x/256,false)
+			last_list=_create_bullet_group(butterfly,COLOR_DEEP_GREEN,self.x,self.y,15,0,2,10,rot,0,false,0,true,true,0,false,self)
+			laser._TurnOff(self,30,true)
+			_del(self,true)
+		end)
+	end
+
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
-		task.MoveTo(0,120,60,MOVE_NORMAL)
+		last=New(_editor_class["Spell_Cutin"],self.x,self.y,"Eternity")
+		task.MoveTo(0,122,60,MOVE_NORMAL)
+		task._Wait(60)
+		lasttask=task.New(self,function()
+			do
+				local _h_a=(100-(-100))/2 local _t_a=(100+(-100))/2 local a=_h_a*sin(0)+_t_a local _w_a=0 local _d_w_a=1.5
+				for _=1,_infinite do
+					self.x,self.y=a,self.y
+					task._Wait(1)
+					_w_a=_w_a+_d_w_a a=_h_a*sin(_w_a)+_t_a
+				end
+			end
+		end)
+		lasttask=task.New(self,function()
+			for _=1,_infinite do
+				New(boss_cast_ef,self.x,self.y,360,0,255,200,60,2,false)
+				task._Wait(60)
+				do
+					local _h_ang=(15-(-15))/2 local _t_ang=(15+(-15))/2 local ang=_h_ang*sin(0)+_t_ang local _w_ang=0 local _d_w_ang=2
+					for _=1,10 do
+						last=New(_straight,ellipse,COLOR_DEEP_GREEN,self.x,self.y,6,ang + 20,false,0,true,true,0,false,0,0,0,false)
+						lasttask=task.New(last,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(35-1)
+								for _=1,35 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+								end
+							end
+							do
+								local _beg_ang=self.rot local ang=_beg_ang local _end_ang=Angle(self, player) local _w_ang=0 local _d_w_ang=1/(15-1)
+								for _=1,15 do
+									SetV2(self,0,ang,true,false)
+									task._Wait(1)
+									_w_ang=_w_ang+_d_w_ang ang=(_beg_ang-_end_ang)*(_w_ang-1)^2+_end_ang
+								end
+							end
+							do
+								local _beg_ang=self.rot - 40 local ang=_beg_ang local _end_ang=self.rot + 40 local _d_ang=(_end_ang-_beg_ang)/(3-1)
+								for _=1,3 do
+									last=New(_editor_class["EternityLaser1"],self.x,self.y,ang)
+									ang=ang+_d_ang
+								end
+							end
+							task._Wait(60)
+							_del(self,true)
+						end)
+						last=New(_straight,ellipse,COLOR_DEEP_GREEN,self.x,self.y,6,ang - 20 + 180,false,0,true,true,0,false,0,0,0,false)
+						lasttask=task.New(last,function()
+							local self=task.GetSelf()
+							do
+								local _beg_spd=6 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(35-1)
+								for _=1,35 do
+									SetV2(self,spd,self.rot,true,false)
+									task._Wait(1)
+									_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+								end
+							end
+							do
+								local _beg_ang=self.rot local ang=_beg_ang local _end_ang=Angle(self, player) local _w_ang=0 local _d_w_ang=1/(15-1)
+								for _=1,15 do
+									SetV2(self,0,ang,true,false)
+									task._Wait(1)
+									_w_ang=_w_ang+_d_w_ang ang=(_beg_ang-_end_ang)*(_w_ang-1)^2+_end_ang
+								end
+							end
+							do
+								local _beg_ang=self.rot - 40 local ang=_beg_ang local _end_ang=self.rot + 40 local _d_ang=(_end_ang-_beg_ang)/(3-1)
+								for _=1,3 do
+									last=New(_editor_class["EternityLaser1"],self.x,self.y,ang)
+									ang=ang+_d_ang
+								end
+							end
+							task._Wait(60)
+							_del(self,true)
+						end)
+						task._Wait(5)
+						_w_ang=_w_ang+_d_w_ang ang=_h_ang*sin(_w_ang)+_t_ang
+					end
+				end
+				task._Wait(60)
+			end
+		end)
+		lasttask=task.New(self,function()
+			do
+				local _h_ang=(15-(-15))/2 local _t_ang=(15+(-15))/2 local ang=_h_ang*sin(-15)+_t_ang local _w_ang=-15 local _d_w_ang=1.5
+				local _h_ang2=(-15-(15))/2 local _t_ang2=(-15+(15))/2 local ang2=_h_ang2*sin(15)+_t_ang2 local _w_ang2=15 local _d_w_ang2=1.5
+				local ang3=0 local _d_ang3=(3)
+				for _=1,_infinite do
+					PlaySound("kira00",0.1,self.x/256,false)
+					do local ang4,_d_ang4=(90),(360/3) for _=1,3 do
+						last=New(_straight,kite,COLOR_DEEP_GREEN,self.x,self.y,3,ang + ang3 + ang4,false,0,true,true,0,false,0,0,0,false)
+						last=New(_straight,kite,COLOR_DEEP_GREEN,self.x,self.y,3,ang2 + ang3 + ang4,false,0,true,true,0,false,0,0,0,false)
+					ang4=ang4+_d_ang4 end end
+					do local ang4,_d_ang4=(90),(360/3) for _=1,3 do
+						last=New(_straight,kite,COLOR_DEEP_GREEN,self.x,self.y,3,ang - ang3 - ang4,false,0,true,true,0,false,0,0,0,false)
+						last=New(_straight,kite,COLOR_DEEP_GREEN,self.x,self.y,3,ang2 - ang3 - ang4,false,0,true,true,0,false,0,0,0,false)
+					ang4=ang4+_d_ang4 end end
+					task._Wait(10)
+					_w_ang=_w_ang+_d_w_ang ang=_h_ang*sin(_w_ang)+_t_ang
+					_w_ang2=_w_ang2+_d_w_ang2 ang2=_h_ang2*sin(_w_ang2)+_t_ang2
+					ang3=ang3+_d_ang3
+				end
+			end
+		end)
 	end)
 end
 function _tmp_sc:del()
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Eternity"].cards,_tmp_sc)
-table.insert(_sc_table,{"Eternity","「」",_tmp_sc,#_editor_class["Eternity"].cards,false})
+table.insert(_sc_table,{"Eternity","Sinusoidal Buoyancy \"Midsummer Frenzy\"",_tmp_sc,#_editor_class["Eternity"].cards,false})
+_tmp_sc=boss.card.New("Scatter Sign \"Scattering Metamorphosis\"",5,15,60,1200,{0,40,15},false)
+function _tmp_sc:before()
+end
+function _tmp_sc:init()
+	lasttask=task.New(self,function()
+		last=New(_editor_class["Spell_Cutin"],self.x,self.y,"Eternity")
+		task.MoveTo(0,120,60,MOVE_NORMAL)
+		lasttask=task.New(self,function()
+			for _=1,_infinite do
+				task._Wait(60*12)
+				PlaySound("tan00",0.1,self.x/256,false)
+				last_list=_create_bullet_group(ball_huge,COLOR_GREEN,self.x,self.y,15,0,2,2,0,360,true,0,true,true,0,false,self)
+			end
+		end)
+		for _=1,_infinite do
+			New(boss_cast_ef,self.x,self.y,360,0,255,200,60,2,false)
+			boss.cast(self,60)
+			task._Wait(60)
+			last=New(_straight,butterfly,COLOR_GREEN,self.x,self.y,0,0,false,0,true,false,0,false,0,0,0,false)
+			last.navi = true
+			lasttask=task.New(last,function()
+				local self=task.GetSelf()
+				lasttask=task.New(self,function()
+					task.Basis2MoveTo(60*3.5,MOVE_ACC_DEC,20, 200, 160, 180, 200, 0, 40, -240)
+					_del(self,true)
+				end)
+				task._Wait(5)
+				for _=1,_infinite do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,ball_mid,COLOR_GREEN,self.x,self.y,0,self.rot,false,0,true,false,0,false,0,0,0,false)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						task._Wait(60*2)
+						PlaySound("kira01",0.1,self.x/256,false)
+						do local ang,_d_ang=(self.rot),(360/4) for _=1,4 do
+							last=New(_straight,ball_mid_c,COLOR_GREEN,self.x,self.y,5,ang,false,0,true,false,0,false,0,0,0,false)
+							lasttask=task.New(last,function()
+								local self=task.GetSelf()
+								do
+									local _beg_spd=5 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(20-1)
+									for _=1,20 do
+										SetV2(self,spd,self.rot,true,false)
+										task._Wait(1)
+										_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+									end
+								end
+								task._Wait(60*2)
+								PlaySound("kira02",0.1,self.x/256,false)
+								do local ang2,_d_ang2=(self.rot),(360/3) for _=1,3 do
+									last=New(_straight,ball_small,COLOR_DEEP_GREEN,self.x,self.y,4,ang2,false,0,true,false,0,false,0,0,0,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										do
+											local _beg_spd=4 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(60-1)
+											for _=1,60 do
+												SetV2(self,spd,self.rot,true,false)
+												task._Wait(1)
+												_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+											end
+										end
+										task._Wait(60*2)
+										last_list=_create_bullet_group(mildew,COLOR_DEEP_GREEN,self.x,self.y,2,0,1,1,self.rot,360,false,0,true,true,0,false,self)
+										for _,unit in ipairs(last_list) do
+											_object.set_color(unit,"mul+add",255,255,255,255)
+										end
+										PlaySound("kira02",0.1,self.x/256,false)
+										_del(self,true)
+									end)
+								ang2=ang2+_d_ang2 end end
+								_del(self,true)
+							end)
+							_del(self,true)
+						ang=ang+_d_ang end end
+						_del(self,true)
+					end)
+					task._Wait(6)
+				end
+			end)
+			task._Wait(60*11)
+			New(boss_cast_ef,self.x,self.y,360,0,255,200,60,2,false)
+			boss.cast(self,60)
+			task._Wait(60)
+			last=New(_straight,butterfly,COLOR_GREEN,self.x,self.y,0,180,false,0,true,false,0,false,0,0,0,false)
+			last.navi = true
+			lasttask=task.New(last,function()
+				local self=task.GetSelf()
+				lasttask=task.New(self,function()
+					task.Basis2MoveTo(60*3.5,MOVE_ACC_DEC,-20, 200, -160, 180, -200, 0, -40, -240)
+					_del(self,true)
+				end)
+				task._Wait(5)
+				for _=1,_infinite do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,ball_mid,COLOR_GREEN,self.x,self.y,0,self.rot,false,0,true,false,0,false,0,0,0,false)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						task._Wait(60*2)
+						PlaySound("kira01",0.1,self.x/256,false)
+						do local ang,_d_ang=(self.rot),(360/4) for _=1,4 do
+							last=New(_straight,ball_mid_c,COLOR_GREEN,self.x,self.y,5,ang,false,0,true,false,0,false,0,0,0,false)
+							lasttask=task.New(last,function()
+								local self=task.GetSelf()
+								do
+									local _beg_spd=5 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(20-1)
+									for _=1,20 do
+										SetV2(self,spd,self.rot,true,false)
+										task._Wait(1)
+										_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+									end
+								end
+								task._Wait(60*2)
+								PlaySound("kira02",0.1,self.x/256,false)
+								do local ang2,_d_ang2=(self.rot),(360/3) for _=1,3 do
+									last=New(_straight,ball_small,COLOR_DEEP_GREEN,self.x,self.y,4,ang2,false,0,true,false,0,false,0,0,0,false)
+									lasttask=task.New(last,function()
+										local self=task.GetSelf()
+										do
+											local _beg_spd=4 local spd=_beg_spd  local _w_spd=-90 local _end_spd=0 local _d_w_spd=180/(60-1)
+											for _=1,60 do
+												SetV2(self,spd,self.rot,true,false)
+												task._Wait(1)
+												_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+											end
+										end
+										task._Wait(60*2)
+										last_list=_create_bullet_group(mildew,COLOR_DEEP_GREEN,self.x,self.y,2,0,1,1,self.rot,360,false,0,true,true,0,false,self)
+										for _,unit in ipairs(last_list) do
+											_object.set_color(unit,"mul+add",255,255,255,255)
+										end
+										PlaySound("kira02",0.1,self.x/256,false)
+										_del(self,true)
+									end)
+								ang2=ang2+_d_ang2 end end
+								_del(self,true)
+							end)
+							_del(self,true)
+						ang=ang+_d_ang end end
+						_del(self,true)
+					end)
+					task._Wait(6)
+				end
+			end)
+			task._Wait(60*11)
+		end
+	end)
+end
+function _tmp_sc:del()
+	scoredata.clearCount[1][2] = scoredata.clearCount[1][2] + 1
+end
+_tmp_sc.perform=false
+table.insert(_editor_class["Eternity"].cards,_tmp_sc)
+table.insert(_sc_table,{"Eternity","Scatter Sign \"Scattering Metamorphosis\"",_tmp_sc,#_editor_class["Eternity"].cards,false})
 _editor_class["Isaki"]=Class(boss)
 _editor_class["Isaki"].cards={}
 _editor_class["Isaki"].name="Isaki Kikushi"
@@ -6893,13 +7452,17 @@ of studying these plants, you should seek her.]===],600,0.15, 0.15,1,1,(325 - 1 
 		boss.dialog.sentence(self,"image:Marisa_2","left",[===[Hang on there, won't you put up some
 battle for me to try out these new toys?]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
 		boss.dialog.sentence(self,"image:Isaki_3","right",[===[I don't really have time for that, please tell me where to go...]===],600,0.15, 0.15,1,1,(550 - -1 * 150),116,(550 - -1 * 100),230,1,false)
+		_stop_music()
 		boss.dialog.sentence(self,"image:Marisa_2","left",[===[C'mon, it'll be quick! I want an excuse to try out these
 shrubs with someone at least somewhat formidable!]===],600,0.15, 0.15,1,1,(325 - 1 * 150),128,(325 - 1 * 100),230,1,false)
+		LoadMusicRecord("bgm:Act1BossTheme")
+		_play_music("bgm:Act1BossTheme")
+		last=New(_editor_class["SongDisplayer"],self.x,self.y,true)
 		boss.dialog.sentence(self,"image:Isaki_3","right",[===[Ugh... how do you even handle these things?!]===],600,0.15, 0.15,1,1,(550 - -1 * 150),116,(550 - -1 * 100),230,1,false)
 	end)
 end
 table.insert(_editor_class["Isaki"].cards,_tmp_sc)
-_tmp_sc=boss.card.New("",2,4,60,1400,{0,35,5},false)
+_tmp_sc=boss.card.New("",2,4,40,1200,{0,40,15},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
@@ -6958,6 +7521,7 @@ function _tmp_sc:init()
 						end
 					end)
 				end)
+				_connect(self,last,0.8,true)
 				last_list=_create_bullet_group(ball_mid,ran:Int(12, 14),self.x + ranPosX,self.y + ranPosY,3,0,3,3,ran:Int(0, 360),360,false,0,true,true,0,false,self)
 				task._Wait(6)
 			end
@@ -6970,7 +7534,7 @@ end
 _tmp_sc.perform=false
 table.insert(_editor_class["Isaki"].cards,_tmp_sc)
 
-_tmp_sc=boss.card.New("Bakery Technique \"Convection Oven\"",2,5,60,1800,{0,35,5},false)
+_tmp_sc=boss.card.New("Bakery Technique \"Convection Oven\"",2,5,60,1800,{0,40,15},false)
 
 	_editor_tasks["IsakiSpell1BulletBehavior1"]=function(t1,t2)
 		return function()
@@ -7058,7 +7622,7 @@ end
 _tmp_sc.perform=false
 table.insert(_editor_class["Isaki"].cards,_tmp_sc)
 table.insert(_sc_table,{"Isaki","Bakery Technique \"Convection Oven\"",_tmp_sc,#_editor_class["Isaki"].cards,false})
-_tmp_sc=boss.card.New("Sure-Fire Vanquishing \"Optically-precise Cleansing\"",2,20,60,1800,{0,0,0},false)
+_tmp_sc=boss.card.New("Sure-Fire Vanquishing \"Optically-precise Cleansing\"",2,20,60,1800,{0,40,15},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
@@ -7192,6 +7756,7 @@ function _tmp_sc:init()
 	end)
 end
 function _tmp_sc:del()
+	scoredata.clearCount[1][1] = scoredata.clearCount[1][1] + 1
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Isaki"].cards,_tmp_sc)
@@ -7378,7 +7943,7 @@ end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
 		lstg.var.karenKill = false
-		task.MoveTo(0,120,60,MOVE_NORMAL)
+		task.MoveTo(0,120,60,MOVE_DECEL)
 		boss.cast(self,60)
 		New(boss_cast_ef,self.x,self.y,360,255,75,195,60,2,false)
 		task._Wait(60)
@@ -7763,7 +8328,7 @@ end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
 		last=New(_editor_class["Spell_Cutin"],self.x,self.y,"Karen")
-		task.MoveTo(0,120,60,MOVE_NORMAL)
+		task.MoveTo(0,120,60,MOVE_DECEL)
 		lstg.var.karenKill = false
 		New(boss_cast_ef,self.x,self.y,360,255,75,195,60,2,false)
 		boss.cast(self,60)
@@ -7799,6 +8364,7 @@ function _tmp_sc:del()
 		end
 	end
 	lstg.var.karenKill = true
+	scoredata.clearCount[2][2] = scoredata.clearCount[2][2] + 1
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Karen"].cards,_tmp_sc)
@@ -7944,7 +8510,7 @@ end
 function _tmp_sc:init()
 	lasttask=task.New(self,function()
 		last=New(_editor_class["Spell_Cutin"],self.x,self.y,"Reimu")
-		task.MoveTo(0,120,60,MOVE_NORMAL)
+		task.MoveTo(0,120,60,MOVE_DECEL)
 		New(boss_cast_ef,self.x,self.y,360,255,0,0,60,2,false)
 		boss.cast(self,60)
 		task._Wait(60)
@@ -8168,6 +8734,7 @@ function _tmp_sc:init()
 	end)
 end
 function _tmp_sc:del()
+	scoredata.clearCount[2][1] = scoredata.clearCount[2][1] + 1
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Reimu"].cards,_tmp_sc)
@@ -8883,7 +9450,7 @@ end
 _tmp_sc.perform=false
 table.insert(_editor_class["Kichi"].cards,_tmp_sc)
 table.insert(_sc_table,{"Kichi","Enchanting Flower \"Crystallize Entanglement\"",_tmp_sc,#_editor_class["Kichi"].cards,false})
-_tmp_sc=boss.card.New("asd",2,5,60,1800,{0,65,5},false)
+_tmp_sc=boss.card.New("\"Leafwhisper Ode to Blooming\"",7,20,60,1800,{0,65,5},false)
 function _tmp_sc:before()
 end
 function _tmp_sc:init()
@@ -8944,6 +9511,33 @@ function _tmp_sc:init()
 			PlaySound("old_enep00",0.7,self.x/256,false)
 			PlaySound("kira00",0.1,self.x/256,false)
 			last_list=_create_bullet_group(ball_big,COLOR_ROYAL_BLUE,self.x,self.y,18,0,1,1,0,360,true,0,true,true,0,false,self)
+			ex.WaitForSignal("shootBullet",true)
+			do
+				local _beg_waitTime=8 local waitTime=_beg_waitTime  local _w_waitTime=-90 local _end_waitTime=4 local _d_w_waitTime=180/(60*8.5-1)
+				local _beg_spd=1 local spd=_beg_spd  local _w_spd=-90 local _end_spd=12 local _d_w_spd=180/(60*8.5-1)
+				for _=1,60*8.5 do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,arrow_big,COLOR_CYAN,self.x,self.y,spd,Angle(self.x, self.y, 0, 0) + ran:Int(-5, 5),false,0,true,true,0,false,0,0,0,false)
+					_object.set_color(last,"mul+add",255,255,255,255)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						for _=1,_infinite do
+							if Dist(self.x, self.y, 0, 0) < 16 then
+								PlaySound("kira02",0.1,self.x/256,false)
+								last_list=_create_bullet_group(kite,COLOR_GRAY,self.x + ran:Int(-3, 3),self.y + ran:Int(-3, 3),3,0,spd,spd,0,360,true,0,true,true,0,false,self)
+								for _,unit in ipairs(last_list) do
+									_object.set_color(unit,"mul+add",255,255,255,255)
+								end
+								_del(self,true)
+							end
+							task._Wait(1)
+						end
+					end)
+					task._Wait(waitTime)
+					_w_waitTime=_w_waitTime+_d_w_waitTime waitTime=(_end_waitTime-_beg_waitTime)/2*sin(_w_waitTime)+((_end_waitTime+_beg_waitTime)/2)
+					_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+				end
+			end
 		end)
 		last=New(_straight,ball_light,COLOR_ROYAL_BLUE,self.x,self.y,0,0,false,0,true,false,0,false,0,0,0,false)
 		lasttask=task.New(last,function()
@@ -8996,6 +9590,33 @@ function _tmp_sc:init()
 			PlaySound("old_enep00",0.7,self.x/256,false)
 			PlaySound("kira00",0.1,self.x/256,false)
 			last_list=_create_bullet_group(ball_big,COLOR_ROYAL_BLUE,self.x,self.y,18,0,1,1,0,360,true,0,true,true,0,false,self)
+			ex.WaitForSignal("shootBullet",true)
+			do
+				local _beg_waitTime=8 local waitTime=_beg_waitTime  local _w_waitTime=-90 local _end_waitTime=4 local _d_w_waitTime=180/(60*8.5-1)
+				local _beg_spd=1 local spd=_beg_spd  local _w_spd=-90 local _end_spd=12 local _d_w_spd=180/(60*8.5-1)
+				for _=1,60*8.5 do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,arrow_big,COLOR_CYAN,self.x,self.y,spd,Angle(self.x, self.y, 0, 0) + ran:Int(-5, 5),false,0,true,true,0,false,0,0,0,false)
+					_object.set_color(last,"mul+add",255,255,255,255)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						for _=1,_infinite do
+							if Dist(self.x, self.y, 0, 0) < 16 then
+								PlaySound("kira02",0.1,self.x/256,false)
+								last_list=_create_bullet_group(kite,COLOR_GRAY,self.x + ran:Int(-3, 3),self.y + ran:Int(-3, 3),3,0,spd,spd,0,360,true,0,true,true,0,false,self)
+								for _,unit in ipairs(last_list) do
+									_object.set_color(unit,"mul+add",255,255,255,255)
+								end
+								_del(self,true)
+							end
+							task._Wait(1)
+						end
+					end)
+					task._Wait(waitTime)
+					_w_waitTime=_w_waitTime+_d_w_waitTime waitTime=(_end_waitTime-_beg_waitTime)/2*sin(_w_waitTime)+((_end_waitTime+_beg_waitTime)/2)
+					_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+				end
+			end
 		end)
 		task._Wait(60*4)
 		New(boss_cast_ef,self.x, self.y,360,125,255,191,60,2,false)
@@ -9051,12 +9672,39 @@ function _tmp_sc:init()
 			PlaySound("old_enep00",0.7,self.x/256,false)
 			PlaySound("kira00",0.1,self.x/256,false)
 			last_list=_create_bullet_group(ball_big,COLOR_GREEN,self.x,self.y,12,0,1,1,0,360,true,0,true,true,0,false,self)
+			ex.WaitForSignal("shootBullet",true)
+			do
+				local _beg_waitTime=8 local waitTime=_beg_waitTime  local _w_waitTime=-90 local _end_waitTime=4 local _d_w_waitTime=180/(60*8.5-1)
+				local _beg_spd=1 local spd=_beg_spd  local _w_spd=-90 local _end_spd=12 local _d_w_spd=180/(60*8.5-1)
+				for _=1,60*8.5 do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,arrow_big,COLOR_GREEN,self.x,self.y,spd,Angle(self.x, self.y, 0, 0) + ran:Int(-5, 5),false,0,true,true,0,false,0,0,0,false)
+					_object.set_color(last,"mul+add",255,255,255,255)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						for _=1,_infinite do
+							if Dist(self.x, self.y, 0, 0) < 16 then
+								PlaySound("kira02",0.1,self.x/256,false)
+								last_list=_create_bullet_group(kite,COLOR_GRAY,self.x + ran:Int(-3, 3),self.y + ran:Int(-3, 3),3,0,spd,spd,0,360,true,0,true,true,0,false,self)
+								for _,unit in ipairs(last_list) do
+									_object.set_color(unit,"mul+add",255,255,255,255)
+								end
+								_del(self,true)
+							end
+							task._Wait(1)
+						end
+					end)
+					task._Wait(waitTime)
+					_w_waitTime=_w_waitTime+_d_w_waitTime waitTime=(_end_waitTime-_beg_waitTime)/2*sin(_w_waitTime)+((_end_waitTime+_beg_waitTime)/2)
+					_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+				end
+			end
 		end)
 		last=New(_straight,ball_light,COLOR_GREEN,self.x,self.y,0,0,false,0,true,false,0,false,0,0,0,false)
 		lasttask=task.New(last,function()
 			local self=task.GetSelf()
 			lasttask=task.New(self,function()
-				task.CRMoveTo(60*5,MOVE_ACC_DEC,-120, 50, -200, -50, -180, -190, -120, -120)
+				task.CRMoveTo(60*5,MOVE_ACC_DEC,-120, 50, -200, -50, -180, -100, -120, -120)
 			end)
 			do
 				local r=Angle(self, player) local _d_r=(-360/8)
@@ -9103,15 +9751,67 @@ function _tmp_sc:init()
 			PlaySound("old_enep00",0.7,self.x/256,false)
 			PlaySound("kira00",0.1,self.x/256,false)
 			last_list=_create_bullet_group(ball_big,COLOR_GREEN,self.x,self.y,12,0,1,1,0,360,true,0,true,true,0,false,self)
+			ex.WaitForSignal("shootBullet",true)
+			do
+				local _beg_waitTime=8 local waitTime=_beg_waitTime  local _w_waitTime=-90 local _end_waitTime=4 local _d_w_waitTime=180/(60*8.5-1)
+				local _beg_spd=1 local spd=_beg_spd  local _w_spd=-90 local _end_spd=12 local _d_w_spd=180/(60*8.5-1)
+				for _=1,60*8.5 do
+					PlaySound("kira00",0.1,self.x/256,false)
+					last=New(_straight,arrow_big,COLOR_GREEN,self.x,self.y,spd,Angle(self.x, self.y, 0, 0) + ran:Int(-5, 5),false,0,true,true,0,false,0,0,0,false)
+					_object.set_color(last,"mul+add",255,255,255,255)
+					lasttask=task.New(last,function()
+						local self=task.GetSelf()
+						for _=1,_infinite do
+							if Dist(self.x, self.y, 0, 0) < 16 then
+								PlaySound("kira02",0.1,self.x/256,false)
+								last_list=_create_bullet_group(kite,COLOR_GRAY,self.x + ran:Int(-3, 3),self.y + ran:Int(-3, 3),3,0,spd,spd,0,360,true,0,true,true,0,false,self)
+								for _,unit in ipairs(last_list) do
+									_object.set_color(unit,"mul+add",255,255,255,255)
+								end
+								_del(self,true)
+							end
+							task._Wait(1)
+						end
+					end)
+					task._Wait(waitTime)
+					_w_waitTime=_w_waitTime+_d_w_waitTime waitTime=(_end_waitTime-_beg_waitTime)/2*sin(_w_waitTime)+((_end_waitTime+_beg_waitTime)/2)
+					_w_spd=_w_spd+_d_w_spd spd=(_end_spd-_beg_spd)/2*sin(_w_spd)+((_end_spd+_beg_spd)/2)
+				end
+			end
+		end)
+		task._Wait(60*8)
+		New(boss_cast_ef,self.x, self.y,360,125,255,191,60,2,false)
+		task._Wait(60)
+		ex.SetSignal("shootBullet",true)
+		task._Wait(60*4)
+		New(boss_cast_ef,self.x, self.y,360,125,255,191,60,2,false)
+		task._Wait(60)
+		task.MoveTo(0,0,60,MOVE_DECEL)
+		lasttask=task.New(self,function()
+			local _x = 0
+			local ang = -90
+			for _=1,_infinite do
+				_x = _x + 1
+				ang = ang + _x
+				PlaySound("kira00",0.1,self.x/256,false)
+				last_list=_create_bullet_group(heart,COLOR_ROYAL_BLUE,self.x,self.y,3,0,1.5,1.5,ang,360,false,0,true,true,0,false,self)
+				for k, unit in ipairs(last_list) do
+					_object.set_color(unit,"mul+add",255,255,255,255)
+					unit.hscale, unit.vscale = 0.8, 0.8
+					unit.a, unit.b, unit.rect = unit.a * 0.8, unit.b * 0.8,false
+				end
+				task._Wait(8)
+			end
 		end)
 	end)
 end
 function _tmp_sc:del()
+	scoredata.clearCount[3][1] = scoredata.clearCount[3][1] + 1
 end
 _tmp_sc.perform=false
 table.insert(_editor_class["Kichi"].cards,_tmp_sc)
-table.insert(_sc_table,{"Kichi","asd",_tmp_sc,#_editor_class["Kichi"].cards,false})
-_boss_class_name="Kichi" _editor_class["Kichi"].cards={boss.move.New(0,144,60,MOVE_NORMAL),_tmp_sc} -- Title Screen
+table.insert(_sc_table,{"Kichi","\"Leafwhisper Ode to Blooming\"",_tmp_sc,#_editor_class["Kichi"].cards,false})
+-- Title Screen
 	stage_init = stage.New("menu", true, true)
 	function stage_init:init()
 		checker_up = coroutine.create(MenuInputChecker)
@@ -9210,10 +9910,46 @@ stage.group.DefStageFunc('Scene@Act1','init',function(self)
 		LoadMusicRecord("bgm:Act1Theme")
 		_play_music("bgm:Act1Theme")
 		last=New(_editor_class["SongDisplayer"],self.x,self.y,false)
-		local _boss_wait=true
-		local _ref=New(_editor_class["Isaki"],_editor_class["Isaki"].cards)
-		last=_ref
-		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		last=New(_editor_class["Stage_Sections"],self.x,self.y,7, 2)
+		while lstg.var.finishStage == false do
+			task._Wait(1)
+		end
+		task._Wait(60)
+		_clear_bullet(true,true)
+		for _,unit in ObjList(GROUP_NONTJT) do
+			_kill(unit,true)
+		end
+		for _,unit in ObjList(GROUP_ENEMY) do
+			_kill(unit,true)
+		end
+		if scoredata.clearCount[1][1] <= 0 then
+			local _boss_wait=true
+			local _ref=New(_editor_class["Isaki"],_editor_class["Isaki"].cards)
+			last=_ref
+			if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		else
+			if scoredata.clearCount[1][2] <= 0 then
+				local _boss_wait=true
+				local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
+				last=_ref
+				if _boss_wait then while IsValid(_ref) do task.Wait() end end
+			else
+				local bossSel=(ran:Int(1, 2))
+				if bossSel == 1 then
+					local _boss_wait=true
+					local _ref=New(_editor_class["Isaki"],_editor_class["Isaki"].cards)
+					last=_ref
+					if _boss_wait then while IsValid(_ref) do task.Wait() end end
+				else
+					local _boss_wait=true
+					local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
+					last=_ref
+					if _boss_wait then while IsValid(_ref) do task.Wait() end end
+				end
+			end
+		end
+		task._Wait(60)
+		last=New(_editor_class["StageClearDisplayer"],self.x,self.y,_)
 		task._Wait(9999999)
 	end)
 	task.New(self,function()
@@ -9249,11 +9985,48 @@ stage.group.DefStageFunc('Scene@Act2','init',function(self)
 		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
 		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
 		task._Wait(60)
-		local _boss_wait=true
-		local _ref=New(_editor_class["Reimu"],_editor_class["Reimu"].cards)
-		last=_ref
-		if _boss_wait then while IsValid(_ref) do task.Wait() end end
-		task._Wait(60*2)
+		LoadMusicRecord("bgm:Act2Theme")
+		_play_music("bgm:Act2Theme")
+		last=New(_editor_class["SongDisplayer"],self.x,self.y,false)
+		last=New(_editor_class["Stage_Sections"],self.x,self.y,9, 3)
+		while lstg.var.finishStage == false do
+			task._Wait(1)
+		end
+		task._Wait(60)
+		_clear_bullet(true,true)
+		for _,unit in ObjList(GROUP_NONTJT) do
+			_kill(unit,true)
+		end
+		for _,unit in ObjList(GROUP_ENEMY) do
+			_kill(unit,true)
+		end
+		if scoredata.clearCount[2][2] <= 0 then
+			local _boss_wait=true
+			local _ref=New(_editor_class["Karen"],_editor_class["Karen"].cards)
+			last=_ref
+			if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		else
+			if scoredata.clearCount[2][1] <= 0 then
+				local _boss_wait=true
+				local _ref=New(_editor_class["Reimu"],_editor_class["Reimu"].cards)
+				last=_ref
+				if _boss_wait then while IsValid(_ref) do task.Wait() end end
+			else
+				local bossSel=(ran:Int(1, 2))
+				if bossSel == 1 then
+					local _boss_wait=true
+					local _ref=New(_editor_class["Karen"],_editor_class["Karen"].cards)
+					last=_ref
+					if _boss_wait then while IsValid(_ref) do task.Wait() end end
+				else
+					local _boss_wait=true
+					local _ref=New(_editor_class["Reimu"],_editor_class["Reimu"].cards)
+					last=_ref
+					if _boss_wait then while IsValid(_ref) do task.Wait() end end
+				end
+			end
+		end
+		task._Wait(60)
 		last=New(_editor_class["StageClearDisplayer"],self.x,self.y,_)
 		task._Wait(9999999)
 	end)
@@ -9290,10 +10063,27 @@ stage.group.DefStageFunc('Scene@Act3','init',function(self)
 		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
 		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
 		task._Wait(60)
+		LoadMusicRecord("bgm:Act3Theme")
+		_play_music("bgm:Act3Theme")
+		last=New(_editor_class["SongDisplayer"],self.x,self.y,false)
+		last=New(_editor_class["Stage_Sections"],self.x,self.y,10, 4)
+		while lstg.var.finishStage == false do
+			task._Wait(1)
+		end
+		task._Wait(60)
+		_clear_bullet(true,true)
+		for _,unit in ObjList(GROUP_NONTJT) do
+			_kill(unit,true)
+		end
+		for _,unit in ObjList(GROUP_ENEMY) do
+			_kill(unit,true)
+		end
 		local _boss_wait=true
 		local _ref=New(_editor_class["Kichi"],_editor_class["Kichi"].cards)
 		last=_ref
 		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		task._Wait(60)
+		last=New(_editor_class["StageClearDisplayer"],self.x,self.y,_)
 		task._Wait(9999999)
 	end)
 	task.New(self,function()
@@ -9315,4 +10105,99 @@ stage.group.DefStageFunc('Scene@Act3','init',function(self)
 		stage.group.FinishStage()
 	end)
 end)
-Include 'THlib\\UI\\scdebugger.lua'
+stage.group.New('menu',{},"ActJudge",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
+stage.group.AddStage('ActJudge','Scene@ActJudge',{lifeleft=7,power=400,faith=50000,bomb=3},true)
+stage.group.DefStageFunc('Scene@ActJudge','init',function(self)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		lstg.var.lifeleft = 9
+		New(_editor_class["tkz_stage3_bg"] or tkz_stage3_bg)
+		last=New(_editor_class["Plant_Manager"],self.x,self.y,_)
+		last=New(_editor_class["UI_Manager"],self.x,self.y,_)
+		task._Wait(60)
+		LoadMusicRecord("bgm:Act1Theme")
+		_play_music("bgm:Act1Theme")
+		last=New(_editor_class["SongDisplayer"],self.x,self.y,false)
+		local _boss_wait=true
+		local _ref=New(_editor_class["Isaki"],_editor_class["Isaki"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		local _boss_wait=true
+		local _ref=New(_editor_class["Eternity"],_editor_class["Eternity"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		local _boss_wait=true
+		local _ref=New(_editor_class["Karen"],_editor_class["Karen"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		local _boss_wait=true
+		local _ref=New(_editor_class["Reimu"],_editor_class["Reimu"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		local _boss_wait=true
+		local _ref=New(_editor_class["Kichi"],_editor_class["Kichi"].cards)
+		last=_ref
+		if _boss_wait then while IsValid(_ref) do task.Wait() end end
+		task._Wait(60)
+		last=New(_editor_class["StageClearDisplayer"],self.x,self.y,_)
+		task._Wait(9999999)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
+end)
+stage.group.New('menu',{},"StaffRoll",{lifeleft=7,power=400,faith=50000,bomb=3},true,1)
+stage.group.AddStage('StaffRoll','SceneStaff@StaffRoll',{lifeleft=7,power=400,faith=50000,bomb=3},true)
+stage.group.DefStageFunc('SceneStaff@StaffRoll','init',function(self)
+	_init_item(self)
+	difficulty=self.group.difficulty
+	New(mask_fader,'open')
+	if jstg then jstg.CreatePlayers() else New(_G[lstg.var.player_name]) end
+	lasttask=task.New(self,function()
+		SetWorldUEX(screen.width/2, screen.height/2, 448, 448, 32, 32)
+		lstg.var.lifeleft = 2
+		lstg.var.equipCard = {0, 0}
+		lstg.var.plantCard = {0,0,0,0,0,0}
+		LoadMusicRecord("bgm:StaffRollTheme")
+		_play_music("bgm:StaffRollTheme")
+		last=New(_editor_class["StaffRollManager"],screen.width/2, 0,_)
+		task._Wait(9999999)
+	end)
+	task.New(self,function()
+		while coroutine.status(self.task[1])~='dead' do task.Wait() end
+		stage.group.FinishReplay()
+		New(mask_fader,'close')
+		task.New(self,function()
+			local _,bgm=EnumRes('bgm')
+			for i=1,30 do
+				for _,v in pairs(bgm) do
+					if GetMusicState(v)=='playing' then
+						SetBGMVolume(v,1-i/30)
+					end
+				end
+				task.Wait()
+			end
+		end)
+		task.Wait(30)
+		stage.group.FinishStage()
+	end)
+end)

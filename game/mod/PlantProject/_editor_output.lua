@@ -1258,7 +1258,7 @@ _editor_class["Shop_Manager"].init=function(self,_x,_y,_)
 	
 	--print("start " .. tostring(scoredata.ownedCards[1]))
 	--scoredata.ownedCards = scoredata.ownedCards or {0,0,0,0,0,0,0,0}
-	scoredata.seedAmount = scoredata.seedAmount or 750
+	scoredata.seedAmount = scoredata.seedAmount or 1000
 	if not scoredata.ownedCards then scoredata.ownedCards = {0,0,0,0,0,0,0,0} end
 	if scoredata.seedAmount == nil then scoredata.seedAmount = 750 end
 	if not scoredata.prevSeedAmount then scoredata.prevSeedAmount = 750 end
@@ -5602,6 +5602,7 @@ _editor_class["PlantEnemy"].init=function(self,_x,_y,_)
 	self.x,self.y=_x,_y
 	self.drop={0,ran:Int(12, 18),0}
 	task.New(self,function() self.protect=true task.Wait(1) self.protect=false end)
+	if lstg.var.stage_name == "Scene@ActJudge" then Del(self) end
 	self.bound = false
 	_object.set_color(self,"",115,255,255,255)
 	if lstg.var.selectedStage == 1 or lstg.var.selectedStage == 2 then
@@ -6421,7 +6422,7 @@ _editor_class["Poison_Shrub_Shot"].init=function(self,_x,_y,_)
 		elseif scoredata.shrubLevelUp[5] == 2 then
 			self.dmg = 0.55
 		elseif scoredata.shrubLevelUp[5] == 3 then
-			self.dmg = 0.6
+			self.dmg = 0.675
 		end
 	end
 	lasttask=task.New(self,function()
@@ -6476,7 +6477,7 @@ _editor_class["Lightning_Shrub_Shot"].init=function(self,_x,_y,_)
 		elseif scoredata.shrubLevelUp[6] == 2 then
 			self.dmg = 0.375
 		elseif scoredata.shrubLevelUp[6] == 3 then
-			self.dmg = 0.4
+			self.dmg = 0.45
 		end
 	end
 end
@@ -6519,7 +6520,7 @@ _editor_class["Wind_Shrub_Shot"].init=function(self,_x,_y,_)
 		elseif scoredata.shrubLevelUp[7] == 2 then
 			self.dmg = 0.3
 		elseif scoredata.shrubLevelUp[7] == 3 then
-			self.dmg = 0.4
+			self.dmg = 0.475
 		end
 	end
 end
@@ -6561,7 +6562,7 @@ _editor_class["Metal_Shrub_Shot"].init=function(self,_x,_y,_)
 		elseif scoredata.shrubLevelUp[8] == 2 then
 			self.dmg = 4.75
 		elseif scoredata.shrubLevelUp[8] == 3 then
-			self.dmg = 5.5
+			self.dmg = 5.75
 		end
 	end
 end
